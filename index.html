@@ -1,182 +1,1077 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Gacha Empire</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  text-align: center;
-}
-
-button {
-  padding: 10px 20px;
-  margin: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  background: #2563eb;
-  color: white;
-}
-.card {
-  background: #1e293b;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 10px;
-}
-</style>
-</head>
-
-<body>
-<div id="app"></div>
-
-<script>
-
-const RARITIES = {
-  COMMON: { name: "Обычная", chance: 6000, mult: 1 },
-  RARE: { name: "Редкая", chance: 3000, mult: 2.5 },
-  EPIC: { name: "Эпическая", chance: 800, mult: 5 },
-  LEGEND: { name: "Легендарная", chance: 180, mult: 8 },
-  DIVINE: { name: "Божественная", chance: 20, mult: 15 }
-};
-
-const UNIVERSES = {
-  "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара"],
-  "EVANGELION": ["Рэй", "Аска", "Синдзи", "Кавору"]
-};
-
-let user = {
-  diamonds: 1500,
-  power: 0,
-  universe: "JUJUTSU KAISEN",
-  inventory: []
-};
-
-let currentView = "main";
-
-function render() {
-  const app = document.getElementById("app");
-
-  if (currentView === "main") {
-    app.innerHTML = `
-      <h1>Anime Gacha Empire</h1>
-      <p>💎 Алмазы: ${user.diamonds}</p>
-      <p>⚡ Мощь: ${user.power}</p>
-      <button id="btnRoll">Призыв</button>
-      <button id="btnInventory">Инвентарь</button>
-    `;
-
-    document.getElementById("btnRoll").addEventListener("click", goRoll);
-    document.getElementById("btnInventory").addEventListener("click", goInventory);
-  }
-
-  if (currentView === "roll") {
-    app.innerHTML = `
-      <h2>Призыв стоит 100 алмазов</h2>
-      <button id="btnActivate">Активировать</button>
-      <button id="btnBack">Назад</button>
-    `;
-
-    document.getElementById("btnActivate").addEventListener("click", performRoll);
-    document.getElementById("btnBack").addEventListener("click", goMain);
-  }
-
-  if (currentView === "inventory") {
-    let cardsHTML = "";
-
-    if (user.inventory.length === 0) {
-      cardsHTML = "<p>Пусто</p>";
-    } else {
-      user.inventory.forEach(card => {
-        cardsHTML += `
-          <div class="card">
-            <strong>${card.name}</strong><br>
-            ${card.rarity}<br>
-            ⚡ ${card.power} | ❤️ ${card.hp}
-          </div>
-        `;
-      });
-    }
-
-    app.innerHTML = `
-      <h2>Инвентарь</h2>
-      ${cardsHTML}
-      <button id="btnBack">Назад</button>
-    `;
-
-    document.getElementById("btnBack").addEventListener("click", goMain);
-  }
-}
-
-function performRoll() {
-  if (user.diamonds < 100) {
-    alert("Недостаточно алмазов");
-    return;
-  }
-
-  user.diamonds -= 100;
-
-  const rng = Math.floor(Math.random() * 10000);
-  let cumulative = 0;
-  let rarityKey = "COMMON";
-
-  for (let key in RARITIES) {
-    cumulative += RARITIES[key].chance;
-    if (rng <= cumulative) {
-      rarityKey = key;
-      break;
-    }
-  }
-
-  const names = UNIVERSES[user.universe];
-  const name = names[Math.floor(Math.random() * names.length)];
-  const rarity = RARITIES[rarityKey];
-
-  const newCard = {
-    id: Date.now(),
-    name: name,
-    rarity: rarity.name,
-    power: Math.floor((Math.random() * 100 + 50) * rarity.mult),
-    hp: Math.floor((Math.random() * 200 + 100) * rarity.mult)
-  };
-
-  user.inventory.push(newCard);
-  user.power += newCard.power;
-
-  alert("Выпала карта: " + name + " (" + rarity.name + ")");
-  render();
-}
-
-function goMain() {
-  currentView = "main";
-  render();
-}
-
-function goRoll() {
-  currentView = "roll";
-  render();
-}
-
-function goInventory() {
-  currentView = "inventory";
-  render();
-}
-
-if (window.Telegram && window.Telegram.WebApp) {
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
-}
-
-render();
-
-</script>
-</body>
-</html>
+diff --git a/index.html b/index.html
+index 988791cd3ae21a6d7ddf17b58c515421c5e8c7dc..cc06296b00ff3fdbcca0a2750323bc2542b3192b 100644
+--- a/index.html
++++ b/index.html
+@@ -1,182 +1,917 @@
+ <!DOCTYPE html>
+ <html lang="ru">
+ <head>
+-<meta charset="UTF-8">
+-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+-<title>Anime Gacha Empire</title>
+-
+-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+-
+-<style>
+-body {
+-  margin: 0;
+-  font-family: Arial, sans-serif;
+-  background: #0f172a;
+-  color: white;
+-  text-align: center;
+-}
+-
+-button {
+-  padding: 10px 20px;
+-  margin: 10px;
+-  border: none;
+-  border-radius: 8px;
+-  cursor: pointer;
+-  font-weight: bold;
+-  background: #2563eb;
+-  color: white;
+-}
+-.card {
+-  background: #1e293b;
+-  padding: 15px;
+-  margin: 10px;
+-  border-radius: 10px;
+-}
+-</style>
+-</head>
++  <meta charset="UTF-8" />
++  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++  <title>Anime Gacha Empire</title>
++  <script src="https://telegram.org/js/telegram-web-app.js"></script>
++  <style>
++    :root {
++      --bg: #060a1f;
++      --panel: rgba(18, 25, 56, 0.75);
++      --panel-strong: rgba(28, 38, 84, 0.92);
++      --text: #ecf2ff;
++      --muted: #8ea3d8;
++      --primary: #6f7bff;
++      --accent: #00d0ff;
++      --success: #16c47f;
++      --warning: #f5b100;
++      --danger: #ff5d86;
++      --border: rgba(151, 177, 255, 0.22);
++      --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
++    }
++
++    * {
++      box-sizing: border-box;
++    }
++
++    body {
++      margin: 0;
++      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
++      color: var(--text);
++      min-height: 100vh;
++      background:
++        radial-gradient(circle at 10% -10%, #1f2b74 0%, transparent 35%),
++        radial-gradient(circle at 110% 0%, #5f1f7f 0%, transparent 28%),
++        radial-gradient(circle at 50% 110%, #063d63 0%, transparent 30%),
++        var(--bg);
++    }
++
++    .shell {
++      width: min(1080px, 100% - 20px);
++      margin: 16px auto 24px;
++      display: grid;
++      grid-template-columns: 320px 1fr;
++      gap: 14px;
++    }
++
++    .panel {
++      background: var(--panel);
++      border: 1px solid var(--border);
++      border-radius: 18px;
++      box-shadow: var(--shadow);
++      backdrop-filter: blur(8px);
++    }
++
++    .sidebar {
++      padding: 14px;
++      display: flex;
++      flex-direction: column;
++      gap: 12px;
++      height: fit-content;
++      position: sticky;
++      top: 12px;
++    }
++
++    .brand {
++      padding: 12px;
++      border-radius: 14px;
++      background: linear-gradient(130deg, rgba(111, 123, 255, 0.35), rgba(0, 208, 255, 0.2));
++      border: 1px solid rgba(174, 196, 255, 0.27);
++    }
++
++    .brand h1 {
++      margin: 0;
++      font-size: 22px;
++      letter-spacing: 0.4px;
++    }
++
++    .brand p {
++      margin: 6px 0 0;
++      color: var(--muted);
++      font-size: 13px;
++    }
++
++    .user-head {
++      display: flex;
++      gap: 10px;
++      align-items: center;
++      padding: 10px;
++      border-radius: 12px;
++      background: rgba(255, 255, 255, 0.03);
++      border: 1px solid rgba(255, 255, 255, 0.09);
++    }
++
++    .avatar {
++      width: 56px;
++      height: 56px;
++      border-radius: 14px;
++      object-fit: cover;
++      background: linear-gradient(145deg, #4c5bcb, #2a7fb1);
++      border: 1px solid rgba(255, 255, 255, 0.2);
++    }
++
++    .nav {
++      display: grid;
++      gap: 8px;
++    }
++
++    button,
++    .btn {
++      border: 0;
++      border-radius: 12px;
++      padding: 10px 12px;
++      color: white;
++      cursor: pointer;
++      font-weight: 700;
++      transition: transform 0.12s ease, filter 0.12s ease;
++      background: linear-gradient(130deg, #4e63ff, #3396ff);
++    }
++
++    button:hover,
++    .btn:hover {
++      transform: translateY(-1px);
++      filter: brightness(1.07);
++    }
++
++    button:disabled {
++      opacity: 0.55;
++      cursor: not-allowed;
++    }
++
++    .nav button {
++      text-align: left;
++      background: rgba(255, 255, 255, 0.05);
++      border: 1px solid rgba(255, 255, 255, 0.14);
++    }
++
++    .nav button.active {
++      background: linear-gradient(130deg, rgba(111, 123, 255, 0.58), rgba(0, 208, 255, 0.35));
++      border-color: rgba(205, 226, 255, 0.5);
++    }
++
++    .stats {
++      display: grid;
++      gap: 8px;
++    }
++
++    .stat-row {
++      display: flex;
++      justify-content: space-between;
++      padding: 8px 10px;
++      border-radius: 10px;
++      background: rgba(255, 255, 255, 0.04);
++      color: var(--muted);
++      font-size: 14px;
++    }
++
++    .stat-row b {
++      color: var(--text);
++    }
++
++    .content {
++      min-height: 86vh;
++      padding: 16px;
++    }
++
++    .page-title {
++      display: flex;
++      justify-content: space-between;
++      align-items: center;
++      gap: 8px;
++      flex-wrap: wrap;
++      margin-bottom: 12px;
++    }
++
++    .page-title h2 {
++      margin: 0;
++      font-size: 24px;
++    }
++
++    .page-title p {
++      margin: 4px 0 0;
++      color: var(--muted);
++    }
++
++    .grid {
++      display: grid;
++      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
++      gap: 10px;
++    }
++
++    .card {
++      background: var(--panel-strong);
++      border: 1px solid rgba(180, 199, 255, 0.18);
++      border-radius: 15px;
++      padding: 12px;
++      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
++    }
++
++    .rarity {
++      display: inline-block;
++      padding: 3px 8px;
++      border-radius: 999px;
++      font-size: 11px;
++      font-weight: 800;
++      margin-bottom: 8px;
++      text-transform: uppercase;
++      letter-spacing: 0.4px;
++    }
++
++    .rarity.common { background: rgba(185, 195, 223, 0.22); }
++    .rarity.rare { background: rgba(79, 125, 255, 0.25); }
++    .rarity.epic { background: rgba(176, 80, 255, 0.24); }
++    .rarity.legend { background: rgba(255, 164, 46, 0.24); }
++    .rarity.divine { background: rgba(255, 81, 143, 0.25); }
++
++    .summon-stage {
++      display: grid;
++      gap: 10px;
++      justify-items: center;
++      text-align: center;
++      padding: 18px;
++      border-radius: 18px;
++      background: linear-gradient(140deg, rgba(57, 77, 174, 0.42), rgba(95, 41, 113, 0.3));
++      border: 1px solid rgba(198, 217, 255, 0.26);
++      overflow: hidden;
++      position: relative;
++      min-height: 250px;
++    }
++
++    .orb {
++      width: 120px;
++      height: 120px;
++      border-radius: 50%;
++      background: radial-gradient(circle at 30% 30%, #fff, #81beff 18%, #5a54f5 50%, #25165e 80%);
++      box-shadow: 0 0 35px rgba(95, 137, 255, 0.75), 0 0 80px rgba(174, 66, 255, 0.45);
++      animation: pulse 2.2s infinite;
++    }
++
++    @keyframes pulse {
++      0%, 100% { transform: scale(1); }
++      50% { transform: scale(1.08); }
++    }
++
++    .rng-stream {
++      font-weight: 800;
++      letter-spacing: 0.5px;
++      min-height: 24px;
++      color: #cddaff;
++      text-shadow: 0 0 12px rgba(126, 170, 255, 0.8);
++    }
++
++    .log {
++      background: rgba(0, 0, 0, 0.26);
++      border-radius: 12px;
++      padding: 10px;
++      max-height: 160px;
++      overflow: auto;
++      border: 1px solid rgba(255, 255, 255, 0.14);
++      font-size: 13px;
++      color: #d7e4ff;
++    }
++
++    input,
++    textarea,
++    select {
++      width: 100%;
++      border: 1px solid rgba(255, 255, 255, 0.2);
++      background: rgba(255, 255, 255, 0.03);
++      color: white;
++      padding: 10px;
++      border-radius: 10px;
++      font: inherit;
++    }
++
++    textarea { min-height: 92px; resize: vertical; }
+ 
++    .row {
++      display: grid;
++      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
++      gap: 10px;
++    }
++
++    .muted {
++      color: var(--muted);
++      font-size: 13px;
++    }
++
++    .section {
++      margin-top: 10px;
++    }
++
++    .pill {
++      display: inline-flex;
++      align-items: center;
++      gap: 6px;
++      background: rgba(255, 255, 255, 0.09);
++      border: 1px solid rgba(255, 255, 255, 0.15);
++      border-radius: 999px;
++      padding: 4px 10px;
++      font-size: 12px;
++      color: #d8e2ff;
++    }
++
++    @media (max-width: 880px) {
++      .shell {
++        grid-template-columns: 1fr;
++      }
++
++      .sidebar {
++        position: static;
++      }
++    }
++  </style>
++</head>
+ <body>
+-<div id="app"></div>
+-
+-<script>
+-
+-const RARITIES = {
+-  COMMON: { name: "Обычная", chance: 6000, mult: 1 },
+-  RARE: { name: "Редкая", chance: 3000, mult: 2.5 },
+-  EPIC: { name: "Эпическая", chance: 800, mult: 5 },
+-  LEGEND: { name: "Легендарная", chance: 180, mult: 8 },
+-  DIVINE: { name: "Божественная", chance: 20, mult: 15 }
+-};
+-
+-const UNIVERSES = {
+-  "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара"],
+-  "EVANGELION": ["Рэй", "Аска", "Синдзи", "Кавору"]
+-};
+-
+-let user = {
+-  diamonds: 1500,
+-  power: 0,
+-  universe: "JUJUTSU KAISEN",
+-  inventory: []
+-};
+-
+-let currentView = "main";
+-
+-function render() {
+-  const app = document.getElementById("app");
+-
+-  if (currentView === "main") {
+-    app.innerHTML = `
+-      <h1>Anime Gacha Empire</h1>
+-      <p>💎 Алмазы: ${user.diamonds}</p>
+-      <p>⚡ Мощь: ${user.power}</p>
+-      <button id="btnRoll">Призыв</button>
+-      <button id="btnInventory">Инвентарь</button>
+-    `;
+-
+-    document.getElementById("btnRoll").addEventListener("click", goRoll);
+-    document.getElementById("btnInventory").addEventListener("click", goInventory);
+-  }
+-
+-  if (currentView === "roll") {
+-    app.innerHTML = `
+-      <h2>Призыв стоит 100 алмазов</h2>
+-      <button id="btnActivate">Активировать</button>
+-      <button id="btnBack">Назад</button>
+-    `;
+-
+-    document.getElementById("btnActivate").addEventListener("click", performRoll);
+-    document.getElementById("btnBack").addEventListener("click", goMain);
+-  }
+-
+-  if (currentView === "inventory") {
+-    let cardsHTML = "";
+-
+-    if (user.inventory.length === 0) {
+-      cardsHTML = "<p>Пусто</p>";
+-    } else {
+-      user.inventory.forEach(card => {
+-        cardsHTML += `
++  <div id="app"></div>
++
++  <script>
++    const RARITIES = {
++      COMMON: { key: "common", name: "Обычная", chance: 6000, mult: 1 },
++      RARE: { key: "rare", name: "Редкая", chance: 3000, mult: 2.2 },
++      EPIC: { key: "epic", name: "Эпическая", chance: 800, mult: 4.5 },
++      LEGEND: { key: "legend", name: "Легендарная", chance: 180, mult: 7.5 },
++      DIVINE: { key: "divine", name: "Божественная", chance: 20, mult: 13 }
++    };
++
++    const UNIVERSES = {
++      "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара", "Маки", "Тодзи"],
++      "EVANGELION": ["Рэй", "Аска", "Синдзи", "Кавору", "Мисато", "Каору"],
++      "NARUTO": ["Наруто", "Саске", "Сакура", "Итачи", "Минато", "Какаши"]
++    };
++
++    const botLeaders = [
++      { nickname: "Akira", title: "Storm", power: 8100, wins: 41, clan: "Moonlit" },
++      { nickname: "Yoru", title: "Blade", power: 7200, wins: 35, clan: "Nova" },
++      { nickname: "MikasaX", title: "Vanguard", power: 6500, wins: 28, clan: "Eclipse" },
++      { nickname: "Ren", title: "Shogun", power: 5800, wins: 22, clan: "Solo" }
++    ];
++
++    const appState = {
++      currentView: "main",
++      rolling: false,
++      rollTimer: null,
++      rngText: "Нажми \"Эпичный призыв\", чтобы начать.",
++      profileForm: null,
++      log: [],
++      user: {
++        diamonds: 1500,
++        power: 0,
++        universe: "JUJUTSU KAISEN",
++        inventory: [],
++        pvpWins: 0,
++        pvpLosses: 0,
++        clan: null,
++        profile: {
++          nickname: "Player",
++          title: "Новичок",
++          avatar: "https://i.imgur.com/f4Q3QW5.png",
++          description: "Покоряю RNG и собираю легендарных героев."
++        }
++      },
++      clans: [
++        { id: "moonlit", name: "Moonlit", members: 24, power: 48200, desc: "Ночные рейды и турниры." },
++        { id: "nova", name: "Nova", members: 17, power: 37450, desc: "Новички и профи в одном составе." },
++        { id: "eclipse", name: "Eclipse", members: 30, power: 61880, desc: "Топ-клан рейтинга PvP." }
++      ],
++      pvpHistory: []
++    };
++
++    function rarityFromRng() {
++      const rng = Math.floor(Math.random() * 10000);
++      let cumulative = 0;
++      for (const key in RARITIES) {
++        cumulative += RARITIES[key].chance;
++        if (rng < cumulative) return key;
++      }
++      return "COMMON";
++    }
++
++    function createCard() {
++      const rarityKey = rarityFromRng();
++      const rarity = RARITIES[rarityKey];
++      const names = UNIVERSES[appState.user.universe];
++      const name = names[Math.floor(Math.random() * names.length)];
++
++      return {
++        id: Date.now() + Math.random(),
++        name,
++        rarityKey,
++        rarity: rarity.name,
++        power: Math.floor((Math.random() * 90 + 60) * rarity.mult),
++        hp: Math.floor((Math.random() * 140 + 120) * rarity.mult)
++      };
++    }
++
++    function userTitle() {
++      return `${appState.user.profile.title} ${appState.user.profile.nickname}`.trim();
++    }
++
++    function pushLog(message) {
++      appState.log.unshift(`${new Date().toLocaleTimeString()} • ${message}`);
++      appState.log = appState.log.slice(0, 20);
++    }
++
++    function navButton(view, label) {
++      const active = appState.currentView === view ? "active" : "";
++      return `<button data-nav="${view}" class="${active}">${label}</button>`;
++    }
++
++    function sidebarHtml() {
++      const user = appState.user;
++      return `
++        <aside class="panel sidebar">
++          <div class="brand">
++            <h1>Anime Gacha Empire</h1>
++            <p>Эпичный WebApp c RNG призывом, PvP, кланами и рейтингами.</p>
++          </div>
++
++          <div class="user-head">
++            <img class="avatar" src="${user.profile.avatar}" alt="avatar" onerror="this.src='https://i.imgur.com/f4Q3QW5.png'" />
++            <div>
++              <div style="font-size:13px;color:var(--muted)">${user.profile.title}</div>
++              <b>${user.profile.nickname}</b>
++            </div>
++          </div>
++
++          <div class="stats">
++            <div class="stat-row"><span>💎 Алмазы</span><b>${user.diamonds}</b></div>
++            <div class="stat-row"><span>⚡ Мощь</span><b>${user.power}</b></div>
++            <div class="stat-row"><span>🏆 PvP</span><b>${user.pvpWins}W / ${user.pvpLosses}L</b></div>
++          </div>
++
++          <nav class="nav">
++            ${navButton("main", "Главная")}
++            ${navButton("roll", "Призыв")}
++            ${navButton("inventory", "Инвентарь")}
++            ${navButton("profile", "Профиль")}
++            ${navButton("clan", "Кланы")}
++            ${navButton("pvp", "PvP")}
++            ${navButton("fusion", "Слияние")}
++            ${navButton("ranking", "Рейтинги")}
++          </nav>
++        </aside>
++      `;
++    }
++
++    function mainView() {
++      const user = appState.user;
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Добро пожаловать, ${userTitle()}!</h2>
++            <p>${user.profile.description}</p>
++          </div>
++          <span class="pill">🌌 Мир: ${user.universe}</span>
++        </div>
++
++        <div class="grid">
++          <article class="card">
++            <h3>Быстрый старт</h3>
++            <p class="muted">Сделай 10 призывов, собери команду и выйди в PvP арену.</p>
++            <button id="goRollNow">Перейти к призыву</button>
++          </article>
++          <article class="card">
++            <h3>Клан</h3>
++            <p class="muted">${user.clan ? `Ты в клане: ${user.clan}` : "Ты пока без клана."}</p>
++            <button id="goClanNow">Открыть кланы</button>
++          </article>
++          <article class="card">
++            <h3>Рейтинг</h3>
++            <p class="muted">Твоя мощь: <b>${user.power}</b>. Продвигайся в топ!</p>
++            <button id="goRankNow">Смотреть таблицу</button>
++          </article>
++        </div>
++
++        <div class="section card">
++          <h3>Лента событий</h3>
++          <div class="log">${appState.log.length ? appState.log.map(item => `<div>${item}</div>`).join("") : "Пока пусто."}</div>
++        </div>
++      `;
++    }
++
++    function rollView() {
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Эпичный призыв</h2>
++            <p>Стоимость: 100 💎. RNG-анимация сначала дразнит, потом раскрывает карту.</p>
++          </div>
++          <span class="pill">Шанс DIVINE: 0.2%</span>
++        </div>
++
++        <div class="summon-stage">
++          <div class="orb"></div>
++          <div class="rng-stream" id="rngStream">${appState.rngText}</div>
++          <div class="row" style="width:100%;max-width:560px;">
++            <select id="universeSelect">
++              ${Object.keys(UNIVERSES).map(name => `<option value="${name}" ${appState.user.universe === name ? "selected" : ""}>${name}</option>`).join("")}
++            </select>
++            <button id="summonBtn" ${appState.rolling ? "disabled" : ""}>⚡ Эпичный призыв</button>
++          </div>
++        </div>
++
++        <div class="section card">
++          <h3>Последний дроп</h3>
++          <div id="lastDrop" class="muted">${appState.user.inventory.length ? `${appState.user.inventory[appState.user.inventory.length - 1].name} (${appState.user.inventory[appState.user.inventory.length - 1].rarity})` : "Еще не было призывов."}</div>
++        </div>
++      `;
++    }
++
++    function inventoryView() {
++      const cards = appState.user.inventory;
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Инвентарь</h2>
++            <p>Всего карт: ${cards.length}</p>
++          </div>
++        </div>
++
++        <div class="grid">
++          ${cards.length ? cards.map(card => `
++            <article class="card">
++              <span class="rarity ${RARITIES[card.rarityKey].key}">${card.rarity}</span>
++              <h3 style="margin:0 0 8px;">${card.name}</h3>
++              <div class="muted">⚡ Сила: <b>${card.power}</b></div>
++              <div class="muted">❤️ HP: <b>${card.hp}</b></div>
++            </article>
++          `).join("") : "<div class='card'>Инвентарь пуст. Сделай призыв!</div>"}
++        </div>
++      `;
++    }
++
++    function profileView() {
++      const p = appState.profileForm || { ...appState.user.profile };
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Профиль</h2>
++            <p>Настрой титул, фото и описание персонажа.</p>
++          </div>
++        </div>
++
++        <div class="row">
+           <div class="card">
+-            <strong>${card.name}</strong><br>
+-            ${card.rarity}<br>
+-            ⚡ ${card.power} | ❤️ ${card.hp}
++            <label>Никнейм</label>
++            <input id="profileNick" value="${p.nickname}" maxlength="20" />
+           </div>
+-        `;
+-      });
++          <div class="card">
++            <label>Титул</label>
++            <input id="profileTitle" value="${p.title}" maxlength="20" />
++          </div>
++        </div>
++
++        <div class="section card">
++          <label>URL фото профиля</label>
++          <input id="profileAvatar" value="${p.avatar}" />
++        </div>
++
++        <div class="section card">
++          <label>Описание</label>
++          <textarea id="profileDesc">${p.description}</textarea>
++        </div>
++
++        <div class="section row">
++          <button id="saveProfile">Сохранить профиль</button>
++          <button id="resetProfile" style="background:linear-gradient(130deg,#5e6480,#8890ad)">Сбросить изменения</button>
++        </div>
++      `;
+     }
+ 
+-    app.innerHTML = `
+-      <h2>Инвентарь</h2>
+-      ${cardsHTML}
+-      <button id="btnBack">Назад</button>
+-    `;
++    function clanView() {
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Кланы</h2>
++            <p>${appState.user.clan ? `Ты состоишь в клане ${appState.user.clan}.` : "Вступи в клан для бонусов и кооператива."}</p>
++          </div>
++        </div>
+ 
+-    document.getElementById("btnBack").addEventListener("click", goMain);
+-  }
+-}
++        <div class="section card">
++          <div class="row">
++            <input id="newClanName" placeholder="Название нового клана" maxlength="18" />
++            <button id="createClan">Создать клан</button>
++          </div>
++        </div>
++
++        <div class="grid section">
++          ${appState.clans.map(clan => `
++            <article class="card">
++              <h3 style="margin-top:0">${clan.name}</h3>
++              <div class="muted">👥 Участники: ${clan.members}</div>
++              <div class="muted">⚡ Сила клана: ${clan.power}</div>
++              <p class="muted">${clan.desc}</p>
++              <button data-join-clan="${clan.id}">${appState.user.clan === clan.name ? "Ты в клане" : "Вступить"}</button>
++            </article>
++          `).join("")}
++        </div>
++      `;
++    }
+ 
+-function performRoll() {
+-  if (user.diamonds < 100) {
+-    alert("Недостаточно алмазов");
+-    return;
+-  }
++    function pvpView() {
++      const history = appState.pvpHistory;
++      return `
++        <div class="page-title">
++          <div>
++            <h2>PvP Арена</h2>
++            <p>Режим дуэли против случайного соперника из рейтинга.</p>
++          </div>
++          <button id="fightBtn">⚔️ Найти бой</button>
++        </div>
++
++        <div class="card">
++          <h3>История боев</h3>
++          <div class="log">${history.length ? history.map(item => `<div>${item}</div>`).join("") : "Еще нет боев."}</div>
++        </div>
++      `;
++    }
+ 
+-  user.diamonds -= 100;
++    function fusionView() {
++      const options = appState.user.inventory.map(card => `<option value="${card.id}">${card.name} • ${card.rarity} • ${card.power}⚡</option>`).join("");
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Слияние карт</h2>
++            <p>Объедини 2 карты и получи усиленную версию.</p>
++          </div>
++        </div>
++
++        <div class="card">
++          ${appState.user.inventory.length < 2 ? "Нужно минимум 2 карты для слияния." : `
++            <div class="row">
++              <select id="fusionA">${options}</select>
++              <select id="fusionB">${options}</select>
++            </div>
++            <div class="section">
++              <button id="fusionBtn">🔧 Выполнить слияние</button>
++            </div>
++          `}
++        </div>
++      `;
++    }
+ 
+-  const rng = Math.floor(Math.random() * 10000);
+-  let cumulative = 0;
+-  let rarityKey = "COMMON";
++    function rankingView() {
++      const userRecord = {
++        nickname: appState.user.profile.nickname,
++        title: appState.user.profile.title,
++        power: appState.user.power,
++        wins: appState.user.pvpWins,
++        clan: appState.user.clan || "Solo"
++      };
++
++      const rows = [...botLeaders, userRecord]
++        .sort((a, b) => (b.power + b.wins * 30) - (a.power + a.wins * 30))
++        .map((entry, i) => `
++          <tr>
++            <td>#${i + 1}</td>
++            <td>${entry.title} ${entry.nickname}</td>
++            <td>${entry.clan}</td>
++            <td>${entry.power}</td>
++            <td>${entry.wins}</td>
++          </tr>
++        `)
++        .join("");
++
++      return `
++        <div class="page-title">
++          <div>
++            <h2>Рейтинги</h2>
++            <p>Глобальная таблица по мощности и победам.</p>
++          </div>
++        </div>
++
++        <div class="card" style="overflow:auto;">
++          <table style="width:100%;border-collapse:collapse;min-width:520px;">
++            <thead>
++              <tr style="text-align:left;color:#b7c7f7;">
++                <th>Позиция</th><th>Игрок</th><th>Клан</th><th>Мощь</th><th>Победы</th>
++              </tr>
++            </thead>
++            <tbody>
++              ${rows}
++            </tbody>
++          </table>
++        </div>
++      `;
++    }
+ 
+-  for (let key in RARITIES) {
+-    cumulative += RARITIES[key].chance;
+-    if (rng <= cumulative) {
+-      rarityKey = key;
+-      break;
++    function renderView() {
++      switch (appState.currentView) {
++        case "main": return mainView();
++        case "roll": return rollView();
++        case "inventory": return inventoryView();
++        case "profile": return profileView();
++        case "clan": return clanView();
++        case "pvp": return pvpView();
++        case "fusion": return fusionView();
++        case "ranking": return rankingView();
++        default: return mainView();
++      }
+     }
+-  }
+ 
+-  const names = UNIVERSES[user.universe];
+-  const name = names[Math.floor(Math.random() * names.length)];
+-  const rarity = RARITIES[rarityKey];
++    function render() {
++      const app = document.getElementById("app");
++      app.innerHTML = `
++        <div class="shell">
++          ${sidebarHtml()}
++          <main class="panel content">${renderView()}</main>
++        </div>
++      `;
++      bindEvents();
++    }
+ 
+-  const newCard = {
+-    id: Date.now(),
+-    name: name,
+-    rarity: rarity.name,
+-    power: Math.floor((Math.random() * 100 + 50) * rarity.mult),
+-    hp: Math.floor((Math.random() * 200 + 100) * rarity.mult)
+-  };
++    function setView(view) {
++      appState.currentView = view;
++      render();
++    }
+ 
+-  user.inventory.push(newCard);
+-  user.power += newCard.power;
++    function bindEvents() {
++      document.querySelectorAll("[data-nav]").forEach(btn => {
++        btn.addEventListener("click", () => setView(btn.dataset.nav));
++      });
+ 
+-  alert("Выпала карта: " + name + " (" + rarity.name + ")");
+-  render();
+-}
++      const goRollNow = document.getElementById("goRollNow");
++      if (goRollNow) goRollNow.addEventListener("click", () => setView("roll"));
++
++      const goClanNow = document.getElementById("goClanNow");
++      if (goClanNow) goClanNow.addEventListener("click", () => setView("clan"));
++
++      const goRankNow = document.getElementById("goRankNow");
++      if (goRankNow) goRankNow.addEventListener("click", () => setView("ranking"));
++
++      const universeSelect = document.getElementById("universeSelect");
++      if (universeSelect) {
++        universeSelect.addEventListener("change", (e) => {
++          appState.user.universe = e.target.value;
++        });
++      }
++
++      const summonBtn = document.getElementById("summonBtn");
++      if (summonBtn) summonBtn.addEventListener("click", performRollAnimation);
++
++      const saveProfile = document.getElementById("saveProfile");
++      if (saveProfile) {
++        saveProfile.addEventListener("click", () => {
++          const nickname = document.getElementById("profileNick").value.trim();
++          const title = document.getElementById("profileTitle").value.trim();
++          const avatar = document.getElementById("profileAvatar").value.trim();
++          const desc = document.getElementById("profileDesc").value.trim();
++
++          appState.user.profile.nickname = nickname || "Player";
++          appState.user.profile.title = title || "Новичок";
++          appState.user.profile.avatar = avatar || "https://i.imgur.com/f4Q3QW5.png";
++          appState.user.profile.description = desc || "Без описания";
++          appState.profileForm = null;
++          pushLog("Профиль обновлен.");
++          render();
++        });
++      }
++
++      ["profileNick", "profileTitle", "profileAvatar", "profileDesc"].forEach(id => {
++        const input = document.getElementById(id);
++        if (input) {
++          input.addEventListener("input", () => {
++            appState.profileForm = {
++              nickname: document.getElementById("profileNick").value,
++              title: document.getElementById("profileTitle").value,
++              avatar: document.getElementById("profileAvatar").value,
++              description: document.getElementById("profileDesc").value
++            };
++          });
++        }
++      });
+ 
+-function goMain() {
+-  currentView = "main";
+-  render();
+-}
++      const resetProfile = document.getElementById("resetProfile");
++      if (resetProfile) {
++        resetProfile.addEventListener("click", () => {
++          appState.profileForm = { ...appState.user.profile };
++          render();
++        });
++      }
++
++      const createClan = document.getElementById("createClan");
++      if (createClan) {
++        createClan.addEventListener("click", () => {
++          const nameInput = document.getElementById("newClanName");
++          const name = nameInput.value.trim();
++          if (!name) return alert("Укажи название клана");
++          const id = name.toLowerCase().replace(/\s+/g, "-");
++          appState.clans.unshift({ id, name, members: 1, power: appState.user.power, desc: "Новый клан игрока." });
++          appState.user.clan = name;
++          pushLog(`Создан клан ${name}.`);
++          render();
++        });
++      }
++
++      document.querySelectorAll("[data-join-clan]").forEach(btn => {
++        btn.addEventListener("click", () => {
++          const clan = appState.clans.find(c => c.id === btn.dataset.joinClan);
++          if (!clan) return;
++          appState.user.clan = clan.name;
++          clan.members += 1;
++          pushLog(`Вступление в клан ${clan.name}.`);
++          render();
++        });
++      });
+ 
+-function goRoll() {
+-  currentView = "roll";
+-  render();
+-}
++      const fightBtn = document.getElementById("fightBtn");
++      if (fightBtn) {
++        fightBtn.addEventListener("click", () => {
++          if (appState.user.power < 100) {
++            alert("Сначала усились призывами. Нужно хотя бы 100 мощи.");
++            return;
++          }
++          const rival = botLeaders[Math.floor(Math.random() * botLeaders.length)];
++          const userScore = appState.user.power + Math.floor(Math.random() * 260);
++          const rivalScore = rival.power + Math.floor(Math.random() * 260);
++          const won = userScore >= rivalScore;
++
++          if (won) {
++            appState.user.pvpWins += 1;
++            appState.user.diamonds += 70;
++          } else {
++            appState.user.pvpLosses += 1;
++            appState.user.diamonds += 25;
++          }
++
++          const text = `${won ? "✅ Победа" : "❌ Поражение"} против ${rival.nickname} (${userScore} vs ${rivalScore})`;
++          appState.pvpHistory.unshift(text);
++          appState.pvpHistory = appState.pvpHistory.slice(0, 18);
++          pushLog(text);
++          render();
++        });
++      }
++
++      const fusionBtn = document.getElementById("fusionBtn");
++      if (fusionBtn) {
++        fusionBtn.addEventListener("click", () => {
++          const first = Number(document.getElementById("fusionA").value);
++          const second = Number(document.getElementById("fusionB").value);
++          if (first === second) return alert("Выбери две разные карты.");
++
++          const firstCard = appState.user.inventory.find(c => c.id === first);
++          const secondCard = appState.user.inventory.find(c => c.id === second);
++          if (!firstCard || !secondCard) return alert("Карты не найдены.");
++
++          appState.user.inventory = appState.user.inventory.filter(c => c.id !== first && c.id !== second);
++
++          const rarityOrder = ["COMMON", "RARE", "EPIC", "LEGEND", "DIVINE"];
++          const bestIndex = Math.max(rarityOrder.indexOf(firstCard.rarityKey), rarityOrder.indexOf(secondCard.rarityKey));
++          const upgraded = Math.min(bestIndex + (Math.random() < 0.4 ? 1 : 0), rarityOrder.length - 1);
++          const newRarityKey = rarityOrder[upgraded];
++
++          const fused = {
++            id: Date.now() + Math.random(),
++            name: `${firstCard.name}-${secondCard.name}`,
++            rarityKey: newRarityKey,
++            rarity: RARITIES[newRarityKey].name,
++            power: Math.floor((firstCard.power + secondCard.power) * 0.68),
++            hp: Math.floor((firstCard.hp + secondCard.hp) * 0.68)
++          };
++
++          appState.user.inventory.push(fused);
++          recalculatePower();
++          pushLog(`Слияние завершено: ${fused.name} (${fused.rarity}).`);
++          render();
++        });
++      }
++    }
+ 
+-function goInventory() {
+-  currentView = "inventory";
+-  render();
+-}
++    function recalculatePower() {
++      appState.user.power = appState.user.inventory.reduce((acc, item) => acc + item.power, 0);
++    }
+ 
+-if (window.Telegram && window.Telegram.WebApp) {
+-  Telegram.WebApp.ready();
+-  Telegram.WebApp.expand();
+-}
++    function performRollAnimation() {
++      if (appState.rolling) return;
++      if (appState.user.diamonds < 100) {
++        alert("Недостаточно алмазов.");
++        return;
++      }
++
++      appState.rolling = true;
++      appState.user.diamonds -= 100;
++
++      const stream = document.getElementById("rngStream");
++      const rarityKeys = Object.keys(RARITIES);
++      let tick = 0;
++
++      appState.rollTimer = setInterval(() => {
++        const randomRarity = RARITIES[rarityKeys[Math.floor(Math.random() * rarityKeys.length)]].name;
++        stream.textContent = `RNG крутится... ${randomRarity}`;
++        tick += 1;
++
++        if (tick > 14) {
++          clearInterval(appState.rollTimer);
++          const card = createCard();
++          appState.user.inventory.push(card);
++          recalculatePower();
++          appState.rngText = `✨ ${card.name} • ${card.rarity} | ⚡ ${card.power} | ❤️ ${card.hp}`;
++          appState.rolling = false;
++          pushLog(`Получена карта ${card.name} (${card.rarity}).`);
++          render();
++        }
++      }, 120);
++    }
+ 
+-render();
++    if (window.Telegram && window.Telegram.WebApp) {
++      Telegram.WebApp.ready();
++      Telegram.WebApp.expand();
++    }
+ 
+-</script>
++    pushLog("Система инициализирована.");
++    render();
++  </script>
+ </body>
+ </html>
