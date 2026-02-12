@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Gacha Empire</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  background: #2563eb;
+  color: white;
+}
+.card {
+  background: #1e293b;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+<div id="app"></div>
+
+<script>
+
+const RARITIES = {
+  COMMON: { name: "Обычная", chance: 6000, mult: 1 },
+  RARE: { name: "Редкая", chance: 3000, mult: 2.5 },
+  EPIC: { name: "Эпическая", chance: 800, mult: 5 },
+  LEGEND: { name: "Легендарная", chance: 180, mult: 8 },
+  DIVINE: { name: "Божественная", chance: 20, mult: 15 }
+};
+
+const UNIVERSES = {
+  "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара"],
+  "EVANGELION": ["Рэй", "Аска", "Синдзи", "Кавору"]
+};
+
+let user = {
+  diamonds: 1500,
+  power: 0,
+  universe: "JUJUTSU KAISEN",
+  inventory: []
+};
+
+let currentView = "main";
+
+function render() {
+  const app = document.getElementById("app");
+
+  if (currentView === "main") {
+    app.innerHTML = `
+      <h1>Anime Gacha Empire</h1>
+      <p>💎 Алмазы: ${user.diamonds}</p>
+      <p>⚡ Мощь: ${user.power}</p>
+      <button id="btnRoll">Призыв</button>
+      <button id="btnInventory">Инвентарь</button>
+    `;
+
+    document.getElementById("btnRoll").addEventListener("click", goRoll);
+    document.getElementById("btnInventory").addEventListener("click", goInventory);
+  }
+
+  if (currentView === "roll") {
+    app.innerHTML = `
+      <h2>Призыв стоит 100 алмазов</h2>
+      <button id="btnActivate">Активировать</button>
+      <button id="btnBack">Назад</button>
+    `;
+
+    document.getElementById("btnActivate").addEventListener("click", performRoll);
+    document.getElementById("btnBack").addEventListener("click", goMain);
+  }
+
+  if (currentView === "inventory") {
+    let cardsHTML = "";
+
+    if (user.inventory.length === 0) {
+      cardsHTML = "<p>Пусто</p>";
+    } else {
+      user.inventory.forEach(card => {
+        cardsHTML += `
+          <div class="card">
+            <strong>${card.name}</strong><br>
+            ${card.rarity}<br>
+            ⚡ ${card.power} | ❤️ ${card.hp}
+          </div>
+        `;
+      });
+    }
+
+    app.innerHTML = `
+      <h2>Инвентарь</h2>
+      ${cardsHTML}
+      <button id="btnBack">Назад</button>
+    `;
+
+    document.getElementById("btnBack").addEventListener("click", goMain);
+  }
+}
+
+function performRoll() {
+  if (user.diamonds < 100) {
+    alert("Недостаточно алмазов");
+    return;
+  }
+
+  user.diamonds -= 100;
+
+  const rng = Math.floor(Math.random() * 10000);
+  let cumulative = 0;
+  let rarityKey = "COMMON";
+
+  for (let key in RARITIES) {
+    cumulative += RARITIES[key].chance;
+    if (rng <= cumulative) {
+      rarityKey = key;
+      break;
+    }
+  }
+
+  const names = UNIVERSES[user.universe];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const rarity = RARITIES[rarityKey];
+
+  const newCard = {
+    id: Date.now(),
+    name: name,
+    rarity: rarity.name,
+    power: Math.floor((Math.random() * 100 + 50) * rarity.mult),
+    hp: Math.floor((Math.random() * 200 + 100) * rarity.mult)
+  };
+
+  user.inventory.push(newCard);
+  user.power += newCard.power;
+
+  alert("Выпала карта: " + name + " (" + rarity.name + ")");
+  render();
+}
+
+function goMain() {
+  currentView = "main";
+  render();
+}
+
+function goRoll() {
+  currentView = "roll";
+  render();
+}
+
+function goInventory() {
+  currentView = "inventory";
+  render();
+}
+
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+
+render();
+
+</script>
+</body>
+</html>
