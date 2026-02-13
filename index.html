@@ -3,58 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Gacha</title>
+    <title>Anime Gacha Game</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Add your custom styles here */
         body {
-            background: linear-gradient(to right, #ff0080, #ff8c00);
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
             font-family: 'Arial', sans-serif;
-            overflow: hidden;
+            color: white;
         }
         .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
+            text-align: center;
+            margin-top: 100px;
         }
-        .gacha-box {
-            width: 300px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .spin-animation {
-            animation: spin 3s infinite;
+        .gacha-animation {
+            animation: spin 2s infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .neon-effect {
-            text-shadow: 0 0 20px rgba(255, 0, 255, 1), 0 0 30px rgba(255, 0, 255, 1);
-            color: white;
-        }
-        /* Particle animations can be handled using additional JavaScript */
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="gacha-box spin-animation">
-            <h1 class="neon-effect">Anime Gacha</h1>
-            <button id="gachaButton">Get My Gacha!</button>
-        </div>
+        <h1>Anime Gacha Game</h1>
+        <div class="gacha-animation">🎰</div>
+        <p>Press the button to start the gacha!</p>
+        <button onclick="startGacha()">Gacha!</button>
     </div>
     <script>
-        // JavaScript for handling gacha mechanics and animations would go here.
-        const button = document.getElementById('gachaButton');
-        button.addEventListener('click', () => {
-            // Add your functionality for gacha pulls
-            alert('Gacha pull initiated!');
-        });
+        function startGacha() {
+            // Add your game mechanics here
+            alert('You have pulled an anime character!');
+            // Add animations and particles effects here.
+        }
     </script>
 </body>
 </html>
