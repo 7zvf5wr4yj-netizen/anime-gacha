@@ -3,347 +3,263 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ReseitCards | Multiverse</title>
+  <title>ReseitCards: RNG</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #0a0b1e;
-      --accent-blue: #00d2ff;
-      --accent-purple: #9d50bb;
-      --divine-gradient: linear-gradient(45deg, #ff00cc, #3333ff, #13ff62, #ffd700);
-      --glass: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.1);
+      --bg: #030308;
+      --card-bg: rgba(15, 15, 25, 0.8);
+      --neon-blue: #00f3ff;
+      --neon-purple: #bc00ff;
+      --neon-gold: #ffcc00;
+      --neon-red: #ff004c;
     }
 
     body {
-      background: var(--bg-dark);
-      background-attachment: fixed;
-      color: white;
-      font-family: 'Inter', -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      margin: 0; padding: 0;
+      overflow: hidden;
+      height: 100vh;
     }
 
-    /* Анимированный фон */
-    .bg-glow {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 50% 50%, #1a1b3a 0%, #0a0b1e 100%);
+    /* Фоновые частицы (абстрактно) */
+    .bg-animation {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at center, #11112b 0%, #030308 100%);
       z-index: -1;
     }
 
-    .container {
-      width: 100%;
-      max-width: 500px;
-      padding: 20px;
-      box-sizing: border-box;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    .app-container {
+      display: flex; flex-direction: column; height: 100vh;
+      padding: 20px; box-sizing: border-box;
     }
 
-    header {
-      text-align: center;
-      padding: 20px 0;
-    }
-
-    h1 {
-      font-size: 28px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0;
-    }
-
-    /* Статистика сверху */
-    .stats-card {
-      background: var(--glass);
+    /* Верхняя панель */
+    .top-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--card-bg);
+      padding: 15px; border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.05);
       backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      display: flex;
-      justify-content: space-around;
-      padding: 15px;
-      margin-bottom: 20px;
     }
 
-    .stat-item { text-align: center; }
-    .stat-val { display: block; font-weight: bold; font-size: 18px; color: var(--accent-blue); }
-    .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.6; }
+    .currency { display: flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: 18px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
 
-    /* Кнопки меню */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .main-btn {
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      padding: 20px;
-      border-radius: 18px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .main-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
-
-    .btn-icon { font-size: 24px; }
-
-    /* Слайд призыва */
-    .gacha-zone {
+    /* Зона ролла (Sol's RNG Style) */
+    .roll-area {
       flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; position: relative;
     }
 
-    .summon-circle {
-      width: 250px;
-      height: 250px;
-      border-radius: 50%;
-      border: 2px dashed var(--accent-blue);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-bottom: 30px;
-      animation: rotate 10s linear infinite;
+    .chance-counter {
+      font-family: 'Orbitron'; font-size: 14px; color: rgba(255,255,255,0.4);
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;
     }
 
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    .card-display {
-      width: 200px;
-      height: 280px;
-      background: #15162c;
-      border-radius: 15px;
-      border: 2px solid var(--accent-blue);
-      position: absolute;
-      transform: rotate(-360deg); /* компенсируем вращение круга */
-      animation: emerge 0.5s ease-out;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 15px;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+    #result-display {
+      text-align: center; transition: 0.3s;
     }
 
-    @keyframes emerge { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-
-    .rarity-tag {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 5px;
-      margin-top: 10px;
-      text-transform: uppercase;
+    .hero-name {
+      font-size: 42px; font-weight: 700; text-transform: uppercase;
+      margin: 5px 0; letter-spacing: -1px; line-height: 1;
     }
 
-    .DIVINE { border: 2px solid gold; color: gold; box-shadow: 0 0 15px gold; }
-    .LEGEND { border: 1px solid orange; color: orange; }
-
-    /* Инвентарь */
-    .inventory-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      padding-bottom: 50px;
+    .rarity-label {
+      font-size: 18px; font-family: 'Orbitron'; text-shadow: 0 0 15px currentColor;
     }
 
-    .mini-card {
-      background: var(--glass);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 11px;
-      text-align: center;
-      border: 1px solid var(--glass-border);
+    /* Анимация тряски экрана */
+    .shake { animation: shakeAnim 0.1s infinite; }
+    @keyframes shakeAnim {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      50% { transform: translate(-1px, -2px) rotate(-1deg); }
+      100% { transform: translate(1px, 2px) rotate(1deg); }
     }
 
-    /* Скрытые разделы */
-    .page { display: none; width: 100%; }
-    .page.active { display: block; }
+    /* Кнопки управления */
+    .bottom-menu {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: auto;
+    }
 
+    .menu-btn {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+      padding: 15px 5px; border-radius: 12px; color: #fff;
+      font-family: 'Orbitron'; font-size: 11px; cursor: pointer;
+      transition: 0.2s; text-align: center;
+    }
+
+    .menu-btn:active { transform: scale(0.9); border-color: var(--neon-blue); }
+
+    .roll-btn {
+      grid-column: span 3;
+      background: linear-gradient(90deg, #004e92, #000428);
+      border: 2px solid var(--neon-blue);
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+      font-size: 20px; font-weight: bold; margin-bottom: 10px;
+    }
+
+    /* Эффекты редкостей */
+    .rarity-COMMON { color: #ccc; }
+    .rarity-RARE { color: #00f3ff; }
+    .rarity-EPIC { color: #bc00ff; }
+    .rarity-LEGENDARY { color: #ffcc00; animation: glowGold 1s infinite alternate; }
+    .rarity-MYTHIC { color: #ff004c; animation: shakeAnim 0.2s infinite; }
+    .rarity-DIVINE { background: linear-gradient(90deg, #ff00cc, #3333ff, #13ff62, #ffcc00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 50px; }
+
+    @keyframes glowGold { from { text-shadow: 0 0 10px #ffcc00; } to { text-shadow: 0 0 30px #ffcc00, 0 0 50px #ff8800; } }
+
+    /* Инвентарь Overlay */
+    #inventory-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg); z-index: 100; display: none; padding: 20px; box-sizing: border-box;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
-  <div class="bg-glow"></div>
-  <div class="container">
-    
-    <div id="main-page" class="page active">
-      <header>
-        <h1>Reseit Cards</h1>
-      </header>
-      
-      <div class="stats-card">
-        <div class="stat-item">
-          <span class="stat-label">Кристаллы</span>
-          <span class="stat-val" id="user-diamonds">0</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Мощь Команды</span>
-          <span class="stat-val" id="user-power">0</span>
-        </div>
-      </div>
-
-      <div class="menu-grid">
-        <div class="main-btn" onclick="showPage('roll-page')">
-          <span class="btn-icon">🔮</span>
-          <span>ПРИЗЫВ</span>
-        </div>
-        <div class="main-btn" onclick="showPage('inv-page')">
-          <span class="btn-icon">🎴</span>
-          <span>КОЛЛЕКЦИЯ</span>
-        </div>
-        <div class="main-btn" onclick="showPage('pvp-page')">
-          <span class="btn-icon">⚔️</span>
-          <span>АРЕНА</span>
-        </div>
-        <div class="main-btn" onclick="tg.showAlert('Кланы в разработке!')">
-          <span class="btn-icon">🛡️</span>
-          <span>КЛАН</span>
-        </div>
+  <div class="bg-animation"></div>
+  
+  <div class="app-container" id="main-ui">
+    <div class="top-nav">
+      <div class="currency">💎 <span id="diamonds">0</span></div>
+      <div style="text-align: right">
+        <div style="font-size: 10px; opacity: 0.5;">POWER</div>
+        <div id="power-val" style="font-weight: bold;">0</div>
       </div>
     </div>
 
-    <div id="roll-page" class="page">
-      <header><h2>Алтарь Призыва</h2></header>
-      <div class="gacha-zone">
-        <div class="summon-circle" id="summon-area">
-          <div id="result-card-placeholder">Нажмите "Призвать"</div>
-        </div>
-        <button class="main-btn" style="width: 200px; background: var(--accent-blue); color: black;" onclick="startRoll()">ПРИЗВАТЬ (100💎)</button>
+    <div class="roll-area" id="screen">
+      <div class="chance-counter" id="chance-text">READY TO ROLL</div>
+      <div id="result-display">
+        <div class="rarity-label rarity-COMMON" id="res-rarity">...</div>
+        <div class="hero-name" id="res-name">????</div>
       </div>
     </div>
 
-    <div id="inv-page" class="page">
-      <header><h2>Твои Герои</h2></header>
-      <div class="inventory-grid" id="inventory-list"></div>
+    <div class="bottom-menu">
+      <button class="menu-btn roll-btn" onclick="performRoll()">ROLL</button>
+      <button class="menu-btn" onclick="toggleInv(true)">INVENTORY</button>
+      <button class="menu-btn">ARENA</button>
+      <button class="menu-btn">SHOP</button>
     </div>
+  </div>
 
+  <div id="inventory-overlay">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-family: Orbitron;">STORAGE</h2>
+      <button class="menu-btn" onclick="toggleInv(false)">CLOSE</button>
+    </div>
+    <div id="inv-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Раскрыть на весь экран
-    tg.MainButton.setText('В МЕНЮ').hide();
+    tg.expand();
 
-    const UNIVERSES = {
-      "NARUTO": ["Наруто", "Саске", "Итачи", "Мадара"],
-      "JUJUTSU": ["Годзё", "Сукуна", "Итадори"],
-      "OP": ["Луффи", "Зоро", "Шанкс"]
-    };
+    // База героев с реальными шансами (1 к N)
+    const HEROES = [
+      { name: "Slime", chance: 2, rarity: "COMMON" },
+      { name: "Ninja", chance: 10, rarity: "RARE" },
+      { name: "Ichigo", chance: 50, rarity: "RARE" },
+      { name: "Naruto", chance: 250, rarity: "EPIC" },
+      { name: "Gojo", chance: 1000, rarity: "LEGENDARY" },
+      { name: "Sukuna", chance: 5000, rarity: "LEGENDARY" },
+      { name: "Saitama", chance: 50000, rarity: "MYTHIC" },
+      { name: "Madara", chance: 250000, rarity: "MYTHIC" },
+      { name: "Sung Jin-Woo", chance: 1000000, rarity: "DIVINE" }
+    ];
 
-    let state = JSON.parse(localStorage.getItem('reseit_state')) || {
-      diamonds: 1000,
+    let state = JSON.parse(localStorage.getItem('reseit_rng_v2')) || {
+      diamonds: 500,
       inventory: [],
-      power: 0
+      totalPower: 0
     };
 
-    function updateStats() {
-      document.getElementById('user-diamonds').innerText = state.diamonds;
-      document.getElementById('user-power').innerText = state.power;
-      localStorage.setItem('reseit_state', JSON.stringify(state));
+    function save() { localStorage.setItem('reseit_rng_v2', JSON.stringify(state)); }
+
+    function updateUI() {
+      document.getElementById('diamonds').innerText = state.diamonds.toLocaleString();
+      document.getElementById('power-val').innerText = state.totalPower.toLocaleString();
     }
 
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-      
-      if(pageId !== 'main-page') {
-        tg.BackButton.show();
-      } else {
-        tg.BackButton.hide();
+    function toggleInv(show) {
+      const el = document.getElementById('inventory-overlay');
+      el.style.display = show ? 'block' : 'none';
+      if(show) {
+        const list = document.getElementById('inv-list');
+        list.innerHTML = state.inventory.slice().reverse().map(item => `
+          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border-left: 3px solid #00f3ff">
+            <div style="font-size: 12px; opacity: 0.6">1 к ${item.chance.toLocaleString()}</div>
+            <div style="font-weight: bold; font-size: 16px">${item.name}</div>
+          </div>
+        `).join('');
       }
-      
-      if(pageId === 'inv-page') renderInventory();
     }
 
-    tg.BackButton.onClick(() => showPage('main-page'));
-
-    function startRoll() {
-      if (state.diamonds < 100) {
-        tg.showAlert("У вас недостаточно кристаллов!");
-        return;
+    function performRoll() {
+      if(state.diamonds < 10) {
+        tg.showAlert("Not enough diamonds!"); return;
       }
 
-      tg.HapticFeedback.impactOccurred('heavy');
-      state.diamonds -= 100;
-      updateStats();
-
-      const area = document.getElementById('result-card-placeholder');
-      area.innerHTML = "🌀"; // Анимация загрузки
+      state.diamonds -= 10;
+      updateUI();
       
+      const screen = document.getElementById('screen');
+      const chanceText = document.getElementById('chance-text');
+      const resName = document.getElementById('res-name');
+      const resRarity = document.getElementById('res-rarity');
+      
+      // Анимация старта
+      tg.HapticFeedback.impactOccurred('medium');
+      screen.classList.add('shake');
+      chanceText.innerText = "ROLLING...";
+      resName.innerText = "???";
+      resName.style.opacity = "0.3";
+      
+      // Рассчет выпадения (начинаем с самых редких)
+      let rolledHero = HEROES[0];
+      let rand = Math.random();
+      
+      const sortedHeroes = [...HEROES].sort((a,b) => b.chance - a.chance);
+      for(let hero of sortedHeroes) {
+        if(Math.random() < (1 / hero.chance)) {
+          rolledHero = hero;
+          break;
+        }
+      }
+
+      // Задержка анимации (как в Sol's RNG)
       setTimeout(() => {
-        const rarities = [
-          {n: 'COMMON', c: 70, m: 1},
-          {n: 'RARE', c: 20, m: 2.5},
-          {n: 'LEGEND', c: 8, m: 6},
-          {n: 'DIVINE', c: 2, m: 15}
-        ];
+        screen.classList.remove('shake');
+        resName.style.opacity = "1";
         
-        const rand = Math.random() * 100;
-        let sum = 0;
-        let rarity = rarities[0];
-        
-        for (let r of rarities) {
-          sum += r.c;
-          if (rand <= sum) { rarity = r; break; }
+        chanceText.innerText = `LUCK: 1 к ${rolledHero.chance.toLocaleString()}`;
+        resName.innerText = rolledHero.name;
+        resName.className = `hero-name rarity-${rolledHero.rarity}`;
+        resRarity.innerText = rolledHero.rarity;
+        resRarity.className = `rarity-label rarity-${rolledHero.rarity}`;
+
+        // Эффекты для редких
+        if(rolledHero.chance >= 1000) {
+          tg.HapticFeedback.notificationOccurred('success');
+          // Добавить вспышку экрана можно тут
+          screen.style.background = "radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)";
+          setTimeout(() => screen.style.background = "none", 500);
         }
 
-        const uniKeys = Object.keys(UNIVERSES);
-        const randomUni = uniKeys[Math.floor(Math.random() * uniKeys.length)];
-        const hero = UNIVERSES[randomUni][Math.floor(Math.random() * UNIVERSES[randomUni].length)];
-        
-        const newPower = Math.floor(Math.random() * 100 * rarity.m);
-        
-        const cardObj = { hero, rarity: rarity.n, power: newPower };
-        state.inventory.push(cardObj);
-        state.power += newPower;
-        updateStats();
-
-        area.innerHTML = `
-          <div class="card-display">
-            <div style="font-size: 14px; opacity: 0.7">${randomUni}</div>
-            <div style="font-size: 22px; font-weight: bold; margin: 10px 0">${hero}</div>
-            <div class="rarity-tag ${rarity.n}">${rarity.n}</div>
-            <div style="margin-top: 15px; color: var(--accent-blue)">⚡ ${newPower}</div>
-          </div>
-        `;
-
-        if(rarity.n === 'DIVINE') tg.HapticFeedback.notificationOccurred('success');
-      }, 1000);
+        state.inventory.push(rolledHero);
+        state.totalPower += Math.floor(rolledHero.chance / 10);
+        save();
+        updateUI();
+      }, 800);
     }
 
-    function renderInventory() {
-      const list = document.getElementById('inventory-list');
-      list.innerHTML = state.inventory.map(c => `
-        <div class="mini-card">
-          <div style="font-weight: bold">${c.hero}</div>
-          <div style="font-size: 8px" class="${c.rarity}">${c.rarity}</div>
-          <div style="color: var(--accent-blue)">⚡${c.power}</div>
-        </div>
-      `).join('');
-    }
-
-    // Инициализация
-    updateStats();
+    updateUI();
   </script>
 </body>
 </html>
