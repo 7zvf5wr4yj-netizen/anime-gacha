@@ -1,541 +1,163 @@
-diff --git a/index.html b/index.html
-index 988791cd3ae21a6d7ddf17b58c515421c5e8c7dc..6d92c50c58fe8f4d37cb01858a826fcc2b41c342 100644
---- a/index.html
-+++ b/index.html
-@@ -1,182 +1,385 @@
- <!DOCTYPE html>
- <html lang="ru">
- <head>
--<meta charset="UTF-8">
--<meta name="viewport" content="width=device-width, initial-scale=1.0">
--<title>Anime Gacha Empire</title>
--
--<script src="https://telegram.org/js/telegram-web-app.js"></script>
--
--<style>
--body {
--  margin: 0;
--  font-family: Arial, sans-serif;
--  background: #0f172a;
--  color: white;
--  text-align: center;
--}
--
--button {
--  padding: 10px 20px;
--  margin: 10px;
--  border: none;
--  border-radius: 8px;
--  cursor: pointer;
--  font-weight: bold;
--  background: #2563eb;
--  color: white;
--}
--.card {
--  background: #1e293b;
--  padding: 15px;
--  margin: 10px;
--  border-radius: 10px;
--}
--</style>
-+  <meta charset="UTF-8" />
-+  <meta name="viewport" content="width=device-width,initial-scale=1" />
-+  <title>Anime Gacha Empire</title>
-+  <style>
-+    :root {
-+      --bg:#070b1f;
-+      --panel:#121a3dcc;
-+      --panel2:#1b2757e0;
-+      --text:#eef3ff;
-+      --muted:#9cb0e4;
-+      --line:#9fb5ff33;
-+      --primary:#5b6cff;
-+      --primary2:#00b8ff;
-+      --ok:#19c37d;
-+      --warn:#ffb020;
-+      --bad:#ff5a7a;
-+    }
-+    *{box-sizing:border-box}
-+    body{
-+      margin:0;
-+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-+      color:var(--text);
-+      background:
-+        radial-gradient(circle at 10% -10%,#263b9d 0%,transparent 32%),
-+        radial-gradient(circle at 100% 0%,#69218a 0%,transparent 28%),
-+        radial-gradient(circle at 50% 120%,#0f5f80 0%,transparent 32%),
-+        var(--bg);
-+      min-height:100vh;
-+    }
-+    .app{width:min(1080px,100% - 20px);margin:14px auto;display:grid;grid-template-columns:290px 1fr;gap:12px}
-+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(8px)}
-+    .side{padding:12px;display:flex;flex-direction:column;gap:10px;height:fit-content;position:sticky;top:12px}
-+    .brand{padding:10px;border-radius:12px;background:linear-gradient(130deg,#5b6cff66,#00b8ff33);border:1px solid #b7ccff44}
-+    .brand h1{margin:0;font-size:20px}
-+    .brand p{margin:6px 0 0;color:var(--muted);font-size:12px}
-+    .profile-mini{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff1f}
-+    .avatar{width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid #ffffff4a;background:linear-gradient(130deg,#4961ce,#2d8fcb)}
-+    .stats{display:grid;gap:8px}
-+    .stat{display:flex;justify-content:space-between;padding:8px;border-radius:10px;background:#ffffff08;color:var(--muted);font-size:13px}
-+    .stat b{color:var(--text)}
-+    .nav{display:grid;gap:7px}
-+    .nav button{border:1px solid #ffffff26;background:#ffffff0d;color:#eaf1ff;padding:10px;border-radius:10px;font-weight:700;text-align:left;cursor:pointer}
-+    .nav button.active{background:linear-gradient(130deg,#5b6cff80,#00b8ff42);border-color:#d7e7ff70}
-+    .content{padding:14px;min-height:84vh}
-+    .header{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-+    .header h2{margin:0}
-+    .sub{color:var(--muted);font-size:14px}
-+    .pill{font-size:12px;background:#ffffff14;border:1px solid #ffffff2a;padding:4px 10px;border-radius:999px}
-+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-+    .card{background:var(--panel2);border:1px solid #b8ccff2b;border-radius:14px;padding:12px}
-+    button.primary{background:linear-gradient(130deg,var(--primary),var(--primary2));border:0;color:white;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
-+    button.gray{background:linear-gradient(130deg,#616b8f,#8490b4);border:0;color:white;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
-+    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid #ffffff33;background:#ffffff08;color:#fff;font:inherit}
-+    textarea{min-height:90px;resize:vertical}
-+    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-+    .rarity{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-bottom:6px}
-+    .r-common{background:#d1d9ee35}.r-rare{background:#5a81ff44}.r-epic{background:#b75fff4a}.r-legend{background:#ffb1334d}.r-divine{background:#ff5a8a59}
-+    .summon{padding:14px;border-radius:16px;background:linear-gradient(140deg,#4050a86b,#7a2f8b4f);border:1px solid #d0e1ff48;text-align:center;display:grid;gap:10px}
-+    .orb{margin:0 auto;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#8bc6ff 20%,#5f63ff 50%,#2a1459 82%);box-shadow:0 0 30px #6c8effaa,0 0 70px #ae6dff6e;animation:pulse 2.2s infinite}
-+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-+    .rng{font-weight:800;min-height:24px;text-shadow:0 0 10px #83b1ffab}
-+    .log{max-height:180px;overflow:auto;background:#00000033;border:1px solid #ffffff26;border-radius:10px;padding:8px;font-size:13px}
-+    table{width:100%;min-width:520px;border-collapse:collapse}
-+    th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #ffffff1d}
-+    th{color:#b9caf6}
-+    @media (max-width:860px){.app{grid-template-columns:1fr}.side{position:static}}
-+  </style>
- </head>
--
- <body>
- <div id="app"></div>
--
- <script>
-+  const RARITIES = {
-+    COMMON: {name:"Обычная", chance:6000, mult:1, class:"r-common"},
-+    RARE: {name:"Редкая", chance:3000, mult:2.2, class:"r-rare"},
-+    EPIC: {name:"Эпическая", chance:800, mult:4.5, class:"r-epic"},
-+    LEGEND: {name:"Легендарная", chance:180, mult:7.5, class:"r-legend"},
-+    DIVINE: {name:"Божественная", chance:20, mult:13, class:"r-divine"}
-+  };
- 
--const RARITIES = {
--  COMMON: { name: "Обычная", chance: 6000, mult: 1 },
--  RARE: { name: "Редкая", chance: 3000, mult: 2.5 },
--  EPIC: { name: "Эпическая", chance: 800, mult: 5 },
--  LEGEND: { name: "Легендарная", chance: 180, mult: 8 },
--  DIVINE: { name: "Божественная", chance: 20, mult: 15 }
--};
--
--const UNIVERSES = {
--  "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара"],
--  "EVANGELION": ["Рэй", "Аска", "Синдзи", "Кавору"]
--};
--
--let user = {
--  diamonds: 1500,
--  power: 0,
--  universe: "JUJUTSU KAISEN",
--  inventory: []
--};
--
--let currentView = "main";
--
--function render() {
--  const app = document.getElementById("app");
--
--  if (currentView === "main") {
--    app.innerHTML = `
--      <h1>Anime Gacha Empire</h1>
--      <p>💎 Алмазы: ${user.diamonds}</p>
--      <p>⚡ Мощь: ${user.power}</p>
--      <button id="btnRoll">Призыв</button>
--      <button id="btnInventory">Инвентарь</button>
--    `;
--
--    document.getElementById("btnRoll").addEventListener("click", goRoll);
--    document.getElementById("btnInventory").addEventListener("click", goInventory);
--  }
--
--  if (currentView === "roll") {
--    app.innerHTML = `
--      <h2>Призыв стоит 100 алмазов</h2>
--      <button id="btnActivate">Активировать</button>
--      <button id="btnBack">Назад</button>
--    `;
--
--    document.getElementById("btnActivate").addEventListener("click", performRoll);
--    document.getElementById("btnBack").addEventListener("click", goMain);
--  }
--
--  if (currentView === "inventory") {
--    let cardsHTML = "";
--
--    if (user.inventory.length === 0) {
--      cardsHTML = "<p>Пусто</p>";
--    } else {
--      user.inventory.forEach(card => {
--        cardsHTML += `
--          <div class="card">
--            <strong>${card.name}</strong><br>
--            ${card.rarity}<br>
--            ⚡ ${card.power} | ❤️ ${card.hp}
--          </div>
--        `;
--      });
-+  const UNIVERSES = {
-+    "JUJUTSU KAISEN":["Годзё","Гэто","Итадори","Нобара","Маки","Тодзи"],
-+    "EVANGELION":["Рэй","Аска","Синдзи","Кавору","Мисато"],
-+    "NARUTO":["Наруто","Саске","Сакура","Итачи","Минато","Какаши"]
-+  };
-+
-+  const BOT_RANK = [
-+    {nickname:"Akira", title:"Storm", power:8200, wins:39, clan:"Moonlit"},
-+    {nickname:"Yoru", title:"Blade", power:7300, wins:31, clan:"Nova"},
-+    {nickname:"Ren", title:"Shogun", power:6100, wins:24, clan:"Solo"}
-+  ];
-+
-+  const state = {
-+    view:"main",
-+    rolling:false,
-+    rngText:'Нажми "Эпичный призыв"',
-+    timer:null,
-+    profileDraft:null,
-+    logs:[],
-+    clans:[
-+      {id:"moonlit",name:"Moonlit",members:24,power:48000,desc:"Ночные турниры"},
-+      {id:"nova",name:"Nova",members:16,power:35000,desc:"Сильный рост"},
-+      {id:"eclipse",name:"Eclipse",members:31,power:62000,desc:"Топ PvP"}
-+    ],
-+    pvpHistory:[],
-+    user:{
-+      diamonds:1500,
-+      power:0,
-+      universe:"JUJUTSU KAISEN",
-+      inventory:[],
-+      pvpWins:0,
-+      pvpLosses:0,
-+      clan:null,
-+      profile:{
-+        nickname:"Player",
-+        title:"Новичок",
-+        avatar:"https://i.imgur.com/f4Q3QW5.png",
-+        description:"Иду к легендарным дропам."
-+      }
-     }
-+  };
- 
--    app.innerHTML = `
--      <h2>Инвентарь</h2>
--      ${cardsHTML}
--      <button id="btnBack">Назад</button>
--    `;
-+  const byId = (id)=>document.getElementById(id);
-+  const addLog = (text)=>{ state.logs.unshift(`${new Date().toLocaleTimeString()} • ${text}`); state.logs=state.logs.slice(0,20); };
-+  const recalcPower = ()=>{ state.user.power = state.user.inventory.reduce((s,c)=>s+c.power,0); };
- 
--    document.getElementById("btnBack").addEventListener("click", goMain);
-+  function rarityRoll(){
-+    const r=Math.floor(Math.random()*10000);
-+    let sum=0;
-+    for(const key in RARITIES){ sum += RARITIES[key].chance; if(r<sum) return key; }
-+    return "COMMON";
-   }
--}
- 
--function performRoll() {
--  if (user.diamonds < 100) {
--    alert("Недостаточно алмазов");
--    return;
-+  function makeCard(){
-+    const rarityKey=rarityRoll();
-+    const rarity=RARITIES[rarityKey];
-+    const names=UNIVERSES[state.user.universe];
-+    const name=names[Math.floor(Math.random()*names.length)];
-+    return {
-+      id:Date.now()+Math.random(),
-+      name,
-+      rarityKey,
-+      rarity:rarity.name,
-+      power:Math.floor((Math.random()*90+60)*rarity.mult),
-+      hp:Math.floor((Math.random()*140+120)*rarity.mult)
-+    };
-   }
- 
--  user.diamonds -= 100;
-+  function navBtn(view,label){ return `<button data-nav="${view}" class="${state.view===view?'active':''}">${label}</button>`; }
-+
-+  function sideHtml(){
-+    const u=state.user;
-+    return `
-+      <aside class="panel side">
-+        <div class="brand"><h1>Anime Gacha Empire</h1><p>Полностью клиентская WebApp-страница</p></div>
-+        <div class="profile-mini">
-+          <img class="avatar" src="${u.profile.avatar}" onerror="this.src='https://i.imgur.com/f4Q3QW5.png'" alt="avatar"/>
-+          <div><div class="sub">${u.profile.title}</div><b>${u.profile.nickname}</b></div>
-+        </div>
-+        <div class="stats">
-+          <div class="stat"><span>💎 Алмазы</span><b>${u.diamonds}</b></div>
-+          <div class="stat"><span>⚡ Мощь</span><b>${u.power}</b></div>
-+          <div class="stat"><span>🏆 PvP</span><b>${u.pvpWins}W / ${u.pvpLosses}L</b></div>
-+        </div>
-+        <div class="nav">
-+          ${navBtn('main','Главная')}
-+          ${navBtn('roll','Призыв')}
-+          ${navBtn('inventory','Инвентарь')}
-+          ${navBtn('profile','Профиль')}
-+          ${navBtn('clan','Кланы')}
-+          ${navBtn('pvp','PvP')}
-+          ${navBtn('fusion','Слияние')}
-+          ${navBtn('ranking','Рейтинги')}
-+        </div>
-+      </aside>`;
-+  }
- 
--  const rng = Math.floor(Math.random() * 10000);
--  let cumulative = 0;
--  let rarityKey = "COMMON";
-+  function vMain(){
-+    const u=state.user;
-+    return `<div class="header"><div><h2>${u.profile.title} ${u.profile.nickname}</h2><div class="sub">${u.profile.description}</div></div><span class="pill">🌌 ${u.universe}</span></div>
-+      <div class="grid">
-+        <div class="card"><h3>Старт</h3><div class="sub">Сделай призыв и усили персонажа</div><br><button class="primary" id="goRoll">Перейти к призыву</button></div>
-+        <div class="card"><h3>Клан</h3><div class="sub">${u.clan?`В клане: ${u.clan}`:'Ты пока без клана'}</div><br><button class="primary" id="goClan">Открыть кланы</button></div>
-+        <div class="card"><h3>Таблица</h3><div class="sub">Следи за позицией в рейтинге</div><br><button class="primary" id="goRank">Открыть рейтинги</button></div>
-+      </div>
-+      <div class="card" style="margin-top:10px"><h3>События</h3><div class="log">${state.logs.length?state.logs.map(x=>`<div>${x}</div>`).join(''):'Пока пусто'}</div></div>`;
-+  }
- 
--  for (let key in RARITIES) {
--    cumulative += RARITIES[key].chance;
--    if (rng <= cumulative) {
--      rarityKey = key;
--      break;
--    }
-+  function vRoll(){
-+    const last=state.user.inventory.at(-1);
-+    return `<div class="header"><div><h2>Эпичный призыв</h2><div class="sub">Стоимость 100 💎</div></div><span class="pill">DIVINE 0.2%</span></div>
-+      <div class="summon">
-+        <div class="orb"></div>
-+        <div id="rng" class="rng">${state.rngText}</div>
-+        <div class="row">
-+          <select id="universe">${Object.keys(UNIVERSES).map(x=>`<option ${x===state.user.universe?'selected':''}>${x}</option>`).join('')}</select>
-+          <button class="primary" id="btnRoll" ${state.rolling?'disabled':''}>⚡ Эпичный призыв</button>
-+        </div>
-+      </div>
-+      <div class="card" style="margin-top:10px"><h3>Последний дроп</h3><div class="sub">${last?`${last.name} (${last.rarity})`:"Пока пусто"}</div></div>`;
-   }
- 
--  const names = UNIVERSES[user.universe];
--  const name = names[Math.floor(Math.random() * names.length)];
--  const rarity = RARITIES[rarityKey];
-+  function vInventory(){
-+    const list=state.user.inventory;
-+    return `<div class="header"><h2>Инвентарь</h2><span class="pill">Карт: ${list.length}</span></div>
-+      <div class="grid">${list.length?list.map(c=>`<div class="card"><span class="rarity ${RARITIES[c.rarityKey].class}">${c.rarity}</span><h3 style="margin:0 0 8px">${c.name}</h3><div class="sub">⚡ ${c.power}</div><div class="sub">❤️ ${c.hp}</div></div>`).join(''):'<div class="card">Пока нет карт</div>'}</div>`;
-+  }
- 
--  const newCard = {
--    id: Date.now(),
--    name: name,
--    rarity: rarity.name,
--    power: Math.floor((Math.random() * 100 + 50) * rarity.mult),
--    hp: Math.floor((Math.random() * 200 + 100) * rarity.mult)
--  };
-+  function vProfile(){
-+    const p=state.profileDraft || {...state.user.profile};
-+    return `<div class="header"><h2>Профиль</h2></div>
-+      <div class="row"><div class="card"><label>Ник</label><input id="nick" value="${p.nickname}" maxlength="20"></div><div class="card"><label>Титул</label><input id="title" value="${p.title}" maxlength="20"></div></div>
-+      <div class="card" style="margin-top:10px"><label>URL аватарки</label><input id="avatar" value="${p.avatar}"></div>
-+      <div class="card" style="margin-top:10px"><label>Описание</label><textarea id="desc">${p.description}</textarea></div>
-+      <div class="row" style="margin-top:10px"><button class="primary" id="saveProfile">Сохранить</button><button class="gray" id="resetProfile">Сбросить</button></div>`;
-+  }
- 
--  user.inventory.push(newCard);
--  user.power += newCard.power;
-+  function vClan(){
-+    return `<div class="header"><h2>Кланы</h2><span class="pill">${state.user.clan||'без клана'}</span></div>
-+      <div class="card"><div class="row"><input id="newClan" placeholder="Название клана" maxlength="18"><button class="primary" id="createClan">Создать клан</button></div></div>
-+      <div class="grid" style="margin-top:10px">${state.clans.map(c=>`<div class="card"><h3 style="margin-top:0">${c.name}</h3><div class="sub">👥 ${c.members}</div><div class="sub">⚡ ${c.power}</div><p class="sub">${c.desc}</p><button class="primary" data-join="${c.id}">${state.user.clan===c.name?'Ты в клане':'Вступить'}</button></div>`).join('')}</div>`;
-+  }
- 
--  alert("Выпала карта: " + name + " (" + rarity.name + ")");
--  render();
--}
-+  function vPvp(){
-+    return `<div class="header"><div><h2>PvP Арена</h2><div class="sub">Бой против случайного соперника</div></div><button class="primary" id="fight">⚔️ Найти бой</button></div>
-+      <div class="card"><h3>История</h3><div class="log">${state.pvpHistory.length?state.pvpHistory.map(x=>`<div>${x}</div>`).join(''):'Еще нет боев'}</div></div>`;
-+  }
- 
--function goMain() {
--  currentView = "main";
--  render();
--}
-+  function vFusion(){
-+    const opts=state.user.inventory.map(c=>`<option value="${c.id}">${c.name} • ${c.rarity} • ${c.power}⚡</option>`).join('');
-+    return `<div class="header"><h2>Слияние</h2></div><div class="card">${state.user.inventory.length<2?'Нужно минимум 2 карты':`<div class="row"><select id="fA">${opts}</select><select id="fB">${opts}</select></div><div style="margin-top:10px"><button class="primary" id="doFusion">🔧 Слить</button></div>`}</div>`;
-+  }
- 
--function goRoll() {
--  currentView = "roll";
--  render();
--}
-+  function vRanking(){
-+    const me={nickname:state.user.profile.nickname,title:state.user.profile.title,power:state.user.power,wins:state.user.pvpWins,clan:state.user.clan||'Solo'};
-+    const rows=[...BOT_RANK,me].sort((a,b)=>(b.power+b.wins*30)-(a.power+a.wins*30));
-+    return `<div class="header"><h2>Рейтинги</h2></div><div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Игрок</th><th>Клан</th><th>Мощь</th><th>Победы</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.title} ${r.nickname}</td><td>${r.clan}</td><td>${r.power}</td><td>${r.wins}</td></tr>`).join('')}</tbody></table></div>`;
-+  }
- 
--function goInventory() {
--  currentView = "inventory";
--  render();
--}
-+  function viewHtml(){
-+    if(state.view==='main') return vMain();
-+    if(state.view==='roll') return vRoll();
-+    if(state.view==='inventory') return vInventory();
-+    if(state.view==='profile') return vProfile();
-+    if(state.view==='clan') return vClan();
-+    if(state.view==='pvp') return vPvp();
-+    if(state.view==='fusion') return vFusion();
-+    return vRanking();
-+  }
- 
--if (window.Telegram && window.Telegram.WebApp) {
--  Telegram.WebApp.ready();
--  Telegram.WebApp.expand();
--}
-+  function render(){
-+    byId('app').innerHTML = `<div class="app">${sideHtml()}<main class="panel content">${viewHtml()}</main></div>`;
-+    bind();
-+  }
-+
-+  function setView(v){state.view=v;render();}
-+
-+  function bind(){
-+    document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.nav)));
-+
-+    const goRoll=byId('goRoll'); if(goRoll) goRoll.onclick=()=>setView('roll');
-+    const goClan=byId('goClan'); if(goClan) goClan.onclick=()=>setView('clan');
-+    const goRank=byId('goRank'); if(goRank) goRank.onclick=()=>setView('ranking');
-+
-+    const universe=byId('universe'); if(universe) universe.onchange=e=>state.user.universe=e.target.value;
-+    const btnRoll=byId('btnRoll'); if(btnRoll) btnRoll.onclick=doRoll;
-+
-+    const save=byId('saveProfile'); if(save) save.onclick=saveProfile;
-+    const reset=byId('resetProfile'); if(reset) reset.onclick=()=>{state.profileDraft={...state.user.profile};render();};
-+    ['nick','title','avatar','desc'].forEach(id=>{
-+      const el=byId(id);
-+      if(el){
-+        el.oninput=()=>{state.profileDraft={nickname:byId('nick').value,title:byId('title').value,avatar:byId('avatar').value,description:byId('desc').value};};
-+      }
-+    });
-+
-+    const createClan=byId('createClan'); if(createClan) createClan.onclick=()=>{
-+      const name=byId('newClan').value.trim();
-+      if(!name){ alert('Введи название клана'); return; }
-+      const id=name.toLowerCase().replace(/\s+/g,'-');
-+      state.clans.unshift({id,name,members:1,power:state.user.power,desc:'Новый клан игрока'});
-+      state.user.clan=name; addLog(`Создан клан ${name}`); render();
-+    };
-+
-+    document.querySelectorAll('[data-join]').forEach(btn=>btn.onclick=()=>{
-+      const c=state.clans.find(x=>x.id===btn.dataset.join);
-+      if(!c) return;
-+      state.user.clan=c.name; c.members+=1; addLog(`Вступление в клан ${c.name}`); render();
-+    });
-+
-+    const fight=byId('fight'); if(fight) fight.onclick=()=>{
-+      if(state.user.power<100){ alert('Нужно минимум 100 мощи'); return; }
-+      const rival=BOT_RANK[Math.floor(Math.random()*BOT_RANK.length)];
-+      const us=state.user.power+Math.floor(Math.random()*260);
-+      const rs=rival.power+Math.floor(Math.random()*260);
-+      const win=us>=rs;
-+      if(win){ state.user.pvpWins+=1; state.user.diamonds+=70; } else { state.user.pvpLosses+=1; state.user.diamonds+=25; }
-+      const t=`${win?'✅ Победа':'❌ Поражение'} vs ${rival.nickname} (${us} vs ${rs})`;
-+      state.pvpHistory.unshift(t); state.pvpHistory=state.pvpHistory.slice(0,18); addLog(t); render();
-+    };
-+
-+    const fuse=byId('doFusion'); if(fuse) fuse.onclick=()=>{
-+      const a=Number(byId('fA').value), b=Number(byId('fB').value);
-+      if(a===b){ alert('Выбери 2 разные карты'); return; }
-+      const c1=state.user.inventory.find(c=>c.id===a), c2=state.user.inventory.find(c=>c.id===b);
-+      if(!c1 || !c2){ alert('Карты не найдены'); return; }
-+      state.user.inventory = state.user.inventory.filter(c=>c.id!==a && c.id!==b);
-+      const order=['COMMON','RARE','EPIC','LEGEND','DIVINE'];
-+      const i=Math.max(order.indexOf(c1.rarityKey),order.indexOf(c2.rarityKey));
-+      const up=Math.min(i+(Math.random()<0.4?1:0),order.length-1);
-+      const key=order[up];
-+      state.user.inventory.push({id:Date.now()+Math.random(),name:`${c1.name}-${c2.name}`,rarityKey:key,rarity:RARITIES[key].name,power:Math.floor((c1.power+c2.power)*0.68),hp:Math.floor((c1.hp+c2.hp)*0.68)});
-+      recalcPower(); addLog('Слияние успешно'); render();
-+    };
-+  }
- 
--render();
-+  function saveProfile(){
-+    const nick=byId('nick').value.trim();
-+    const title=byId('title').value.trim();
-+    const avatar=byId('avatar').value.trim();
-+    const desc=byId('desc').value.trim();
-+    state.user.profile.nickname=nick||'Player';
-+    state.user.profile.title=title||'Новичок';
-+    state.user.profile.avatar=avatar||'https://i.imgur.com/f4Q3QW5.png';
-+    state.user.profile.description=desc||'Без описания';
-+    state.profileDraft=null;
-+    addLog('Профиль обновлен');
-+    render();
-+  }
- 
-+  function doRoll(){
-+    if(state.rolling) return;
-+    if(state.user.diamonds<100){ alert('Недостаточно алмазов'); return; }
-+    state.rolling=true;
-+    state.user.diamonds-=100;
-+    const rngEl=byId('rng');
-+    const keys=Object.keys(RARITIES);
-+    let tick=0;
-+    state.timer=setInterval(()=>{
-+      const rk=keys[Math.floor(Math.random()*keys.length)];
-+      if(rngEl) rngEl.textContent=`RNG крутится... ${RARITIES[rk].name}`;
-+      tick++;
-+      if(tick>14){
-+        clearInterval(state.timer);
-+        const card=makeCard();
-+        state.user.inventory.push(card);
-+        recalcPower();
-+        state.rngText=`✨ ${card.name} • ${card.rarity} | ⚡ ${card.power} | ❤️ ${card.hp}`;
-+        state.rolling=false;
-+        addLog(`Получена карта ${card.name} (${card.rarity})`);
-+        render();
-+      }
-+    },120);
-+  }
-+
-+  function loadTelegramSdk(){
-+    return new Promise((resolve)=>{
-+      if(window.Telegram && window.Telegram.WebApp){ resolve(true); return; }
-+      const s=document.createElement('script');
-+      s.src='https://telegram.org/js/telegram-web-app.js';
-+      s.async=true;
-+      const done=()=>resolve(!!(window.Telegram && window.Telegram.WebApp));
-+      s.onload=done;
-+      s.onerror=()=>resolve(false);
-+      document.head.appendChild(s);
-+      setTimeout(done,2500);
-+    });
-+  }
-+
-+  async function initTelegram(){
-+    await loadTelegramSdk();
-+    if(window.Telegram && window.Telegram.WebApp){
-+      window.Telegram.WebApp.ready();
-+      window.Telegram.WebApp.expand();
-+    }
-+  }
-+
-+  addLog('Система инициализирована');
-+  render();
-+  initTelegram();
- </script>
- </body>
- </html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anime Gacha Empire</title>
+<style>
+body{margin:0;font-family:Arial;background:#0f172a;color:white}
+button{padding:8px 12px;margin:5px;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer}
+.card{background:#1e293b;padding:10px;margin:5px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const RARITIES={
+COMMON:{name:"Обычная",chance:6000,mult:1},
+RARE:{name:"Редкая",chance:3000,mult:2},
+EPIC:{name:"Эпическая",chance:800,mult:4},
+LEGEND:{name:"Легендарная",chance:180,mult:7},
+DIVINE:{name:"Божественная",chance:20,mult:12}
+};
+
+const UNIVERSES={
+"JUJUTSU KAISEN":["Годзё","Гэто","Итадори","Нобара"],
+"EVANGELION":["Рэй","Аска","Синдзи","Кавору"],
+"NARUTO":["Наруто","Саске","Сакура","Итачи"]
+};
+
+let state=JSON.parse(localStorage.getItem("gachaState"))||{
+view:"main",
+rolling:false,
+user:{
+diamonds:1500,
+power:0,
+universe:"JUJUTSU KAISEN",
+inventory:[],
+pvpWins:0,
+pvpLosses:0
+}
+};
+
+function save(){localStorage.setItem("gachaState",JSON.stringify(state))}
+
+function recalcPower(){
+state.user.power=state.user.inventory.reduce((s,c)=>s+c.power,0);
+}
+
+function rarityRoll(){
+let r=Math.floor(Math.random()*10000);
+let sum=0;
+for(let k in RARITIES){
+sum+=RARITIES[k].chance;
+if(r<sum) return k;
+}
+return "COMMON";
+}
+
+function makeCard(){
+let key=rarityRoll();
+let rarity=RARITIES[key];
+let names=UNIVERSES[state.user.universe];
+let name=names[Math.floor(Math.random()*names.length)];
+return{
+id:"c_"+Date.now()+"_"+Math.random(),
+name,
+rarity:rarity.name,
+rarityKey:key,
+power:Math.floor((Math.random()*80+60)*rarity.mult),
+hp:Math.floor((Math.random()*120+100)*rarity.mult)
+};
+}
+
+function setView(v){state.view=v;render();}
+
+function render(){
+const app=document.getElementById("app");
+if(state.view==="main"){
+app.innerHTML=`
+<h1>Anime Gacha Empire</h1>
+<p>💎 ${state.user.diamonds}</p>
+<p>⚡ ${state.user.power}</p>
+<button onclick="setView('roll')">Призыв</button>
+<button onclick="setView('inventory')">Инвентарь</button>
+<button onclick="setView('pvp')">PvP</button>
+`;
+}
+
+if(state.view==="roll"){
+app.innerHTML=`
+<h2>Призыв (100 💎)</h2>
+<select id="uni">${Object.keys(UNIVERSES).map(u=>`<option ${u===state.user.universe?'selected':''}>${u}</option>`).join('')}</select>
+<br>
+<button onclick="roll()">Крутить</button>
+<button onclick="setView('main')">Назад</button>
+<div id="result"></div>
+`;
+}
+
+if(state.view==="inventory"){
+app.innerHTML=`
+<h2>Инвентарь</h2>
+${state.user.inventory.length===0?"Пусто":state.user.inventory.map(c=>`
+<div class="card">
+<b>${c.name}</b><br>
+${c.rarity}<br>
+⚡ ${c.power} | ❤️ ${c.hp}
+</div>`).join("")}
+<button onclick="setView('main')">Назад</button>
+`;
+}
+
+if(state.view==="pvp"){
+app.innerHTML=`
+<h2>PvP</h2>
+<p>Победы: ${state.user.pvpWins} | Поражения: ${state.user.pvpLosses}</p>
+<button onclick="fight()">Бой</button>
+<button onclick="setView('main')">Назад</button>
+<div id="fightRes"></div>
+`;
+}
+save();
+}
+
+function roll(){
+if(state.user.diamonds<100){alert("Недостаточно алмазов");return;}
+state.user.universe=document.getElementById("uni").value;
+state.user.diamonds-=100;
+
+let card=makeCard();
+state.user.inventory.push(card);
+recalcPower();
+
+document.getElementById("result").innerHTML=
+`Выпала карта: <b>${card.name}</b> (${card.rarity}) ⚡${card.power}`;
+
+save();
+}
+
+function fight(){
+if(state.user.power<100){alert("Слишком мало мощи");return;}
+let enemyPower=Math.floor(Math.random()*2000+500);
+let yourPower=state.user.power+Math.floor(Math.random()*300);
+let win=yourPower>=enemyPower;
+
+if(win){
+state.user.pvpWins++;
+state.user.diamonds+=50;
+}else{
+state.user.pvpLosses++;
+}
+
+document.getElementById("fightRes").innerHTML=
+win?`Победа! (+50💎)`:`Поражение`;
+
+save();
+}
+
+render();
+</script>
+</body>
+</html>
