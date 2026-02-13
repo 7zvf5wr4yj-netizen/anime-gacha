@@ -2,462 +2,348 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Anime Gacha Empire</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ReseitCards | Multiverse</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #151e3d 0%, #511281 100%);
-      --card-gradient: linear-gradient(135deg, #22294e 60%, #161928 100%);
-      --neon-blue: #34cbff;
-      --neon-purp: #be59ff;
-      --neon-gold: #ffd700;
-      --neon-orange: #ff9900;
-      --neon-rainbow: linear-gradient(90deg, #ff00cc 0%, #3333ff 25%, #13ff62 50%, #ffd700 75%, #ff00cc 100%);
+      --bg-dark: #0a0b1e;
+      --accent-blue: #00d2ff;
+      --accent-purple: #9d50bb;
+      --divine-gradient: linear-gradient(45deg, #ff00cc, #3333ff, #13ff62, #ffd700);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
     }
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-    }
+
     body {
-      min-height: 100vh;
-      background: var(--bg-gradient);
-      font-family: 'Segoe UI', Arial, sans-serif;
-      color: #fff;
+      background: var(--bg-dark);
+      background-attachment: fixed;
+      color: white;
+      font-family: 'Inter', -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
       overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .wrap {
-      max-width: 420px;
-      margin: 30px auto 0 auto;
-      background: rgba(21,30,61,0.92);
-      box-shadow: 0 6px 32px #0009;
-      border-radius: 24px;
-      padding: 36px 18px 22px 18px;
-      position: relative;
-      min-height: 670px;
+
+    /* Анимированный фон */
+    .bg-glow {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 50%, #1a1b3a 0%, #0a0b1e 100%);
+      z-index: -1;
     }
-    h1 {
-      letter-spacing: 2px;
-      font-weight: 700;
-      font-size: 2.5em;
-      background: linear-gradient(90deg, #34cbff, #be59ff, #ffd700, #be59ff, #34cbff);
-      background-size: 400% 100%;
-      color: transparent;
-      animation: grad 6s linear infinite;
-      -webkit-background-clip: text;
-      background-clip: text;
-      margin: 0 0 12px 0;
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      box-sizing: border-box;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
       text-align: center;
-      text-shadow: 0 0 28px #43e6f744, 0 0 2px #be59ff;
+      padding: 20px 0;
     }
-    @keyframes grad {
-      0% {background-position:0%}
-      100% {background-position:400%}
+
+    h1 {
+      font-size: 28px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
     }
-    .stat-bar {
+
+    /* Статистика сверху */
+    .stats-card {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
       display: flex;
       justify-content: space-around;
-      font-size: 1.2em;
-      margin-bottom: 8px;
-      margin-top: 0;
-      user-select: all;
+      padding: 15px;
+      margin-bottom: 20px;
     }
-    .stat-bar span {
-      filter: drop-shadow(0 0 5px #fff7);
-    }
-    .nav-btns {
-      display: flex;
-      justify-content: center;
-      gap: 14px;
-      margin: 17px 0 18px 0;
-    }
-    button, .select {
-      padding: 10px 22px;
-      font-size: 1.04em;
-      font-weight: 600;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(90deg,#31255e 0,#1b53d6 100%);
-      color: #fff;
-      margin: 0 4px;
-      cursor: pointer;
-      box-shadow: 0 2px 12px #2a2e5580;
-      transition: .14s;
-      outline: none;
-      user-select: none;
-    }
-    button:hover, .select:hover {
-      background: linear-gradient(90deg, #1b53d6 0, #31255e 100%);
-      color: #ffea70;
-      box-shadow: 0 0 18px #5093ff99;
-      transform: scale(1.04);
-    }
-    .select {
-      background: #23184e;
-      padding: 10px 16px;
-    }
-    /* Gacha Animation */
-    .gacha-roller {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 170px;
-      margin-bottom: 16px;
-      perspective: 800px;
-      position: relative;
-    }
-    .gacha-card-anim {
-      font-size: 2.2em;
-      font-weight: 700;
-      border-radius: 16px;
-      text-align: center;
-      width: 220px;
-      box-shadow: 0 2px 16px #000a, 0 0 55px #a78cffcc;
-      background: #262962;
-      border: 3.5px solid #b8b6ff;
-      opacity: 1;
-      transform-style: preserve-3d;
-      animation: popIn .27s cubic-bezier(.27,.7,.34,1.4);
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-    }
-    @keyframes popIn {
-      0% { opacity:0; transform: scale(0.4) rotateY(-120deg);}
-      70% {opacity:1; transform: scale(1.11) rotateY(12deg);}
-      90% {opacity:1;}
-      100% { opacity:1; transform: scale(1) rotateY(0);}
-    }
-    .gacha-anim-rarity-EPIC { border:3.5px solid var(--neon-orange); color: var(--neon-orange);}
-    .gacha-anim-rarity-LEGEND { border:3.5px solid var(--neon-gold); color: var(--neon-gold); text-shadow:0 0 16px gold;}
-    .gacha-anim-rarity-DIVINE { border-image: var(--neon-rainbow) 1; border-width:4px; border-style:solid; background: #fff; color: transparent; background-clip:text;}
-    .gacha-anim-rare-sparkle {
-      animation: sparkle-glow 1s infinite alternate;
-      text-shadow: 0 0 16px #fff, 0 0 16px var(--neon-gold), 0 0 26px #ffea70;
-    }
-    @keyframes sparkle-glow {
-      to {
-        text-shadow: 0 0 24px #fff, 0 0 40px var(--neon-gold), 0 0 70px #ffea708a;
-      }
-    }
-    .card-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: center;
-      max-height: 260px;
-      overflow-y: auto;
-      margin-bottom: 22px;
-    }
-    .gacha-card {
-      min-width: 105px;
-      background: var(--card-gradient);
-      border-radius: 12px;
-      box-shadow: 0 2px 9px #0007, 0 0 0 1.5px #3e2460b8;
-      padding: 10px 7px 8px 7px;
-      font-size: 1.15em;
-      font-weight: 500;
-      margin-bottom: 2px;
-      text-align: center;
-      position: relative;
-      border: 2.5px solid #2d3560;
-      margin: 0 0 6px 0;
-      user-select: text;
-    }
-    .rarity-color-COMMON { border-color: #34cbff; }
-    .rarity-color-RARE { border-color: #be59ff;}
-    .rarity-color-EPIC { border-color: orange; box-shadow: 0 0 18px #ff993327;}
-    .rarity-color-LEGEND { border-color: gold; box-shadow: 0 0 22px #ffd7007e; font-weight:700;}
-    .rarity-color-DIVINE { border-image: var(--neon-rainbow) 1; border-width: 2.5px 4.5px; background: #fff3eb; color: #9264ff; font-weight:600; box-shadow: 0 0 44px #ff00cc44 inset;}
-    .gacha-card .rarity {
-      font-size: .95em;
-      font-weight: 400;
-      opacity:.8;
-    }
-    .gacha-card .pow {font-size:.98em;}
-    .gacha-card .hp {font-size:.99em;}
 
-    /* PvP/Other */
-    .pvp-battle {
-      background: #22294e;
-      border-radius: 10px;
-      margin-top: 10px;
-      padding: 14px 10px;
-      box-shadow: 0 0 22px #582cb320;
-      font-size: 1.15em;
-      min-height: 38px;
-      text-align: center;
+    .stat-item { text-align: center; }
+    .stat-val { display: block; font-weight: bold; font-size: 18px; color: var(--accent-blue); }
+    .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.6; }
+
+    /* Кнопки меню */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .main-btn {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 20px;
+      border-radius: 18px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .main-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+
+    .btn-icon { font-size: 24px; }
+
+    /* Слайд призыва */
+    .gacha-zone {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .summon-circle {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: 2px dashed var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
+      margin-bottom: 30px;
+      animation: rotate 10s linear infinite;
     }
-    .pvp-res-win { color: #ffe682; text-shadow:0 0 6px #fff9;}
-    .pvp-res-lose { color: #b0adad; }
-    /* Confetti animation for Divine/Legenadary drops */
-    .confetti {
-      pointer-events:none;position:fixed;z-index:10002;top:0;left:0;width:100vw;height:100vh;overflow:hidden; }
-    .confetti-piece {
+
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .card-display {
+      width: 200px;
+      height: 280px;
+      background: #15162c;
+      border-radius: 15px;
+      border: 2px solid var(--accent-blue);
       position: absolute;
-      width: 10px; height: 18px;
-      border-radius: 4px;
-      opacity: 0.82;
-      animation: confetti-fall 1.2s cubic-bezier(.37,.76,.29,.96);
+      transform: rotate(-360deg); /* компенсируем вращение круга */
+      animation: emerge 0.5s ease-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
     }
-    @keyframes confetti-fall {
-      to {
-        transform: translateY(100vh) rotateZ(480deg) scale(.83);
-        opacity: 0.6;
-      }
+
+    @keyframes emerge { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+
+    .rarity-tag {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-transform: uppercase;
     }
-    /* Scroll bar */
-    ::-webkit-scrollbar { width: 9px; background: #25184e;}
-    ::-webkit-scrollbar-thumb { background: #50309f; border-radius: 4px;}
+
+    .DIVINE { border: 2px solid gold; color: gold; box-shadow: 0 0 15px gold; }
+    .LEGEND { border: 1px solid orange; color: orange; }
+
+    /* Инвентарь */
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding-bottom: 50px;
+    }
+
+    .mini-card {
+      background: var(--glass);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 11px;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Скрытые разделы */
+    .page { display: none; width: 100%; }
+    .page.active { display: block; }
+
   </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
-<div class="confetti" id="confetti"></div>
-<script>
-const RARITIES = {
-  COMMON:    {name:"Обычная",      chance:6000, mult:1, color:'COMMON'},
-  RARE:      {name:"Редкая",       chance:3000, mult:2, color:'RARE'},
-  EPIC:      {name:"Эпическая",    chance:800,  mult:4, color:'EPIC'},
-  LEGEND:    {name:"Легендарная",  chance:180,  mult:7, color:'LEGEND'},
-  DIVINE:    {name:"Божественная", chance:20,   mult:12, color:'DIVINE'}
-};
-const UNIVERSES = {
-  "JUJUTSU KAISEN": ["Годзё", "Гэто", "Итадори", "Нобара"],
-  "EVANGELION":["Рэй","Аска","Синдзи","Кавору"],
-  "NARUTO":["Наруто","Саске","Сакура","Итачи"]
-};
-
-let state = JSON.parse(localStorage.getItem("gachaState")) || {
-  view:"main",
-  rolling:false,
-  user:{
-    diamonds:1500,
-    power:0,
-    universe:"JUJUTSU KAISEN",
-    inventory:[],
-    pvpWins:0,
-    pvpLosses:0
-  }
-};
-
-function save(){ localStorage.setItem("gachaState",JSON.stringify(state)); }
-
-function recalcPower() {
-  state.user.power = state.user.inventory.reduce((s,c) => s+c.power, 0);
-}
-
-function rarityRoll() {
-  let r = Math.floor(Math.random()*10000); let sum = 0;
-  for(let k in RARITIES){ sum += RARITIES[k].chance; if(r<sum) return k; }
-  return "COMMON";
-}
-
-function makeCard() {
-  let key = rarityRoll(), rarity = RARITIES[key];
-  let names = UNIVERSES[state.user.universe];
-  let name = names[Math.floor(Math.random()*names.length)];
-  return {
-    id:"c_"+Date.now()+"_"+Math.random(),
-    name,
-    rarity:rarity.name,
-    rarityKey:key,
-    power:Math.floor((Math.random()*80+60)*rarity.mult),
-    hp:Math.floor((Math.random()*120+100)*rarity.mult)
-  };
-}
-
-// ---- UI & rendering logic ----
-function setView(v){ state.view=v; render(); }
-
-function showConfetti(rarity) {
-  const confettiColors = rarity==='DIVINE'
-    ? ['#ffd700','#00ffd0','#ff00cc','#3333ff','#13ff62']
-    : rarity==='LEGEND'
-    ? ['#ffd700','#fff185','#ffb64b','#ffe01e']
-    : ['#be59ff','#ffd700','#34cbff'];
-  let confetti = document.getElementById('confetti');
-  confetti.innerHTML='';
-  for(let i=0;i<40+(rarity==='DIVINE'?30:0);++i){
-    let d = document.createElement('div');
-    d.className='confetti-piece';
-    d.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
-    d.style.left=(Math.random()*98)+"vw";
-    d.style.top = -(Math.random()*30+5)+"px";
-    d.style.transform = `rotateZ(${Math.random()*240-60}deg)`;
-    d.style.animationDuration= 0.7+Math.random()*0.71+'s';
-    confetti.appendChild(d);
-  }
-  setTimeout(()=>{confetti.innerHTML='';}, 1600);
-}
-
-function animateGacha(card) {
-  state.rolling=true;
-  render();
-  let gachaRoller = document.getElementById("gachaRollAnim");
-  let viewCard = () => {
-    state.rolling = false;
-    state.user.inventory.push(card);
-    recalcPower();
-    render();
-    // Confetti for rare
-    if(card.rarityKey==='LEGEND' || card.rarityKey==='DIVINE')
-      showConfetti(card.rarityKey);
-  };
-
-  // Animation sequence
-  let rare = card.rarityKey;
-  let names = [];
-  for(let i=0;i<6;i++) {
-    let fakeKey = Object.keys(RARITIES)[Math.floor(Math.random()*Object.keys(RARITIES).length)];
-    let name = UNIVERSES[state.user.universe][Math.floor(Math.random()*UNIVERSES[state.user.universe].length)];
-    names.push({name, key: fakeKey});
-  }
-  let cur = 0, interval = 95, times = 0;
-  let spin = () => {
-    if(!gachaRoller) return;
-    if(times<12 || (times<17 && rare!=='COMMON') || (times<28 && rare==='DIVINE')) {
-      let show = names[++cur%names.length];
-      gachaRoller.innerHTML = `
-        <div class="gacha-card-anim gacha-anim-rarity-${show.key}">
-          <div>${show.name}</div>
-          <div class="rarity">${RARITIES[show.key].name}</div>
+  <div class="bg-glow"></div>
+  <div class="container">
+    
+    <div id="main-page" class="page active">
+      <header>
+        <h1>Reseit Cards</h1>
+      </header>
+      
+      <div class="stats-card">
+        <div class="stat-item">
+          <span class="stat-label">Кристаллы</span>
+          <span class="stat-val" id="user-diamonds">0</span>
         </div>
-      `;
-      times++; interval += 15;
-      setTimeout(spin, interval);
-    } else {
-      gachaRoller.innerHTML = `
-        <div class="gacha-card-anim gacha-anim-rarity-${rare} ${rare==='DIVINE'?'gacha-anim-rare-sparkle':''}">
-          <div>${card.name}</div>
-          <div class="rarity">${card.rarity}</div>
-          <div>⚡${card.power} | ❤️${card.hp}</div>
+        <div class="stat-item">
+          <span class="stat-label">Мощь Команды</span>
+          <span class="stat-val" id="user-power">0</span>
         </div>
-      `;
-      setTimeout(viewCard, 1150);
+      </div>
+
+      <div class="menu-grid">
+        <div class="main-btn" onclick="showPage('roll-page')">
+          <span class="btn-icon">🔮</span>
+          <span>ПРИЗЫВ</span>
+        </div>
+        <div class="main-btn" onclick="showPage('inv-page')">
+          <span class="btn-icon">🎴</span>
+          <span>КОЛЛЕКЦИЯ</span>
+        </div>
+        <div class="main-btn" onclick="showPage('pvp-page')">
+          <span class="btn-icon">⚔️</span>
+          <span>АРЕНА</span>
+        </div>
+        <div class="main-btn" onclick="tg.showAlert('Кланы в разработке!')">
+          <span class="btn-icon">🛡️</span>
+          <span>КЛАН</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="roll-page" class="page">
+      <header><h2>Алтарь Призыва</h2></header>
+      <div class="gacha-zone">
+        <div class="summon-circle" id="summon-area">
+          <div id="result-card-placeholder">Нажмите "Призвать"</div>
+        </div>
+        <button class="main-btn" style="width: 200px; background: var(--accent-blue); color: black;" onclick="startRoll()">ПРИЗВАТЬ (100💎)</button>
+      </div>
+    </div>
+
+    <div id="inv-page" class="page">
+      <header><h2>Твои Герои</h2></header>
+      <div class="inventory-grid" id="inventory-list"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Раскрыть на весь экран
+    tg.MainButton.setText('В МЕНЮ').hide();
+
+    const UNIVERSES = {
+      "NARUTO": ["Наруто", "Саске", "Итачи", "Мадара"],
+      "JUJUTSU": ["Годзё", "Сукуна", "Итадори"],
+      "OP": ["Луффи", "Зоро", "Шанкс"]
+    };
+
+    let state = JSON.parse(localStorage.getItem('reseit_state')) || {
+      diamonds: 1000,
+      inventory: [],
+      power: 0
+    };
+
+    function updateStats() {
+      document.getElementById('user-diamonds').innerText = state.diamonds;
+      document.getElementById('user-power').innerText = state.power;
+      localStorage.setItem('reseit_state', JSON.stringify(state));
     }
-  };
-  spin();
-}
 
-function render() {
-  const app = document.getElementById("app");
-  const { view, rolling, user } = state;
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      
+      if(pageId !== 'main-page') {
+        tg.BackButton.show();
+      } else {
+        tg.BackButton.hide();
+      }
+      
+      if(pageId === 'inv-page') renderInventory();
+    }
 
-  // ---- MAIN MENU ----
-  if(view==="main") {
-    app.innerHTML = `
-      <h1>Anime Gacha Empire</h1>
-      <div class="stat-bar">
-        <span>💎 <b>${user.diamonds}</b></span>
-        <span>⚡ <b>${user.power}</b></span>
-      </div>
-      <div class="nav-btns">
-        <button onclick="setView('roll')">🎰 Призыв</button>
-        <button onclick="setView('inventory')">📦 Инвентарь</button>
-        <button onclick="setView('pvp')">⚔️ PvP</button>
-      </div>
-      <div style="margin-top:18px;text-align:center;opacity:.83;font-size:1.03em;">
-        <b>Вселенная:</b> <span style="color:#13e7e7">${user.universe}</span>
-      </div>
-    `;
-    return;
-  }
-  // ---- GACHA PULL ----
-  if(view==="roll") {
-    app.innerHTML = `
-      <button onclick="setView('main')" style="float:right;font-size:.95em;padding:7px 16px;margin-top:-29px;margin-right:-3px;">Назад</button>
-      <h1 style="font-size:1.47em;margin-bottom:7px;">Призыв (100 💎)</h1>
-      <div style="margin:12px auto 16px;text-align:center;">
-        <select class="select" id="uni" onchange="state.user.universe=this.value;save();">
-          ${Object.keys(UNIVERSES).map(u=>`
-            <option value="${u}"${u===user.universe?' selected':''}>${u}</option>
-          `).join('')}
-        </select>
-      </div>
-      <div class="gacha-roller" id="gachaRollAnim">
-        ${rolling?`
-          <div class="gacha-card-anim" style="opacity:.75;background:#231546;border:none;font-size:1.46em;">...</div>
-        `:''}
-      </div>
-      <button ${rolling||user.diamonds<100?'disabled style="opacity:.44;"':''} onclick="roll()">
-        ${rolling?'Крутится...':'🎰 Крутить'}
-      </button>
-      <div style="text-align:center;opacity:.71;margin-top:19px;">
-        Алмазы: <b>${user.diamonds}</b>
-      </div>
-    `;
-    return;
-  }
+    tg.BackButton.onClick(() => showPage('main-page'));
 
-  // ---- INVENTORY ----
-  if(view==="inventory") {
-    let inv = user.inventory.slice().reverse();
-    app.innerHTML = `
-      <button onclick="setView('main')" style="float:right;font-size:.95em;padding:7px 16px;margin-top:-29px;margin-right:-3px;">Назад</button>
-      <h1 style="font-size:1.36em;">Инвентарь</h1>
-      <div class="card-list">
-        ${inv.length===0
-          ? `<div style="opacity:.7;margin:36px auto;width:100%;font-size:1.15em;">Пусто</div>`
-          : inv.map(c=>`
-            <div class="gacha-card rarity-color-${c.rarityKey}">
-              <div><b>${c.name}</b></div>
-              <div class="rarity">${RARITIES[c.rarityKey].name}</div>
-              <div class="pow">⚡ ${c.power}</div>
-              <div class="hp">❤️ ${c.hp}</div>
-            </div>
-          `).join('')}
-      </div>
-      <button onclick="setView('main')" style="margin-top:15px;">Назад</button>
-    `;
-    return;
-  }
+    function startRoll() {
+      if (state.diamonds < 100) {
+        tg.showAlert("У вас недостаточно кристаллов!");
+        return;
+      }
 
-  // ---- PVP ----
-  if(view==="pvp") {
-    app.innerHTML = `
-      <button onclick="setView('main')" style="float:right;font-size:.95em;padding:7px 16px;margin-top:-29px;margin-right:-3px;">Назад</button>
-      <h1 style="font-size:1.3em;">PvP</h1>
-      <div style="margin-bottom:8px;">
-        Победы: <span style="color:#71fdff">${user.pvpWins}</span> |
-        Поражения: <span style="color:#ffd6bb">${user.pvpLosses}</span>
-      </div>
-      <button onclick="fight();" style="margin-bottom:19px;">Бой!</button>
-      <div id="fightRes" class="pvp-battle"></div>
-    `;
-    save();
-    return;
-  }
-}
+      tg.HapticFeedback.impactOccurred('heavy');
+      state.diamonds -= 100;
+      updateStats();
 
-function roll() {
-  if(state.rolling) return;
-  if(state.user.diamonds < 100) { alert("Недостаточно алмазов"); return; }
-  state.user.universe = document.getElementById("uni").value;
-  state.user.diamonds -= 100;
-  let card = makeCard();
-  save();
-  animateGacha(card);
-}
+      const area = document.getElementById('result-card-placeholder');
+      area.innerHTML = "🌀"; // Анимация загрузки
+      
+      setTimeout(() => {
+        const rarities = [
+          {n: 'COMMON', c: 70, m: 1},
+          {n: 'RARE', c: 20, m: 2.5},
+          {n: 'LEGEND', c: 8, m: 6},
+          {n: 'DIVINE', c: 2, m: 15}
+        ];
+        
+        const rand = Math.random() * 100;
+        let sum = 0;
+        let rarity = rarities[0];
+        
+        for (let r of rarities) {
+          sum += r.c;
+          if (rand <= sum) { rarity = r; break; }
+        }
 
-function fight() {
-  if(state.user.power<100) { alert("Слишком мало мощи"); return; }
-  let enemyPower = Math.floor(Math.random()*2000+500);
-  let yourPower = state.user.power+Math.floor(Math.random()*300);
-  let win = yourPower>=enemyPower;
-  if(win){
-    state.user.pvpWins++;
-    state.user.diamonds+=50;
-  }
-  else {
-    state.user.pvpLosses++;
-  }
-  render();
-  document.getElementById("fightRes").innerHTML=
-    win?`<span class="pvp-res-win">Победа! (+50💎)</span>`:`<span class="pvp-res-lose">Поражение</span>`;
-  save();
-}
+        const uniKeys = Object.keys(UNIVERSES);
+        const randomUni = uniKeys[Math.floor(Math.random() * uniKeys.length)];
+        const hero = UNIVERSES[randomUni][Math.floor(Math.random() * UNIVERSES[randomUni].length)];
+        
+        const newPower = Math.floor(Math.random() * 100 * rarity.m);
+        
+        const cardObj = { hero, rarity: rarity.n, power: newPower };
+        state.inventory.push(cardObj);
+        state.power += newPower;
+        updateStats();
 
-render();
-</script>
+        area.innerHTML = `
+          <div class="card-display">
+            <div style="font-size: 14px; opacity: 0.7">${randomUni}</div>
+            <div style="font-size: 22px; font-weight: bold; margin: 10px 0">${hero}</div>
+            <div class="rarity-tag ${rarity.n}">${rarity.n}</div>
+            <div style="margin-top: 15px; color: var(--accent-blue)">⚡ ${newPower}</div>
+          </div>
+        `;
+
+        if(rarity.n === 'DIVINE') tg.HapticFeedback.notificationOccurred('success');
+      }, 1000);
+    }
+
+    function renderInventory() {
+      const list = document.getElementById('inventory-list');
+      list.innerHTML = state.inventory.map(c => `
+        <div class="mini-card">
+          <div style="font-weight: bold">${c.hero}</div>
+          <div style="font-size: 8px" class="${c.rarity}">${c.rarity}</div>
+          <div style="color: var(--accent-blue)">⚡${c.power}</div>
+        </div>
+      `).join('');
+    }
+
+    // Инициализация
+    updateStats();
+  </script>
 </body>
 </html>
