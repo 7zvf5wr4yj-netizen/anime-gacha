@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ReseitCards: RNG</title>
+  <title>Reseit RNG: Full Edition</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
@@ -25,7 +25,6 @@
       height: 100vh;
     }
 
-    /* Фоновые частицы (абстрактно) */
     .bg-animation {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: radial-gradient(circle at center, #11112b 0%, #030308 100%);
@@ -37,288 +36,254 @@
       padding: 20px; box-sizing: border-box;
     }
 
-    /* Верхняя панель */
+    /* ВЕРХНЯЯ ПАНЕЛЬ ИЗ ПАЙТОН БОТА */
     .top-nav {
-      display: flex; justify-content: space-between; align-items: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       background: var(--card-bg);
-      padding: 15px; border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
+      padding: 12px; border-radius: 12px;
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      backdrop-filter: blur(15px);
+      font-family: 'Orbitron';
     }
 
-    .currency { display: flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: 18px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+    .stat-box { text-align: center; }
+    .stat-label { font-size: 9px; opacity: 0.6; text-transform: uppercase; }
+    .stat-val { font-size: 14px; font-weight: bold; color: var(--neon-blue); }
 
-    /* Зона ролла (Sol's RNG Style) */
+    /* ЗОНА ПРИЗЫВА (SOLS RNG STYLE) */
     .roll-area {
       flex-grow: 1;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative;
     }
 
-    .chance-counter {
-      font-family: 'Orbitron'; font-size: 14px; color: rgba(255,255,255,0.4);
-      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;
+    #chance-text {
+      font-family: 'Orbitron'; font-size: 11px;
+      letter-spacing: 3px; color: rgba(255,255,255,0.3);
+      margin-bottom: 15px;
     }
 
-    #result-display {
-      text-align: center; transition: 0.3s;
-    }
-
+    .hero-display { text-align: center; min-height: 120px; }
     .hero-name {
-      font-size: 42px; font-weight: 700; text-transform: uppercase;
-      margin: 5px 0; letter-spacing: -1px; line-height: 1;
+      font-size: 52px; font-weight: 800; text-transform: uppercase;
+      margin: 0; line-height: 0.9; letter-spacing: -2px;
+      transition: all 0.2s ease-out;
+    }
+    .rarity-tag {
+      display: inline-block; padding: 2px 10px;
+      border-radius: 4px; font-family: 'Orbitron';
+      font-size: 12px; margin-top: 10px;
     }
 
-    .rarity-label {
-      font-size: 18px; font-family: 'Orbitron'; text-shadow: 0 0 15px currentColor;
+    /* КНОПКИ МЕНЮ */
+    .bottom-controls {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
     }
 
-    /* Анимация тряски экрана */
-    .shake { animation: shakeAnim 0.1s infinite; }
-    @keyframes shakeAnim {
-      0% { transform: translate(1px, 1px) rotate(0deg); }
-      50% { transform: translate(-1px, -2px) rotate(-1deg); }
-      100% { transform: translate(1px, 2px) rotate(1deg); }
+    .main-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white; padding: 15px; border-radius: 8px;
+      font-family: 'Orbitron'; font-size: 12px;
+      transition: 0.2s; cursor: pointer;
     }
-
-    /* Кнопки управления */
-    .bottom-menu {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: auto;
-    }
-
-    .menu-btn {
-      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-      padding: 15px 5px; border-radius: 12px; color: #fff;
-      font-family: 'Orbitron'; font-size: 11px; cursor: pointer;
-      transition: 0.2s; text-align: center;
-    }
-
-    .menu-btn:active { transform: scale(0.9); border-color: var(--neon-blue); }
 
     .roll-btn {
-      grid-column: span 3;
-      background: linear-gradient(90deg, #004e92, #000428);
-      border: 2px solid var(--neon-blue);
-      box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-      font-size: 20px; font-weight: bold; margin-bottom: 10px;
+      grid-column: span 2;
+      background: linear-gradient(180deg, rgba(0, 243, 255, 0.2), transparent);
+      border: 1px solid var(--neon-blue);
+      font-size: 24px; font-weight: 900;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
     }
 
-    /* Эффекты редкостей */
-    .rarity-COMMON { color: #ccc; }
-    .rarity-RARE { color: #00f3ff; }
-    .rarity-EPIC { color: #bc00ff; }
-    .rarity-LEGENDARY { color: #ffcc00; animation: glowGold 1s infinite alternate; }
-    .rarity-MYTHIC { color: #ff004c; animation: shakeAnim 0.2s infinite; }
-    .rarity-DIVINE { background: linear-gradient(90deg, #ff00cc, #3333ff, #13ff62, #ffcc00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 50px; }
+    .roll-btn:active { transform: scale(0.95); box-shadow: 0 0 30px var(--neon-blue); }
 
-    @keyframes glowGold { from { text-shadow: 0 0 10px #ffcc00; } to { text-shadow: 0 0 30px #ffcc00, 0 0 50px #ff8800; } }
-
-    /* Инвентарь Overlay */
-    #inventory-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg); z-index: 100; display: none; padding: 20px; box-sizing: border-box;
-      overflow-y: auto;
+    /* АНИМАЦИИ РЕДКОСТЕЙ */
+    .rarity-COMMON { color: #888; }
+    .rarity-RARE { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+    .rarity-EPIC { color: var(--neon-purple); text-shadow: 0 0 15px var(--neon-purple); }
+    .rarity-LEGENDARY { color: var(--neon-gold); text-shadow: 0 0 25px var(--neon-gold); animation: pulse 1s infinite alternate; }
+    .rarity-MYTHIC { color: var(--neon-red); text-shadow: 0 0 30px var(--neon-red); animation: shake 0.1s infinite; }
+    .rarity-DIVINE {
+      background: linear-gradient(90deg, #ff00cc, #3333ff, #13ff62, #ffcc00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: divineFlow 3s infinite linear;
     }
-  </style>:root {
-  --bg: #030308;
-  --card-bg: rgba(15, 15, 25, 0.8);
-  --neon-blue: #00f3ff;
-  --neon-purple: #bc00ff;
-  --neon-gold: #ffcc00;
-  --neon-red: #ff004c;
-}
 
-body {
-  background-color: var(--bg);
-  color: #fff;
-  font-family: 'Rajdhani', sans-serif;
-  margin: 0; padding: 0;
-  overflow: hidden;
-  height: 100vh;
-}
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+    @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
+    @keyframes divineFlow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-.bg-animation {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at center, #11112b 0%, #030308 100%);
-  z-index: -1;
-}
+    .shake-screen { animation: screenShake 0.2s infinite; }
+    @keyframes screenShake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -3px); } 100% { transform: translate(2px, -1px); } }
+  </style>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  
+  <div class="app-container">
+    <div class="top-nav">
+      <div class="stat-box">
+        <div class="stat-label">Diamonds</div>
+        <div class="stat-val" id="dmd">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Power</div>
+        <div class="stat-val" id="pwr">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Tickets</div>
+        <div class="stat-val" id="tix">0</div>
+      </div>
+    </div>
 
-.app-container {
-  display: flex; flex-direction: column; height: 100vh;
-  padding: 20px; box-sizing: border-box;
-}
+    <div class="roll-area" id="main-screen">
+      <div id="chance-text">READY TO EVOLVE</div>
+      <div class="hero-display">
+        <div id="res-name" class="hero-name">? ? ?</div>
+        <div id="res-tag" class="rarity-tag" style="display:none;"></div>
+      </div>
+    </div>
 
-.top-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--card-bg);
-  padding: 15px; border-radius: 10px;
-  border: 1px solid rgba(0, 243, 255, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.currency { font-family: 'Orbitron'; font-size: 18px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-
-.roll-area {
-  flex-grow: 1; display: flex; flex-direction: column; 
-  align-items: center; justify-content: center; text-align: center;
-}
-
-.chance-counter {
-  font-family: 'Orbitron'; font-size: 12px; color: rgba(255,255,255,0.4);
-  margin-bottom: 10px; letter-spacing: 2px;
-}
-
-.hero-name {
-  font-size: 48px; font-weight: 700; text-transform: uppercase;
-  margin: 5px 0; letter-spacing: -1px;
-}
-
-.rarity-label { font-size: 16px; font-family: 'Orbitron'; letter-spacing: 3px; }
-
-/* КНОПКИ В СТИЛЕ SOLS RNG */
-.bottom-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-
-.menu-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px; border-radius: 5px; color: #fff;
-  font-family: 'Orbitron'; font-size: 10px; cursor: pointer;
-  transition: 0.2s;
-}
-
-.roll-btn {
-  grid-column: span 3;
-  background: linear-gradient(180deg, rgba(0, 243, 255, 0.15), transparent);
-  border: 1px solid var(--neon-blue) !important;
-  font-size: 20px; font-weight: bold; margin-bottom: 10px;
-  animation: pulseBorder 2s infinite;
-}
-
-@keyframes pulseBorder {
-  0%, 100% { box-shadow: 0 0 5px var(--neon-blue); }
-  50% { box-shadow: 0 0 20px var(--neon-blue); }
-}
-
-/* ЭФФЕКТЫ РЕДКОСТЕЙ */
-.rarity-COMMON { color: #888; }
-.rarity-RARE { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-.rarity-EPIC { color: var(--neon-purple); text-shadow: 0 0 15px var(--neon-purple); }
-.rarity-LEGENDARY { color: var(--neon-gold); text-shadow: 0 0 20px var(--neon-gold); animation: shake 0.5s infinite; }
-.rarity-DIVINE { 
-    background: linear-gradient(90deg, #ff00cc, #3333ff, #13ff62, #ffcc00);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    font-size: 55px; animation: divineGlow 2s infinite linear;
-}
-
-@keyframes divineGlow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-@keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(1px, -1px); } 50% { transform: translate(-1px, 1px); } 100% { transform: translate(0); } }
+    <div class="bottom-controls">
+      <button class="main-btn roll-btn" onclick="roll()">ROLL</button>
+      <button class="main-btn" onclick="openShop()">🛍️ SHOP</button>
+      <button class="main-btn" onclick="startBattle()">⚔️ PVP ARENA</button>
+    </div>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-tg.expand();
+    tg.expand();
 
-// БАЗА ИЗ ТВОЕГО ПРОШЛОГО БОТА + ШАНСЫ RNG
-const HEROES = [
-    { name: "Slime", chance: 2, rarity: "COMMON" },
-    { name: "Ichigo", chance: 50, rarity: "RARE" },
-    { name: "Naruto", chance: 250, rarity: "EPIC" },
-    { name: "Gojo", chance: 1000, rarity: "LEGENDARY" },
-    { name: "Saitama", chance: 50000, rarity: "MYTHIC" },
-    { name: "Sung Jin-Woo", chance: 1000000, rarity: "DIVINE" }
-];
+    // ПЕРЕНЕСЕННАЯ БАЗА ГЕРОЕВ
+    const HEROES = [
+      { n: "Slime", c: 2, r: "COMMON" },
+      { n: "Ninja", c: 10, r: "RARE" },
+      { n: "Ichigo", c: 50, r: "RARE" },
+      { n: "Naruto", c: 250, r: "EPIC" },
+      { n: "Gojo", c: 1000, r: "LEGENDARY" },
+      { n: "Sukuna", c: 5000, r: "LEGENDARY" },
+      { n: "Saitama", c: 50000, r: "MYTHIC" },
+      { n: "Madara", c: 250000, r: "MYTHIC" },
+      { n: "Jin-Woo", c: 1000000, r: "DIVINE" }
+    ];
 
-const BOSSES = [
-    { name: "СУКУНА", power: 15000, reward: 500 },
-    { name: "МАДАРА", power: 50000, reward: 2000 }
-];
+    // ПЕРЕНЕСЕННАЯ БАЗА БОССОВ
+    const BOSSES = [
+      { name: "СУКУНА", base: 15000, dmd: 500 },
+      { name: "МАДАРА", base: 50000, dmd: 2000 },
+      { name: "АЙЗЕН", base: 150000, dmd: 10000 }
+    ];
 
-// СОСТОЯНИЕ ИГРЫ
-let state = JSON.parse(localStorage.getItem('reseit_rng_v3')) || {
-    diamonds: 1000,
-    tickets: 5,
-    inventory: [],
-    totalPower: 0
-};
+    let state = JSON.parse(localStorage.getItem('reseit_full_v4')) || {
+      dmd: 1000,
+      pwr: 0,
+      tix: 5,
+      wins: 0
+    };
 
-function save() { localStorage.setItem('reseit_rng_v3', JSON.stringify(state)); }
+    function updateUI() {
+      document.getElementById('dmd').innerText = state.dmd.toLocaleString();
+      document.getElementById('pwr').innerText = state.pwr.toLocaleString();
+      document.getElementById('tix').innerText = state.tix;
+      localStorage.setItem('reseit_full_v4', JSON.stringify(state));
+    }
 
-function updateUI() {
-    document.getElementById('diamonds').innerText = state.diamonds.toLocaleString();
-    document.getElementById('power-val').innerText = state.totalPower.toLocaleString();
-    save();
-}
+    // ЛОГИКА ПРИЗЫВА (RNG)
+    function roll() {
+      if(state.dmd < 10) { tg.showAlert("❌ Недостаточно алмазов!"); return; }
+      state.dmd -= 10;
+      updateUI();
 
-// ГЛАВНАЯ ФУНКЦИЯ ПРИЗЫВА (RNG)
-function performRoll() {
-    if (state.diamonds < 10) { tg.showAlert("Нужно 10 💎"); return; }
-    
-    state.diamonds -= 10;
-    updateUI();
+      const screen = document.getElementById('main-screen');
+      const nameEl = document.getElementById('res-name');
+      const tagEl = document.getElementById('res-tag');
+      const chanceEl = document.getElementById('chance-text');
 
-    const nameEl = document.getElementById('res-name');
-    const rarEl = document.getElementById('res-rarity');
-    const chanceEl = document.getElementById('chance-text');
+      screen.classList.add('shake-screen');
+      nameEl.innerText = "ROLLING...";
+      nameEl.className = "hero-name";
+      tagEl.style.display = "none";
+      tg.HapticFeedback.impactOccurred('medium');
 
-    // Анимация "Интриги"
-    nameEl.innerText = "ROLLING...";
-    nameEl.className = "hero-name";
-    rarEl.innerText = "";
-    tg.HapticFeedback.impactOccurred('light');
-
-    setTimeout(() => {
+      setTimeout(() => {
+        screen.classList.remove('shake-screen');
         let rolled = HEROES[0];
-        for (let h of [...HEROES].reverse()) {
-            if (Math.random() < (1 / h.chance)) {
-                rolled = h;
-                break;
-            }
+        let rand = Math.random();
+        for(let h of [...HEROES].reverse()) {
+          if(Math.random() < (1/h.c)) { rolled = h; break; }
         }
 
-        // Если выпало что-то круче 1:1000
-        if (rolled.chance >= 1000) {
-            tg.HapticFeedback.notificationOccurred('success');
-            document.body.style.backgroundColor = "#1a0000"; // Вспышка
-            setTimeout(() => document.body.style.backgroundColor = "#030308", 200);
-        }
+        nameEl.innerText = rolled.n;
+        nameEl.className = `hero-name rarity-${rolled.r}`;
+        tagEl.innerText = rolled.r;
+        tagEl.className = `rarity-tag rarity-${rolled.r}`;
+        tagEl.style.display = "inline-block";
+        chanceEl.innerText = `LUCK: 1 к ${rolled.c.toLocaleString()}`;
 
-        nameEl.innerText = rolled.name;
-        nameEl.className = `hero-name rarity-${rolled.rarity}`;
-        rarEl.innerText = rolled.rarity;
-        rarEl.className = `rarity-label rarity-${rolled.rarity}`;
-        chanceEl.innerText = `LUCK: 1 к ${rolled.chance.toLocaleString()}`;
-
-        state.inventory.push(rolled);
-        state.totalPower += Math.floor(rolled.chance / 10);
+        if(rolled.c >= 1000) tg.HapticFeedback.notificationOccurred('success');
+        
+        state.pwr += Math.floor(rolled.c / 10);
         updateUI();
-    }, 800);
-}
-
-// ФУНКЦИЯ БОЯ (из твоего Python кода)
-function startPvP() {
-    if (state.tickets < 1) {
-        tg.showConfirm("Нет тикетов! Купить 5 штук за 500 💎?", (ok) => {
-            if(ok && state.diamonds >= 500) {
-                state.diamonds -= 500; state.tickets += 5; updateUI();
-            }
-        });
-        return;
+      }, 700);
     }
 
-    const boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
-    const win = state.totalPower > (boss.power * 0.8);
-    
-    if (win) {
-        state.diamonds += boss.reward;
-        state.tickets -= 1;
-        tg.showAlert(`🏆 ПОБЕДА! Ты одолел ${boss.name} и получил ${boss.reward} 💎`);
-    } else {
-        state.tickets -= 1;
-        tg.showAlert(`💀 ПОРАЖЕНИЕ! ${boss.name} слишком силен.`);
+    // ГЕНЕРАТОР ИМЕН (ИЗ ТВОЕГО ПАЙТОН БОТА)
+    function genName() {
+      const p = ["Pro", "Shadow", "Dark", "Fire", "Alpha"];
+      const s = ["Gamer", "King", "Warrior", "Slayer", "Legend"];
+      return p[Math.floor(Math.random()*p.length)] + "_" + s[Math.floor(Math.random()*s.length)];
     }
+
+    // ПВП И БОССЫ (ИЗ ТВОЕГО ПАЙТОН БОТА)
+    function startBattle() {
+      if(state.tix < 1) { tg.showAlert("🎫 Нужны тикеты! Купи их в магазине."); return; }
+      
+      const isBoss = Math.random() < 0.3;
+      const oppName = isBoss ? BOSSES[Math.floor(Math.random()*BOSSES.length)].name : genName();
+      const oppBasePower = isBoss ? BOSSES[0].base : state.pwr;
+      const oppPower = Math.floor(oppBasePower * (0.8 + Math.random() * 0.4));
+      const tactic = ["агрессивную", "защитную", "сбалансированную"][Math.floor(Math.random()*3)];
+
+      tg.showConfirm(`Вызвать на бой: ${oppName}?\nСила противника: ~${oppPower.toLocaleString()}`, (ok) => {
+        if(!ok) return;
+        state.tix--;
+        
+        if(state.pwr > oppPower * 0.85) {
+          const reward = isBoss ? 1000 : 200;
+          state.dmd += reward;
+          state.wins++;
+          // Шанс вернуть тикет (30%)
+          if(Math.random() < 0.3) {
+             state.tix++;
+             tg.showAlert(`🏆 ПОБЕДА!\nТы одолел ${oppName}!\nНаграда: ${reward} 💎 и возврат тикета!`);
+          } else {
+             tg.showAlert(`🏆 ПОБЕДА!\nТы одолел ${oppName}!\nНаграда: ${reward} 💎\nПротивник использовал ${tactic} тактику.`);
+          }
+        } else {
+          tg.showAlert(`😔 ПОРАЖЕНИЕ\n${oppName} оказался сильнее.\nТвоя сила: ${state.pwr}\nСила врага: ${oppPower}`);
+        }
+        updateUI();
+      });
+    }
+
+    function openShop() {
+      tg.showConfirm("КУПИТЬ ПАКЕТ ТИКЕТОВ?\n5 штук за 500 💎", (ok) => {
+        if(ok) {
+          if(state.dmd >= 500) {
+            state.dmd -= 500; state.tix += 5; updateUI();
+            tg.showAlert("✅ Куплено!");
+          } else {
+            tg.showAlert("❌ Не хватает алмазов!");
+          }
+        }
+      });
+    }
+
     updateUI();
-}
-
-updateUI();
   </script>
 </body>
 </html>
