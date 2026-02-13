@@ -1,163 +1,49 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Anime Gacha Empire</title>
-<style>
-body{margin:0;font-family:Arial;background:#0f172a;color:white}
-button{padding:8px 12px;margin:5px;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer}
-.card{background:#1e293b;padding:10px;margin:5px;border-radius:8px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Gacha Roll</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-<div id="app"></div>
-
-<script>
-const RARITIES={
-COMMON:{name:"Обычная",chance:6000,mult:1},
-RARE:{name:"Редкая",chance:3000,mult:2},
-EPIC:{name:"Эпическая",chance:800,mult:4},
-LEGEND:{name:"Легендарная",chance:180,mult:7},
-DIVINE:{name:"Божественная",chance:20,mult:12}
-};
-
-const UNIVERSES={
-"JUJUTSU KAISEN":["Годзё","Гэто","Итадори","Нобара"],
-"EVANGELION":["Рэй","Аска","Синдзи","Кавору"],
-"NARUTO":["Наруто","Саске","Сакура","Итачи"]
-};
-
-let state=JSON.parse(localStorage.getItem("gachaState"))||{
-view:"main",
-rolling:false,
-user:{
-diamonds:1500,
-power:0,
-universe:"JUJUTSU KAISEN",
-inventory:[],
-pvpWins:0,
-pvpLosses:0
-}
-};
-
-function save(){localStorage.setItem("gachaState",JSON.stringify(state))}
-
-function recalcPower(){
-state.user.power=state.user.inventory.reduce((s,c)=>s+c.power,0);
-}
-
-function rarityRoll(){
-let r=Math.floor(Math.random()*10000);
-let sum=0;
-for(let k in RARITIES){
-sum+=RARITIES[k].chance;
-if(r<sum) return k;
-}
-return "COMMON";
-}
-
-function makeCard(){
-let key=rarityRoll();
-let rarity=RARITIES[key];
-let names=UNIVERSES[state.user.universe];
-let name=names[Math.floor(Math.random()*names.length)];
-return{
-id:"c_"+Date.now()+"_"+Math.random(),
-name,
-rarity:rarity.name,
-rarityKey:key,
-power:Math.floor((Math.random()*80+60)*rarity.mult),
-hp:Math.floor((Math.random()*120+100)*rarity.mult)
-};
-}
-
-function setView(v){state.view=v;render();}
-
-function render(){
-const app=document.getElementById("app");
-if(state.view==="main"){
-app.innerHTML=`
-<h1>Anime Gacha Empire</h1>
-<p>💎 ${state.user.diamonds}</p>
-<p>⚡ ${state.user.power}</p>
-<button onclick="setView('roll')">Призыв</button>
-<button onclick="setView('inventory')">Инвентарь</button>
-<button onclick="setView('pvp')">PvP</button>
-`;
-}
-
-if(state.view==="roll"){
-app.innerHTML=`
-<h2>Призыв (100 💎)</h2>
-<select id="uni">${Object.keys(UNIVERSES).map(u=>`<option ${u===state.user.universe?'selected':''}>${u}</option>`).join('')}</select>
-<br>
-<button onclick="roll()">Крутить</button>
-<button onclick="setView('main')">Назад</button>
-<div id="result"></div>
-`;
-}
-
-if(state.view==="inventory"){
-app.innerHTML=`
-<h2>Инвентарь</h2>
-${state.user.inventory.length===0?"Пусто":state.user.inventory.map(c=>`
-<div class="card">
-<b>${c.name}</b><br>
-${c.rarity}<br>
-⚡ ${c.power} | ❤️ ${c.hp}
-</div>`).join("")}
-<button onclick="setView('main')">Назад</button>
-`;
-}
-
-if(state.view==="pvp"){
-app.innerHTML=`
-<h2>PvP</h2>
-<p>Победы: ${state.user.pvpWins} | Поражения: ${state.user.pvpLosses}</p>
-<button onclick="fight()">Бой</button>
-<button onclick="setView('main')">Назад</button>
-<div id="fightRes"></div>
-`;
-}
-save();
-}
-
-function roll(){
-if(state.user.diamonds<100){alert("Недостаточно алмазов");return;}
-state.user.universe=document.getElementById("uni").value;
-state.user.diamonds-=100;
-
-let card=makeCard();
-state.user.inventory.push(card);
-recalcPower();
-
-document.getElementById("result").innerHTML=
-`Выпала карта: <b>${card.name}</b> (${card.rarity}) ⚡${card.power}`;
-
-save();
-}
-
-function fight(){
-if(state.user.power<100){alert("Слишком мало мощи");return;}
-let enemyPower=Math.floor(Math.random()*2000+500);
-let yourPower=state.user.power+Math.floor(Math.random()*300);
-let win=yourPower>=enemyPower;
-
-if(win){
-state.user.pvpWins++;
-state.user.diamonds+=50;
-}else{
-state.user.pvpLosses++;
-}
-
-document.getElementById("fightRes").innerHTML=
-win?`Победа! (+50💎)`:`Поражение`;
-
-save();
-}
-
-render();
-</script>
+    <h1>Anime Gacha Roll</h1>
+    <button id="rollButton">Roll for Gacha!</button>
+    <p id="result"></p>
+    <script>
+        document.getElementById('rollButton').addEventListener('click', function() {
+            const randomAnime = ['Naruto', 'One Piece', 'Attack on Titan', 'My Hero Academia', 'Demon Slayer'];
+            const result = randomAnime[Math.floor(Math.random() * randomAnime.length)];
+            document.getElementById('result').innerText = `You rolled: ${result}`;
+        });
+    </script>
+    <footer>
+        <p>Current Date and Time (UTC): 2026-02-13 10:04:12</p>
+        <p>Current User's Login: 7zvf5wr4yj-netizen</p>
+    </footer>
 </body>
 </html>
