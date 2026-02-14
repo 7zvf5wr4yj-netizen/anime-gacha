@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime RNG: Cyberpunk Edition</title>
+  <title>Anime RNG: Ultimate Cyberpunk</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
@@ -21,9 +21,10 @@
       font-family: 'Rajdhani', sans-serif;
       margin: 0; padding: 0;
       height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
     }
 
-    /* ФОН КИБЕРПАНК */
+    /* ФОН С СЕТКОЙ */
     .grid-bg {
       position: fixed; width: 200%; height: 200%;
       background-image: linear-gradient(rgba(112, 0, 255, 0.1) 1px, transparent 1px),
@@ -33,41 +34,37 @@
       top: -50%; left: -50%; z-index: -1;
       animation: moveGrid 20s linear infinite;
     }
-
     @keyframes moveGrid { from { transform: perspective(500px) rotateX(60deg) translateY(0); } to { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
 
     .app-container {
       display: flex; flex-direction: column; height: 100vh;
       padding: 15px; box-sizing: border-box;
+      transition: transform 0.1s;
     }
 
-    /* ВЕРХНЯЯ ПАНЕЛЬ */
+    /* ПАНЕЛЬ СТАТИСТИКИ */
     .header {
-      display: flex; justify-content: space-between;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
       background: var(--card-glass);
-      padding: 15px; border-radius: 15px;
+      padding: 12px; border-radius: 15px;
       border: 1px solid var(--cyber-purple);
       box-shadow: 0 0 15px rgba(112, 0, 255, 0.3);
+      backdrop-filter: blur(10px);
     }
-
-    .stat-val { font-family: 'Orbitron'; color: var(--cyber-cyan); text-shadow: 0 0 5px var(--cyber-cyan); }
+    .stat-box { text-align: center; }
+    .stat-label { font-size: 9px; color: var(--cyber-pink); font-family: 'Orbitron'; }
+    .stat-val { font-family: 'Orbitron'; font-size: 14px; color: var(--cyber-cyan); text-shadow: 0 0 5px var(--cyber-cyan); }
 
     /* ЭКРАН ПРИЗЫВА */
     .display-box {
       flex-grow: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center;
+      align-items: center; justify-content: center; text-align: center;
     }
-
-    .anime-title {
-      font-size: 10px; font-family: 'Orbitron';
-      color: var(--cyber-pink); letter-spacing: 5px; margin-bottom: 10px;
-    }
-
+    .anime-title { font-size: 10px; font-family: 'Orbitron'; color: var(--cyber-pink); letter-spacing: 5px; margin-bottom: 10px; }
     .hero-name {
-      font-size: 50px; font-weight: 900; text-transform: uppercase;
-      margin: 0; line-height: 0.8; font-family: 'Orbitron';
-      text-shadow: 0 0 20px rgba(255,255,255,0.2);
+      font-size: 45px; font-weight: 900; text-transform: uppercase;
+      margin: 0; line-height: 0.9; font-family: 'Orbitron';
+      transition: all 0.2s;
     }
 
     /* ХАРАКТЕРИСТИКИ */
@@ -75,64 +72,76 @@
       display: flex; gap: 15px; margin-top: 25px;
       opacity: 0; transform: translateY(20px); transition: 0.5s;
     }
-
-    .stat-item {
-      background: rgba(0,0,0,0.5); padding: 5px 10px;
-      border-left: 2px solid var(--cyber-cyan); font-size: 12px;
-    }
-
-    .stat-label { font-size: 8px; color: #888; display: block; }
+    .stat-item { background: rgba(0,0,0,0.5); padding: 5px 10px; border-left: 2px solid var(--cyber-cyan); font-size: 12px; }
+    .stat-label-inner { font-size: 8px; color: #888; display: block; }
 
     /* КНОПКИ */
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .btn {
-      background: var(--card-glass); border: 1px solid #333;
+      background: var(--card-glass); border: 1px solid rgba(255,255,255,0.1);
       color: #fff; padding: 15px; border-radius: 8px;
       font-family: 'Orbitron'; font-size: 12px; transition: 0.2s;
     }
-
     .roll-btn {
       grid-column: span 2; background: var(--cyber-purple);
-      border: none; font-size: 20px; font-weight: bold;
+      border: none; font-size: 20px; font-weight: bold; margin-bottom: 5px;
       box-shadow: 0 0 20px rgba(112, 0, 255, 0.5);
     }
+    .roll-btn:active { transform: scale(0.95); }
 
-    /* РЕДКОСТИ */
-    .rare-RARE { color: var(--cyber-cyan); text-shadow: 0 0 10px var(--cyber-cyan); }
-    .rare-EPIC { color: #ff00ff; text-shadow: 0 0 15px #ff00ff; }
-    .rare-LEGENDARY { color: #ffcc00; text-shadow: 0 0 20px #ffcc00; animation: glow 1s infinite alternate; }
-    .rare-GODLY { background: linear-gradient(90deg, #fff, #7000ff, #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 60px; }
+    /* ЭФФЕКТЫ РЕДКОСТЕЙ */
+    .rare-RARE { color: #fff; }
+    .rare-EPIC { color: var(--cyber-cyan); text-shadow: 0 0 15px var(--cyber-cyan); }
+    .rare-LEGENDARY { color: #ffcc00; text-shadow: 0 0 20px #ffcc00; }
+    .rare-MYTHIC { color: #ff00ff; text-shadow: 0 0 25px #ff00ff; animation: pulse 0.5s infinite alternate; }
+    .rare-GODLY { 
+      background: linear-gradient(90deg, #fff, #7000ff, #00f3ff, #fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: divineFlow 2s infinite linear; font-size: 55px;
+    }
 
-    @keyframes glow { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.05); } }
+    /* ТРЯСКА И ВСПЫШКА */
+    .extreme-shake { animation: extremeShake 0.1s infinite; }
+    @keyframes extremeShake {
+      0% { transform: translate(2px, 2px); }
+      50% { transform: translate(-2px, -3px); }
+      100% { transform: translate(2px, -1px); }
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+    @keyframes divineFlow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+
+    .flash-rare { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index:100; pointer-events:none; opacity:0; animation: flash 0.5s; }
+    @keyframes flash { 0% { opacity: 0.7; } 100% { opacity: 0; } }
   </style>
 </head>
 <body>
   <div class="grid-bg"></div>
-  <div class="app-container">
+  <div id="flash-layer"></div>
+  
+  <div class="app-container" id="app">
     <div class="header">
-      <div><span style="font-size:10px">DIAMONDS</span><br><span id="dmd" class="stat-val">0</span></div>
-      <div><span style="font-size:10px">POWER</span><br><span id="pwr" class="stat-val">0</span></div>
-      <div><span style="font-size:10px">TICKETS</span><br><span id="tix" class="stat-val">0</span></div>
+      <div class="stat-box"><div class="stat-label">DIAMONDS</div><div id="dmd" class="stat-val">0</div></div>
+      <div class="stat-box"><div class="stat-label">POWER</div><div id="pwr" class="stat-val">0</div></div>
+      <div class="stat-box"><div class="stat-label">TICKETS</div><div id="tix" class="stat-val">0</div></div>
     </div>
 
     <div class="display-box">
-      <div id="anime-source" class="anime-title">SELECTING...</div>
-      <div id="char-name" class="hero-name">READY?</div>
+      <div id="anime-source" class="anime-title">READY TO SUMMON</div>
+      <div id="char-name" class="hero-name">? ? ?</div>
       
       <div id="char-stats" class="stats-container">
-        <div class="stat-item"><span class="stat-label">STR</span><span id="s-str">0</span></div>
-        <div class="stat-item"><span class="stat-label">SPD</span><span id="s-spd">0</span></div>
-        <div class="stat-item"><span class="stat-label">INT</span><span id="s-int">0</span></div>
+        <div class="stat-item"><span class="stat-label-inner">STR</span><span id="s-str">0</span></div>
+        <div class="stat-item"><span class="stat-label-inner">SPD</span><span id="s-spd">0</span></div>
+        <div class="stat-item"><span class="stat-label-inner">INT</span><span id="s-int">0</span></div>
       </div>
       
       <div id="rarity-text" style="margin-top:20px; font-family:'Orbitron'; font-size:14px; letter-spacing:3px"></div>
     </div>
 
     <div class="btn-group">
-      <button class="btn roll-btn" onclick="roll()">SUMMON</button>
-      <button class="btn" onclick="tg.showAlert('Инвентарь в разработке')">COLLECTION</button>
-      <button class="btn" onclick="tg.showAlert('Битва скоро!')">BATTLE</button>
+      <button class="btn roll-btn" onclick="roll()">SUMMON (10 💎)</button>
+      <button class="btn" onclick="tg.showAlert('Топ игроков: скоро!')">RANKING</button>
+      <button class="btn" onclick="startBattle()">⚔️ BATTLE</button>
     </div>
   </div>
 
@@ -145,21 +154,21 @@
       { n: "Куросаки Ичиго", s: "Bleach", c: 50, r: "EPIC", str: 120, spd: 150, int: 70 },
       { n: "Синдзи Икари", s: "Evangelion", c: 200, r: "EPIC", str: 200, spd: 80, int: 60 },
       { n: "Зараки Кенпачи", s: "Bleach", c: 1000, r: "LEGENDARY", str: 500, spd: 300, int: 20 },
-      { n: "Айзен Соуске", s: "Bleach", c: 10000, r: "LEGENDARY", str: 450, spd: 480, int: 999 },
+      { n: "Айзен Соуске", s: "Bleach", c: 10000, r: "MYTHIC", str: 450, spd: 480, int: 999 },
       { n: "Ева-01 (Berzerk)", s: "Evangelion", c: 100000, r: "GODLY", str: 999, spd: 999, int: 0 }
     ];
 
-    let state = JSON.parse(localStorage.getItem('anime_rng_v5')) || { dmd: 1000, pwr: 0, tix: 3 };
+    let state = JSON.parse(localStorage.getItem('anime_rng_final')) || { dmd: 1000, pwr: 0, tix: 5 };
 
     function updateUI() {
-      document.getElementById('dmd').innerText = state.dmd;
-      document.getElementById('pwr').innerText = state.pwr;
+      document.getElementById('dmd').innerText = state.dmd.toLocaleString();
+      document.getElementById('pwr').innerText = state.pwr.toLocaleString();
       document.getElementById('tix').innerText = state.tix;
-      localStorage.setItem('anime_rng_v5', JSON.stringify(state));
+      localStorage.setItem('anime_rng_final', JSON.stringify(state));
     }
 
-    function roll() {
-      if(state.dmd < 10) { tg.showAlert("Мало алмазов!"); return; }
+    async function roll() {
+      if(state.dmd < 10) { tg.showAlert("❌ Недостаточно алмазов!"); return; }
       state.dmd -= 10;
       updateUI();
 
@@ -167,36 +176,80 @@
       const sourceEl = document.getElementById('anime-source');
       const statsEl = document.getElementById('char-stats');
       const rarEl = document.getElementById('rarity-text');
+      const app = document.getElementById('app');
 
+      // Сброс визуала
       statsEl.style.opacity = "0";
-      nameEl.innerText = "WAIT...";
-      tg.HapticFeedback.impactOccurred('medium');
+      rarEl.innerText = "";
+      sourceEl.innerText = "SEARCHING...";
 
-      setTimeout(() => {
-        let rolled = ROSTER[0];
-        for(let h of [...ROSTER].reverse()) {
-          if(Math.random() < (1/h.c)) { rolled = h; break; }
+      // Логика шанса
+      let rolled = ROSTER[0];
+      for(let h of [...ROSTER].reverse()) {
+        if(Math.random() < (1/h.c)) { rolled = h; break; }
+      }
+
+      // АНИМАЦИЯ СЧЕТЧИКА (Sol's RNG Style)
+      let steps = 20;
+      for (let i = 0; i < steps; i++) {
+        let fakeChance = Math.floor(Math.pow(1.8, i + 1) * (rolled.c / Math.pow(1.8, steps)));
+        if (i === steps - 1) fakeChance = rolled.c;
+
+        nameEl.innerText = `1 : ${fakeChance.toLocaleString()}`;
+        nameEl.style.color = i % 2 === 0 ? "var(--cyber-cyan)" : "var(--cyber-pink)";
+        
+        if (i > 10) app.classList.add('extreme-shake');
+        tg.HapticFeedback.impactOccurred('light');
+        await new Promise(r => setTimeout(r, 40 + i * 2));
+      }
+
+      // Финал
+      app.classList.remove('extreme-shake');
+      if (rolled.c >= 1000) {
+        document.getElementById('flash-layer').className = "flash-rare";
+        setTimeout(() => document.getElementById('flash-layer').className = "", 500);
+        tg.HapticFeedback.notificationOccurred('success');
+      }
+
+      sourceEl.innerText = rolled.s;
+      nameEl.innerText = rolled.n;
+      nameEl.className = `hero-name rare-${rolled.r}`;
+      nameEl.style.color = ""; // Сброс цвета после анимации
+      
+      rarEl.innerText = rolled.r + ` (1:${rolled.c.toLocaleString()})`;
+      rarEl.className = `rare-${rolled.r}`;
+
+      document.getElementById('s-str').innerText = rolled.str;
+      document.getElementById('s-spd').innerText = rolled.spd;
+      document.getElementById('s-int').innerText = rolled.int;
+      
+      statsEl.style.opacity = "1";
+      statsEl.style.transform = "translateY(0)";
+      
+      state.pwr += Math.floor(rolled.c / 5);
+      updateUI();
+    }
+
+    function startBattle() {
+      if(state.tix < 1) { 
+        tg.showConfirm("Тикеты кончились! Купить 5 шт. за 500 💎?", (ok) => {
+          if(ok && state.dmd >= 500) { state.dmd -= 500; state.tix += 5; updateUI(); }
+        });
+        return; 
+      }
+      
+      const oppPower = Math.floor(state.pwr * (0.7 + Math.random() * 0.6)) + 100;
+      tg.showConfirm(`Вызвать противника (Сила: ${oppPower.toLocaleString()})?`, (ok) => {
+        if(!ok) return;
+        state.tix--;
+        if(state.pwr > oppPower) {
+          state.dmd += 200;
+          tg.showAlert("🏆 ПОБЕДА! +200 💎");
+        } else {
+          tg.showAlert("😔 ПОРАЖЕНИЕ! Противник оказался сильнее.");
         }
-
-        sourceEl.innerText = rolled.s;
-        nameEl.innerText = rolled.n;
-        nameEl.className = `hero-name rare-${rolled.r}`;
-        
-        rarEl.innerText = rolled.r + ` (1:${rolled.c})`;
-        rarEl.className = `rare-${rolled.r}`;
-
-        document.getElementById('s-str').innerText = rolled.str;
-        document.getElementById('s-spd').innerText = rolled.spd;
-        document.getElementById('s-int').innerText = rolled.int;
-        
-        statsEl.style.opacity = "1";
-        statsEl.style.transform = "translateY(0)";
-        
-        state.pwr += Math.floor(rolled.c / 5);
         updateUI();
-
-        if(rolled.c >= 1000) tg.HapticFeedback.notificationOccurred('success');
-      }, 600);
+      });
     }
 
     updateUI();
