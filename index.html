@@ -3,255 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime RNG: Ultimate Cyberpunk</title>
+  <title>Anime RNG: Evolution</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a12;
+      --bg: #05050a;
       --cyber-purple: #7000ff;
       --cyber-pink: #ff007a;
       --cyber-cyan: #00f3ff;
-      --card-glass: rgba(20, 20, 35, 0.9);
+      --glass: rgba(20, 20, 35, 0.95);
     }
 
     body {
-      background: radial-gradient(circle at center, #1a0b2e 0%, #05050a 100%);
-      color: #fff;
-      font-family: 'Rajdhani', sans-serif;
-      margin: 0; padding: 0;
-      height: 100vh; overflow: hidden;
-      display: flex; flex-direction: column;
+      background: #000; color: #fff; font-family: 'Rajdhani', sans-serif;
+      margin: 0; padding: 0; height: 100vh; overflow: hidden;
     }
 
-    /* ФОН С СЕТКОЙ */
+    /* ФОНОВАЯ СЕТКА */
     .grid-bg {
       position: fixed; width: 200%; height: 200%;
       background-image: linear-gradient(rgba(112, 0, 255, 0.1) 1px, transparent 1px),
                         linear-gradient(90deg, rgba(112, 0, 255, 0.1) 1px, transparent 1px);
-      background-size: 40px 40px;
-      transform: perspective(500px) rotateX(60deg);
-      top: -50%; left: -50%; z-index: -1;
-      animation: moveGrid 20s linear infinite;
+      background-size: 50px 50px; transform: perspective(500px) rotateX(60deg);
+      top: -50%; left: -50%; z-index: -1; animation: move 20s linear infinite;
     }
-    @keyframes moveGrid { from { transform: perspective(500px) rotateX(60deg) translateY(0); } to { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
+    @keyframes move { from { transform: perspective(500px) rotateX(60deg) translateY(0); } to { transform: perspective(500px) rotateX(60deg) translateY(50px); } }
 
-    .app-container {
-      display: flex; flex-direction: column; height: 100vh;
-      padding: 15px; box-sizing: border-box;
-      transition: transform 0.1s;
+    /* ЭКРАНЫ */
+    .screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg); display: none; flex-direction: column;
+      padding: 20px; box-sizing: border-box; overflow-y: auto; z-index: 10;
     }
+    .screen.active { display: flex; }
+    .screen-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { background: var(--cyber-pink); border: none; color: #fff; padding: 5px 15px; border-radius: 5px; font-family: 'Orbitron'; cursor: pointer; }
 
-    /* ПАНЕЛЬ СТАТИСТИКИ */
-    .header {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      background: var(--card-glass);
-      padding: 12px; border-radius: 15px;
-      border: 1px solid var(--cyber-purple);
-      box-shadow: 0 0 15px rgba(112, 0, 255, 0.3);
-      backdrop-filter: blur(10px);
+    /* ГЛАВНОЕ МЕНЮ */
+    .main-menu {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;
     }
-    .stat-box { text-align: center; }
-    .stat-label { font-size: 9px; color: var(--cyber-pink); font-family: 'Orbitron'; }
-    .stat-val { font-family: 'Orbitron'; font-size: 14px; color: var(--cyber-cyan); text-shadow: 0 0 5px var(--cyber-cyan); }
+    .menu-card {
+      background: var(--glass); border: 1px solid var(--cyber-purple);
+      padding: 20px; border-radius: 15px; text-align: center;
+      box-shadow: 0 0 10px rgba(112, 0, 255, 0.2);
+      cursor: pointer; transition: 0.3s;
+    }
+    .menu-card:active { transform: scale(0.95); background: var(--cyber-purple); }
+    .menu-card i { display: block; font-size: 24px; margin-bottom: 10px; }
+    .menu-card span { font-family: 'Orbitron'; font-size: 12px; letter-spacing: 1px; }
+    .full-width { grid-column: span 2; background: linear-gradient(90deg, var(--cyber-purple), var(--cyber-pink)); }
 
-    /* ЭКРАН ПРИЗЫВА */
-    .display-box {
-      flex-grow: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
-    }
-    .anime-title { font-size: 10px; font-family: 'Orbitron'; color: var(--cyber-pink); letter-spacing: 5px; margin-bottom: 10px; }
-    .hero-name {
-      font-size: 45px; font-weight: 900; text-transform: uppercase;
-      margin: 0; line-height: 0.9; font-family: 'Orbitron';
-      transition: all 0.2s;
-    }
+    /* ПРОФИЛЬ */
+    .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyber-cyan); margin-bottom: 10px; }
+    .input-field { background: #111; border: 1px solid #333; color: #fff; padding: 10px; width: 100%; margin: 5px 0; border-radius: 5px; }
 
-    /* ХАРАКТЕРИСТИКИ */
-    .stats-container {
-      display: flex; gap: 15px; margin-top: 25px;
-      opacity: 0; transform: translateY(20px); transition: 0.5s;
-    }
-    .stat-item { background: rgba(0,0,0,0.5); padding: 5px 10px; border-left: 2px solid var(--cyber-cyan); font-size: 12px; }
-    .stat-label-inner { font-size: 8px; color: #888; display: block; }
+    /* ИНВЕНТАРЬ */
+    .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .inv-item { background: #111; padding: 10px; border-radius: 5px; font-size: 10px; text-align: center; border: 1px solid #333; }
 
-    /* КНОПКИ */
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .btn {
-      background: var(--card-glass); border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; padding: 15px; border-radius: 8px;
-      font-family: 'Orbitron'; font-size: 12px; transition: 0.2s;
-    }
-    .roll-btn {
-      grid-column: span 2; background: var(--cyber-purple);
-      border: none; font-size: 20px; font-weight: bold; margin-bottom: 5px;
-      box-shadow: 0 0 20px rgba(112, 0, 255, 0.5);
-    }
-    .roll-btn:active { transform: scale(0.95); }
+    /* ЦВЕТА РЕДКОСТЕЙ */
+    .rare-COMMON { color: #888; }
+    .rare-EPIC { color: var(--cyber-cyan); text-shadow: 0 0 5px var(--cyber-cyan); }
+    .rare-GODLY { color: var(--cyber-pink); text-shadow: 0 0 10px var(--cyber-pink); animation: pulse 1s infinite alternate; }
+    @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
 
-    /* ЭФФЕКТЫ РЕДКОСТЕЙ */
-    .rare-RARE { color: #fff; }
-    .rare-EPIC { color: var(--cyber-cyan); text-shadow: 0 0 15px var(--cyber-cyan); }
-    .rare-LEGENDARY { color: #ffcc00; text-shadow: 0 0 20px #ffcc00; }
-    .rare-MYTHIC { color: #ff00ff; text-shadow: 0 0 25px #ff00ff; animation: pulse 0.5s infinite alternate; }
-    .rare-GODLY { 
-      background: linear-gradient(90deg, #fff, #7000ff, #00f3ff, #fff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      animation: divineFlow 2s infinite linear; font-size: 55px;
-    }
-
-    /* ТРЯСКА И ВСПЫШКА */
-    .extreme-shake { animation: extremeShake 0.1s infinite; }
-    @keyframes extremeShake {
-      0% { transform: translate(2px, 2px); }
-      50% { transform: translate(-2px, -3px); }
-      100% { transform: translate(2px, -1px); }
-    }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
-    @keyframes divineFlow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-
-    .flash-rare { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index:100; pointer-events:none; opacity:0; animation: flash 0.5s; }
-    @keyframes flash { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+    /* ПРИЗЫВ (ТВОЙ СТИЛЬ) */
+    .roll-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .hero-name { font-family: 'Orbitron'; font-size: 32px; text-align: center; margin: 20px 0; }
+    .shake { animation: shake 0.1s infinite; }
+    @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, -2px); } }
   </style>
 </head>
 <body>
   <div class="grid-bg"></div>
-  <div id="flash-layer"></div>
-  
-  <div class="app-container" id="app">
-    <div class="header">
-      <div class="stat-box"><div class="stat-label">DIAMONDS</div><div id="dmd" class="stat-val">0</div></div>
-      <div class="stat-box"><div class="stat-label">POWER</div><div id="pwr" class="stat-val">0</div></div>
-      <div class="stat-box"><div class="stat-label">TICKETS</div><div id="tix" class="stat-val">0</div></div>
+
+  <div id="screen-main" class="screen active" style="background: transparent;">
+    <div class="screen-header">
+      <div style="font-family: 'Orbitron';">💎 <span id="m-dmd">0</span></div>
+      <div style="font-family: 'Orbitron';">⚡ <span id="m-pwr">0</span></div>
+    </div>
+    
+    <div style="text-align: center; margin: 20px 0;">
+      <h1 style="font-family: 'Orbitron'; margin: 0; color: var(--cyber-cyan);">ANIME RNG</h1>
+      <p style="font-size: 12px; color: #888;">EVOLUTION v3.0</p>
     </div>
 
-    <div class="display-box">
-      <div id="anime-source" class="anime-title">READY TO SUMMON</div>
-      <div id="char-name" class="hero-name">? ? ?</div>
-      
-      <div id="char-stats" class="stats-container">
-        <div class="stat-item"><span class="stat-label-inner">STR</span><span id="s-str">0</span></div>
-        <div class="stat-item"><span class="stat-label-inner">SPD</span><span id="s-spd">0</span></div>
-        <div class="stat-item"><span class="stat-label-inner">INT</span><span id="s-int">0</span></div>
-      </div>
-      
-      <div id="rarity-text" style="margin-top:20px; font-family:'Orbitron'; font-size:14px; letter-spacing:3px"></div>
+    <div class="main-menu">
+      <div class="menu-card full-width" onclick="showScreen('screen-roll')"><span>🔮 ПРИЗЫВ</span></div>
+      <div class="menu-card" onclick="showScreen('screen-inv')"><span>🎒 ИНВЕНТАРЬ</span></div>
+      <div class="menu-card" onclick="showScreen('screen-pvp')"><span>⚔️ ПВП АРЕНА</span></div>
+      <div class="menu-card" onclick="showScreen('screen-profile')"><span>👤 ПРОФИЛЬ</span></div>
+      <div class="menu-card" onclick="showScreen('screen-fusion')"><span>🧬 СЛИЯНИЕ</span></div>
+      <div class="menu-card" onclick="showScreen('screen-clan')"><span>🛡️ КЛАН</span></div>
+      <div class="menu-card" onclick="showScreen('screen-shop')"><span>🛍️ МАГАЗИН</span></div>
+      <div class="menu-card" onclick="tg.showAlert('Рейтинг обновится через 2 часа')"><span>🏆 РЕЙТИНГ</span></div>
     </div>
+  </div>
 
-    <div class="btn-group">
-      <button class="btn roll-btn" onclick="roll()">SUMMON (10 💎)</button>
-      <button class="btn" onclick="tg.showAlert('Топ игроков: скоро!')">RANKING</button>
-      <button class="btn" onclick="startBattle()">⚔️ BATTLE</button>
+  <div id="screen-roll" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-main')">← МЕНЮ</button>
+      <div id="roll-diamonds">1000</div>
     </div>
+    <div class="roll-display">
+      <div id="roll-status" style="color: var(--cyber-pink); font-family: 'Orbitron';">READY</div>
+      <div id="roll-name" class="hero-name">? ? ?</div>
+      <button class="menu-card full-width" style="border:none;" onclick="startRoll()">SUMMON (10 💎)</button>
+    </div>
+  </div>
+
+  <div id="screen-profile" class="screen">
+    <div class="screen-header"><button class="back-btn" onclick="showScreen('screen-main')">←</button></div>
+    <center>
+      <div class="profile-img"></div>
+      <h2 id="p-name" style="font-family:'Orbitron';">Player</h2>
+      <p id="p-rank" style="color: var(--cyber-cyan);">Новичок</p>
+    </center>
+    <div style="margin-top: 20px;">
+      <label>НИКНЕЙМ</label>
+      <input id="edit-name" class="input-field" placeholder="Введите имя..." onchange="updateProfile()">
+      <label>О СЕБЕ</label>
+      <input id="edit-bio" class="input-field" placeholder="Описание..." onchange="updateProfile()">
+    </div>
+    <div style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+      <p>Всего призывов: <span id="stat-rolls">0</span></p>
+      <p>Побед в ПВП: <span id="stat-wins">0</span></p>
+    </div>
+  </div>
+
+  <div id="screen-inv" class="screen">
+    <div class="screen-header"><button class="back-btn" onclick="showScreen('screen-main')">←</button> ИНВЕНТАРЬ</div>
+    <div class="inv-grid" id="inv-container"></div>
+  </div>
+
+  <div id="screen-shop" class="screen">
+    <div class="screen-header"><button class="back-btn" onclick="showScreen('screen-main')">←</button> МАГАЗИН</div>
+    <div class="menu-card full-width" onclick="buyTix()">5 ТИКЕТОВ ПВП = 500 💎</div>
+    <div class="menu-card full-width" onclick="tg.showAlert('Донат временно отключен')">КУПИТЬ 10,000 💎</div>
+  </div>
+
+  <div id="screen-fusion" class="screen">
+    <div class="screen-header"><button class="back-btn" onclick="showScreen('screen-main')">←</button> СЛИЯНИЕ</div>
+    <p style="font-size: 12px; color: #888;">Сжечь всех COMMON персонажей, чтобы получить +5% к общей силе?</p>
+    <button class="menu-card full-width" onclick="doFusion()">ВЫПОЛНИТЬ СЛИЯНИЕ</button>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // БАЗА
     const ROSTER = [
-      { n: "Юкихира Сома", s: "Food Wars", c: 5, r: "RARE", str: 15, spd: 40, int: 85 },
-      { n: "Куросаки Ичиго", s: "Bleach", c: 50, r: "EPIC", str: 120, spd: 150, int: 70 },
-      { n: "Синдзи Икари", s: "Evangelion", c: 200, r: "EPIC", str: 200, spd: 80, int: 60 },
-      { n: "Зараки Кенпачи", s: "Bleach", c: 1000, r: "LEGENDARY", str: 500, spd: 300, int: 20 },
-      { n: "Айзен Соуске", s: "Bleach", c: 10000, r: "MYTHIC", str: 450, spd: 480, int: 999 },
-      { n: "Ева-01 (Berzerk)", s: "Evangelion", c: 100000, r: "GODLY", str: 999, spd: 999, int: 0 }
+      { n: "Юкихира Сома", s: "Food Wars", c: 5, r: "COMMON", p: 50 },
+      { n: "Куросаки Ичиго", s: "Bleach", c: 50, r: "EPIC", p: 500 },
+      { n: "Синдзи Икари", s: "Evangelion", c: 200, r: "EPIC", p: 1200 },
+      { n: "Зараки Кенпачи", s: "Bleach", c: 1000, r: "EPIC", p: 4000 },
+      { n: "Ева-01", s: "Evangelion", c: 50000, r: "GODLY", p: 25000 }
     ];
 
-    let state = JSON.parse(localStorage.getItem('anime_rng_final')) || { dmd: 1000, pwr: 0, tix: 5 };
+    let state = JSON.parse(localStorage.getItem('anime_v7')) || {
+      dmd: 1000, pwr: 0, tix: 5, inv: [], name: "User", bio: "Bio", rolls: 0, wins: 0
+    };
+
+    function save() { localStorage.setItem('anime_v7', JSON.stringify(state)); updateUI(); }
 
     function updateUI() {
-      document.getElementById('dmd').innerText = state.dmd.toLocaleString();
-      document.getElementById('pwr').innerText = state.pwr.toLocaleString();
-      document.getElementById('tix').innerText = state.tix;
-      localStorage.setItem('anime_rng_final', JSON.stringify(state));
+      document.getElementById('m-dmd').innerText = state.dmd.toLocaleString();
+      document.getElementById('m-pwr').innerText = state.pwr.toLocaleString();
+      document.getElementById('roll-diamonds').innerText = state.dmd;
+      document.getElementById('p-name').innerText = state.name;
+      document.getElementById('stat-rolls').innerText = state.rolls;
+      document.getElementById('stat-wins').innerText = state.wins;
+      
+      // Звания
+      let rank = "Новичок";
+      if(state.pwr > 5000) rank = "Опытный";
+      if(state.pwr > 50000) rank = "Мастер";
+      if(state.pwr > 500000) rank = "ЛЕГЕНДА";
+      document.getElementById('p-rank').innerText = rank;
+
+      // Отрисовка инвентаря
+      const invCont = document.getElementById('inv-container');
+      invCont.innerHTML = '';
+      state.inv.slice(-12).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'inv-item';
+        div.innerHTML = `<span class="rare-${item.r}">${item.n}</span><br>+${item.p}`;
+        invCont.appendChild(div);
+      });
     }
 
-    async function roll() {
-      if(state.dmd < 10) { tg.showAlert("❌ Недостаточно алмазов!"); return; }
-      state.dmd -= 10;
-      updateUI();
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
 
-      const nameEl = document.getElementById('char-name');
-      const sourceEl = document.getElementById('anime-source');
-      const statsEl = document.getElementById('char-stats');
-      const rarEl = document.getElementById('rarity-text');
-      const app = document.getElementById('app');
-
-      // Сброс визуала
-      statsEl.style.opacity = "0";
-      rarEl.innerText = "";
-      sourceEl.innerText = "SEARCHING...";
-
-      // Логика шанса
+    async function startRoll() {
+      if(state.dmd < 10) return tg.showAlert("Нужно 10 💎");
+      state.dmd -= 10; state.rolls++;
+      
+      const nameEl = document.getElementById('roll-name');
+      const statusEl = document.getElementById('roll-status');
+      
+      document.getElementById('screen-roll').classList.add('shake');
+      
       let rolled = ROSTER[0];
+      for(let i=0; i<15; i++) {
+        nameEl.innerText = "1 : " + Math.floor(Math.random()*1000);
+        await new Promise(r => setTimeout(r, 70));
+        tg.HapticFeedback.impactOccurred('light');
+      }
+
       for(let h of [...ROSTER].reverse()) {
         if(Math.random() < (1/h.c)) { rolled = h; break; }
       }
 
-      // АНИМАЦИЯ СЧЕТЧИКА (Sol's RNG Style)
-      let steps = 20;
-      for (let i = 0; i < steps; i++) {
-        let fakeChance = Math.floor(Math.pow(1.8, i + 1) * (rolled.c / Math.pow(1.8, steps)));
-        if (i === steps - 1) fakeChance = rolled.c;
-
-        nameEl.innerText = `1 : ${fakeChance.toLocaleString()}`;
-        nameEl.style.color = i % 2 === 0 ? "var(--cyber-cyan)" : "var(--cyber-pink)";
-        
-        if (i > 10) app.classList.add('extreme-shake');
-        tg.HapticFeedback.impactOccurred('light');
-        await new Promise(r => setTimeout(r, 40 + i * 2));
-      }
-
-      // Финал
-      app.classList.remove('extreme-shake');
-      if (rolled.c >= 1000) {
-        document.getElementById('flash-layer').className = "flash-rare";
-        setTimeout(() => document.getElementById('flash-layer').className = "", 500);
-        tg.HapticFeedback.notificationOccurred('success');
-      }
-
-      sourceEl.innerText = rolled.s;
+      document.getElementById('screen-roll').classList.remove('shake');
       nameEl.innerText = rolled.n;
       nameEl.className = `hero-name rare-${rolled.r}`;
-      nameEl.style.color = ""; // Сброс цвета после анимации
+      statusEl.innerText = `LUCK 1:${rolled.c}`;
       
-      rarEl.innerText = rolled.r + ` (1:${rolled.c.toLocaleString()})`;
-      rarEl.className = `rare-${rolled.r}`;
-
-      document.getElementById('s-str').innerText = rolled.str;
-      document.getElementById('s-spd').innerText = rolled.spd;
-      document.getElementById('s-int').innerText = rolled.int;
-      
-      statsEl.style.opacity = "1";
-      statsEl.style.transform = "translateY(0)";
-      
-      state.pwr += Math.floor(rolled.c / 5);
-      updateUI();
+      state.inv.push(rolled);
+      state.pwr += rolled.p;
+      save();
     }
 
-    function startBattle() {
-      if(state.tix < 1) { 
-        tg.showConfirm("Тикеты кончились! Купить 5 шт. за 500 💎?", (ok) => {
-          if(ok && state.dmd >= 500) { state.dmd -= 500; state.tix += 5; updateUI(); }
-        });
-        return; 
+    function updateProfile() {
+      state.name = document.getElementById('edit-name').value || state.name;
+      state.bio = document.getElementById('edit-bio').value || state.bio;
+      save();
+    }
+
+    function buyTix() {
+      if(state.dmd >= 500) { state.dmd -= 500; state.tix += 5; save(); tg.showAlert("Куплено!"); }
+    }
+
+    function doFusion() {
+      const startCount = state.inv.length;
+      state.inv = state.inv.filter(h => h.r !== 'COMMON');
+      if(state.inv.length < startCount) {
+        state.pwr = Math.floor(state.pwr * 1.05);
+        save();
+        tg.showAlert("Слияние завершено! Сила +5%");
+      } else {
+        tg.showAlert("Нет обычных персонажей для сжигания.");
       }
-      
-      const oppPower = Math.floor(state.pwr * (0.7 + Math.random() * 0.6)) + 100;
-      tg.showConfirm(`Вызвать противника (Сила: ${oppPower.toLocaleString()})?`, (ok) => {
-        if(!ok) return;
-        state.tix--;
-        if(state.pwr > oppPower) {
-          state.dmd += 200;
-          tg.showAlert("🏆 ПОБЕДА! +200 💎");
-        } else {
-          tg.showAlert("😔 ПОРАЖЕНИЕ! Противник оказался сильнее.");
-        }
-        updateUI();
-      });
     }
 
+    // Инициализация
+    document.getElementById('edit-name').value = state.name;
+    document.getElementById('edit-bio').value = state.bio;
     updateUI();
   </script>
 </body>
