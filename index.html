@@ -3,143 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CR: Analytics Elite</title>
+  <title>CR: Ultimate Deck Analyst</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #080a0f;
-      --accent: #00d2ff;
-      --pink: #ff00ff;
-      --glass: rgba(255, 255, 255, 0.05);
-      --border: rgba(255, 255, 255, 0.1);
+      --bg: #030712;
+      --accent: #00f2ff;
+      --pink: #ff00c8;
+      --glass: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.08);
     }
 
     body {
       background: var(--bg);
-      background-image: radial-gradient(circle at 50% 0%, #1c2d4d 0%, #080a0f 100%);
-      color: #fff; font-family: 'Montserrat', sans-serif;
+      color: #fff; font-family: 'Outfit', sans-serif;
       margin: 0; padding: 0; height: 100vh; overflow: hidden;
     }
 
-    /* АНИМАЦИИ */
-    @keyframes cardJump {
-      0% { transform: scale(0); opacity: 0; }
-      60% { transform: scale(1.15); }
-      100% { transform: scale(1); opacity: 1; }
+    /* Анимированный фон */
+    .bg-animation {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #030712 100%);
+      z-index: -1;
     }
 
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
+    .bg-glow {
+      position: absolute; width: 300px; height: 300px;
+      background: var(--accent); filter: blur(150px);
+      opacity: 0.1; top: -100px; left: 50%; transform: translateX(-50%);
     }
 
-    @keyframes shine {
-      from { left: -100%; }
-      to { left: 100%; }
-    }
+    .app { display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; position: relative; }
 
-    .app { display: flex; flex-direction: column; height: 100%; max-width: 450px; margin: 0 auto; }
-
-    .header { padding: 25px 20px; text-align: center; }
+    .header { padding: 30px 20px 20px; text-align: center; }
     .header h1 { 
-      margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 2px;
-      background: linear-gradient(90deg, var(--accent), #fff);
+      margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;
+      background: linear-gradient(to right, var(--accent), #fff);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
     }
+    .header p { font-size: 10px; opacity: 0.4; letter-spacing: 3px; margin-top: 5px; }
 
     /* СЕТКА СЛОТОВ */
-    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 20px; }
+    .deck-grid { display: grid; grid-template-columns: repeat(4, 2fr); gap: 12px; padding: 10px 20px; }
 
     .slot {
       aspect-ratio: 1/1.25; background: var(--glass);
-      border: 1px solid var(--border); border-radius: 12px;
+      border: 1px solid var(--border); border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
-      position: relative; transition: 0.3s; overflow: visible;
+      position: relative; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
     }
-    .slot.active-glow { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+    .slot:active { transform: scale(0.95); }
+
+    .slot.filled { border-color: rgba(0, 242, 255, 0.4); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
 
     .slot img { width: 90%; height: 90%; object-fit: contain; display: none; }
-    .slot.filled img { display: block; animation: cardJump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     
-    .plus-icon { font-size: 24px; color: var(--border); transition: 0.3s; }
+    /* Анимация влета карты */
+    .slot.filled img { 
+      display: block; 
+      animation: cardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+    }
+
+    @keyframes cardPop {
+      0% { transform: scale(0.4) translateY(20px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .plus-icon { font-size: 24px; color: rgba(255,255,255,0.1); }
     .slot.filled .plus-icon { display: none; }
 
     .elixir-tag {
-      position: absolute; top: -5px; right: -5px;
-      background: linear-gradient(135deg, #ff00ff, #aa00ff);
-      color: white; border-radius: 50%; width: 20px; height: 20px;
-      font-size: 10px; font-weight: 900; display: none;
+      position: absolute; top: -6px; right: -6px;
+      background: linear-gradient(135deg, var(--pink), #8000ff);
+      color: white; border-radius: 8px; width: 24px; height: 24px;
+      font-size: 11px; font-weight: 900; display: none;
       align-items: center; justify-content: center; border: 2px solid var(--bg); z-index: 5;
     }
     .slot.filled .elixir-tag { display: flex; }
 
     /* МОДАЛКА ВЫБОРА */
-    .picker-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px); z-index: 100; display: none;
-      flex-direction: column;
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(20px); z-index: 1000; display: none;
+      flex-direction: column; animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+      margin-top: auto; background: #0f172a; border-top: 2px solid var(--accent);
+      border-radius: 30px 30px 0 0; height: 85vh; overflow-y: auto;
+      display: flex; flex-direction: column;
     }
 
-    .picker-sheet {
-      margin-top: auto; background: #12161f; border-top: 2px solid var(--accent);
-      border-radius: 25px 25px 0 0; height: 80vh; overflow-y: auto;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    .search-box {
-      position: sticky; top: 0; background: #12161f; padding: 20px;
-      z-index: 10; border-bottom: 1px solid var(--border);
-    }
+    .modal-header { padding: 25px; position: sticky; top: 0; background: #0f172a; z-index: 10; }
     #search {
       width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      padding: 12px; border-radius: 10px; color: #fff; outline: none; box-sizing: border-box;
+      padding: 15px; border-radius: 14px; color: #fff; outline: none; font-size: 16px;
+      box-sizing: border-box; font-family: 'Outfit';
     }
 
     .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; }
-    
-    .card-btn { transition: 0.2s; position: relative; }
-    .card-btn img { width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-    .card-btn:active { transform: scale(0.9); }
-    .card-btn.in-deck { opacity: 0.15; pointer-events: none; filter: grayscale(1); }
+    .card-item { transition: 0.2s; position: relative; text-align: center; }
+    .card-item img { width: 100%; border-radius: 12px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
+    .card-item.used { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
+    .card-item:active { transform: scale(0.9); }
 
-    /* КНОПКА АНАЛИЗА */
+    /* КНОПКА */
     .footer { padding: 30px 20px; }
-    .btn-main {
-      width: 100%; padding: 20px; border-radius: 15px; border: none;
-      background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+    .btn-action {
+      width: 100%; padding: 22px; border-radius: 20px; border: none;
+      background: linear-gradient(90deg, #3b82f6, var(--accent));
       color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;
-      cursor: pointer; box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
+      cursor: pointer; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+      transition: 0.3s;
     }
+    .btn-action:active { transform: scale(0.98); }
 
     /* РЕЗУЛЬТАТ */
-    .result-screen {
-      position: fixed; inset: 0; background: var(--bg); z-index: 200;
+    .result-overlay {
+      position: fixed; inset: 0; background: var(--bg); z-index: 2000;
       display: none; flex-direction: column; align-items: center; justify-content: center;
-      padding: 25px; animation: slideUp 0.4s ease;
+      padding: 20px; text-align: center;
     }
-    .result-box {
+    .result-card {
       background: var(--glass); border: 1px solid var(--border);
-      padding: 40px 20px; border-radius: 25px; width: 100%; box-sizing: border-box;
+      padding: 40px 25px; border-radius: 32px; width: 100%; box-sizing: border-box;
+      backdrop-filter: blur(10px);
     }
   </style>
 </head>
 <body>
 
+<div class="bg-animation"><div class="bg-glow"></div></div>
+
 <div class="app">
   <div class="header">
-    <h1>STRATEGY ANALYST</h1>
-    <p style="font-size: 9px; opacity: 0.4; letter-spacing: 2px;">NEURAL DECK EVALUATION</p>
+    <h1>CR DECK ANALYST</h1>
+    <p>POWERED BY AI • PRECISE EVALUATION</p>
   </div>
 
-  <div class="deck-grid">
+  <div class="deck-grid" id="main-grid">
     <script>
       for(let i=0; i<8; i++) {
         document.write(`
-          <div class="slot" id="s${i}" onclick="openPicker(${i})">
+          <div class="slot" id="slot-${i}" onclick="openPicker(${i})">
             <div class="plus-icon">＋</div>
-            <div class="elixir-tag" id="e${i}"></div>
-            <img id="img${i}" src="">
+            <div class="elixir-tag" id="elixir-${i}">0</div>
+            <img id="img-${i}" src="">
           </div>
         `);
       }
@@ -147,47 +160,56 @@
   </div>
 
   <div class="footer">
-    <button class="btn-main" onclick="analyze()">Проверить билд</button>
+    <button class="btn-action" onclick="runAnalysis()">Проанализировать билд</button>
   </div>
 </div>
 
-<div id="picker-modal" class="picker-overlay" onclick="closePicker()">
-  <div class="picker-sheet" onclick="event.stopPropagation()">
-    <div class="search-box">
-      <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
+<div id="modal" class="modal" onclick="closePicker()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <input type="text" id="search" placeholder="Поиск карты..." oninput="renderPicker()">
     </div>
-    <div class="cards-grid" id="cards-list"></div>
+    <div class="cards-grid" id="picker-grid"></div>
   </div>
 </div>
 
-<div id="result-screen" class="result-screen">
-  <div id="mini-deck" style="display:grid; grid-template-columns: repeat(8, 1fr); gap:5px; width:100%; margin-bottom:20px;"></div>
-  <div class="result-box">
-    <div id="v-emoji" style="font-size: 60px; margin-bottom: 15px;">🧐</div>
-    <h2 id="v-title" style="color:var(--accent); margin: 0 0 15px 0; font-size: 24px;"></h2>
-    <p id="v-text" style="line-height: 1.6; opacity: 0.8; font-size: 14px;"></p>
+<div id="result-screen" class="result-overlay">
+  <div style="display:grid; grid-template-columns: repeat(8, 1fr); gap:4px; width:100%; margin-bottom:25px;" id="res-mini"></div>
+  <div class="result-card">
+    <div id="res-emoji" style="font-size: 70px; margin-bottom: 20px;"></div>
+    <h2 id="res-title" style="margin: 0; color: var(--accent); font-size: 28px;"></h2>
+    <p id="res-text" style="font-size: 16px; line-height: 1.6; opacity: 0.8; margin-top: 20px;"></p>
   </div>
-  <button class="btn-main" style="margin-top: 30px; background: rgba(255,255,255,0.05);" onclick="location.reload()">Изменить билд</button>
+  <button class="btn-action" style="margin-top: 40px; background: rgba(255,255,255,0.05);" onclick="location.reload()">Вернуться</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// БАЗА КАРТ
+// ПОЛНАЯ БАЗА КАРТ
 const CARDS = [
-  {id:"mega-knight",n:"Мегарыцарь",e:7,t:"mid"},{id:"hog-rider",n:"Хог",e:4,t:"win"},
-  {id:"pekka",n:"ПЕККА",e:7,t:"heavy"},{id:"the-log",n:"Бревно",e:2,t:"spell"},
-  {id:"fireball",n:"Файербол",e:4,t:"spell"},{id:"elite-barbarians",n:"Элитки",e:6,t:"mid"},
-  {id:"balloon",n:"Шар",e:5,t:"win"},{id:"goblin-barrel",n:"Бочка",e:3,t:"win"},
-  {id:"electro-giant",n:"Электрогигант",e:7,t:"mid"},{id:"x-bow",n:"Арбалет",e:6,t:"cancer"},
-  {id:"graveyard",n:"Кладбище",e:5,t:"win"},{id:"golem",n:"Голем",e:8,t:"heavy"},
-  {id:"miner",n:"Шахтер",e:3,t:"win"},{id:"poison",n:"Яд",e:4,t:"spell"},
-  {id:"skeletons",n:"Скелеты",e:1,t:"cycle"},{id:"ice-spirit",n:"Ледяной дух",e:1,t:"cycle"},
-  {id:"valkyrie",n:"Валькирия",e:4,t:"def"},{id:"executioner",n:"Палач",e:5,t:"def"},
-  {id:"zap",n:"Разряд",e:2,t:"spell"},{id:"tornado",n:"Торнадо",e:3,t:"spell"},
-  {id:"arrows",n:"Стрелы",e:3,t:"spell"},{id:"princess",n:"Принцесса",e:3,t:"win"},
-  {id:"baby-dragon",n:"Дракончик",e:4,t:"sup"},{id:"witch",n:"Ведьма",e:5,t:"mid"}
+  // WIN CONDITIONS
+  {id:"hog-rider",n:"Хог",e:4,t:"win"},{id:"balloon",n:"Шар",e:5,t:"win"},{id:"goblin-barrel",n:"Бочка",e:3,t:"win"},
+  {id:"giant",n:"Гигант",e:5,t:"win"},{id:"royal-giant",n:"Королевский гигант",e:6,t:"win"},{id:"golem",n:"Голем",e:8,t:"win"},
+  {id:"battle-ram",n:"Таран",e:4,t:"win"},{id:"ram-rider",n:"Всадница",e:5,t:"win"},{id:"graveyard",n:"Кладбище",e:5,t:"win"},
+  {id:"sparky",n:"Спарки",e:6,t:"win"},{id:"electro-giant",n:"Электрогигант",e:7,t:"win"},{id:"x-bow",n:"Арбалет",e:6,t:"cancer"},
+  {id:"mortar",n:"Мортира",e:4,t:"win"},{id:"miner",n:"Шахтер",e:3,t:"win"},
+  // SPELLS
+  {id:"the-log",n:"Бревно",e:2,t:"spell"},{id:"arrows",n:"Стрелы",e:3,t:"spell"},{id:"fireball",n:"Файербол",e:4,t:"spell"},
+  {id:"poison",n:"Яд",e:4,t:"spell"},{id:"zap",n:"Разряд",e:2,t:"spell"},{id:"rocket",n:"Ракета",e:6,t:"spell"},
+  {id:"tornado",n:"Торнадо",e:3,t:"spell"},{id:"earthquake",n:"Землетрясение",e:3,t:"spell"},{id:"freeze",n:"Заморозка",e:4,t:"spell"},
+  // SUPPORT / DEFENSE
+  {id:"mega-knight",n:"Мегарыцарь",e:7,t:"mid"},{id:"pekka",n:"ПЕККА",e:7,t:"heavy"},{id:"mini-pekka",n:"Мини ПЕККА",e:4,t:"def"},
+  {id:"valkyrie",n:"Валькирия",e:4,t:"def"},{id:"knight",n:"Рыцарь",e:3,t:"def"},{id:"wizard",n:"Маг",e:5,t:"mid"},
+  {id:"executioner",n:"Палач",e:5,t:"def"},{id:"baby-dragon",n:"Дракончик",e:4,t:"sup"},{id:"musketeer",n:"Мушкетер",e:4,t:"sup"},
+  {id:"electro-wizard",n:"Электромаг",e:4,t:"sup"},{id:"ice-wizard",n:"Ледяной маг",e:3,t:"sup"},{id:"witch",n:"Ведьма",e:5,t:"mid"},
+  {id:"night-witch",n:"Ночная ведьма",e:4,t:"sup"},{id:"bandit",n:"Бандитка",e:3,t:"sup"},{id:"ghost",n:"Призрак",e:3,t:"sup"},
+  {id:"inferno-dragon",n:"Пламенный",e:4,t:"def"},{id:"inferno-tower",n:"Инферно",e:5,t:"def"},{id:"cannon",n:"Пушка",e:3,t:"def"},
+  {id:"tesla",n:"Тесла",e:4,t:"def"},{id:"elite-barbarians",n:"Элитки",e:6,t:"mid"},{id:"skeletons",n:"Скелеты",e:1,t:"cycle"},
+  {id:"ice-spirit",n:"Ледяной дух",e:1,t:"cycle"},{id:"electro-spirit",n:"Электродух",e:1,t:"cycle"},
+  // CHAMPIONS
+  {id:"little-prince",n:"Маленький принц",e:3,t:"sup"},{id:"monk",n:"Монах",e:5,t:"sup"},{id:"archer-queen",n:"Королева",e:5,t:"sup"}
 ];
 
 let deck = Array(8).fill(null);
@@ -195,22 +217,20 @@ let activeSlot = null;
 
 function openPicker(idx) {
   activeSlot = idx;
-  document.getElementById('picker-modal').style.display = 'flex';
-  renderCards();
+  document.getElementById('modal').style.display = 'flex';
+  renderPicker();
   tg.HapticFeedback.impactOccurred('medium');
 }
 
-function closePicker() {
-  document.getElementById('picker-modal').style.display = 'none';
-}
+function closePicker() { document.getElementById('modal').style.display = 'none'; }
 
-function renderCards() {
-  const query = document.getElementById('search').value.toLowerCase();
-  const list = document.getElementById('cards-list');
-  const usedIds = deck.filter(c => c).map(c => c.id);
+function renderPicker() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const grid = document.getElementById('picker-grid');
+  const used = deck.filter(c => c).map(c => c.id);
 
-  list.innerHTML = CARDS.filter(c => c.n.toLowerCase().includes(query)).map(c => `
-    <div class="card-btn ${usedIds.includes(c.id) ? 'in-deck' : ''}" onclick="selectCard('${c.id}')">
+  grid.innerHTML = CARDS.filter(c => c.n.toLowerCase().includes(q)).map(c => `
+    <div class="card-item ${used.includes(c.id) ? 'used' : ''}" onclick="selectCard('${c.id}')">
       <img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png">
     </div>
   `).join('');
@@ -220,50 +240,53 @@ function selectCard(id) {
   const card = CARDS.find(c => c.id === id);
   deck[activeSlot] = card;
 
-  const slot = document.getElementById(`s${activeSlot}`);
-  const img = document.getElementById(`img${activeSlot}`);
-  const elixir = document.getElementById(`e${activeSlot}`);
+  const slot = document.getElementById(`slot-${activeSlot}`);
+  const img = document.getElementById(`img-${activeSlot}`);
+  const elix = document.getElementById(`elixir-${activeSlot}`);
 
-  // СБРОС АНИМАЦИИ (чтобы сработала заново)
+  // Перезапуск анимации
   slot.classList.remove('filled');
-  void slot.offsetWidth; // Магия для рестарта анимации
+  void slot.offsetWidth; 
   
   img.src = `https://royaleapi.github.io/cr-api-assets/cards/${id}.png`;
-  elixir.innerText = card.e;
+  elix.innerText = card.e;
   slot.classList.add('filled');
 
   closePicker();
   tg.HapticFeedback.notificationOccurred('success');
 }
 
-function analyze() {
-  if (deck.includes(null)) return tg.showAlert("Заполни все 8 слотов, стратег!");
+function runAnalysis() {
+  if (deck.includes(null)) return tg.showAlert("Выбери все 8 карт, чтобы я мог их прожарить!");
 
   const avg = (deck.reduce((a,b) => a+b.e, 0) / 8).toFixed(1);
   const midCount = deck.filter(c => c.t === 'mid' || c.e >= 7).length;
   const spellCount = deck.filter(c => c.t === 'spell').length;
   const winCount = deck.filter(c => c.t === 'win' || c.t === 'cancer').length;
 
-  let emoji, title, text;
+  let e, t, d;
 
-  if (midCount >= 3 && avg > 4.2) {
-    emoji = "🤡"; title = "МАСТЕР МИДЛАДДЕРА";
-    text = `Средний эликсир ${avg}. Набрал тяжелого мусора и доволен? Твой максимум — это спамить смайликами, когда Мегарыцарь прыгает на мушкетера. Учи матчасть.`;
-  } else if (spellCount >= 2 && winCount >= 1 && avg >= 3.0 && avg <= 3.9) {
-    emoji = "🔥"; title = "ЭЛИТНЫЙ ПИК";
-    text = `Слушай, а это реально грамотно. Баланс есть, вин-кон на месте. Признавайся, украл деку у топа или сам додумался? Если сам — снимаю шляпу, иди ломай кабины.`;
+  if (midCount >= 3 && avg > 4.4) {
+    e = "🤡"; t = "МИДЛАДДЕР ХЕРО";
+    d = `Слушай, твоя дека за ${avg} эликсира — это просто памятник спаму Мегарыцарем. Ты либо очень веришь в чудо, либо просто любишь страдать. Но в ТикТоке оценят!`;
+  } else if (spellCount >= 2 && winCount >= 1 && avg >= 3.1 && avg <= 3.9) {
+    e = "🔥"; t = "СОЛИДНЫЙ ВЫБОР";
+    d = `Блин, даже придраться сложно. Всё по уму: есть танк, есть спеллы, средний чек ${avg}. Скорее всего, ты просто скопировал деку у топа, но вкус у тебя определенно есть!`;
   } else if (winCount === 0) {
-    emoji = "🧱"; title = "ГЛУХАЯ ОБОРОНА";
-    text = "В деке нет вин-кона. Ты как башни ломать собрался? Молитвами? Добавь Хога или Шара, не позорься в ТикТоке.";
+    e = "🤨"; t = "БЕЗДАРНЫЙ ДЕФ";
+    d = "У тебя 8 карт, но ни одна не умеет бить по башням. Ты планируешь выиграть по времени или ждешь, пока противник умрет от старости? Добавь Хога или Шара!";
+  } else if (avg < 2.9) {
+    e = "⚡"; t = "ПОТНЫЙ ЦИКЛЕР";
+    d = `Средний эликсир ${avg}. Ты из тех, кто закидывает противника скелетами до инфаркта. Мощно, потно, задротски. Уважение за скилл, если он есть.`;
   } else {
-    emoji = "🤔"; title = "СОЙДЕТ ДЛЯ СЕЛЬСКОЙ МЕСТНОСТИ";
-    text = `Билд (Avg: ${avg}) играбельный, но без искры. Вроде всё есть, а вроде и скучно. Попробуй добавить что-то более дерзкое.`;
+    e = "🧐"; t = "НИ РЫБА НИ МЯСО";
+    d = `Билд играбельный, но скучный как уроки истории. Вроде всё есть, но изюминки не хватает. Играй, но на топ-1 мира не рассчитывай.`;
   }
 
-  document.getElementById('v-emoji').innerText = emoji;
-  document.getElementById('v-title').innerText = title;
-  document.getElementById('v-text').innerText = text;
-  document.getElementById('mini-deck').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%; border-radius:2px;">`).join('');
+  document.getElementById('res-emoji').innerText = e;
+  document.getElementById('res-title').innerText = t;
+  document.getElementById('res-text').innerText = d;
+  document.getElementById('res-mini').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%; border-radius:4px;">`).join('');
   
   document.getElementById('result-screen').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('warning');
