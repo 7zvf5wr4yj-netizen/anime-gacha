@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CR: Deck Roast</title>
+  <title>CR: Deck Roast PRO</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -11,201 +11,210 @@
       --cr-blue: #1e90ff;
       --cr-dark: #0f172a;
       --cr-gold: #fbbf24;
-      --danger: #ef4444;
+      --pink: #f0f;
     }
 
     body {
-      background: var(--cr-dark);
-      color: #fff; font-family: 'Rubik', sans-serif;
+      background: #0f172a; color: #fff; font-family: 'Rubik', sans-serif;
       margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh;
     }
 
-    .header {
-      padding: 20px; text-align: center; background: rgba(255,255,255,0.05);
-      border-bottom: 2px solid #334155;
-    }
+    .header { padding: 15px; text-align: center; border-bottom: 2px solid #334155; background: #1e293b; }
 
     /* СЕТКА КОЛОДЫ */
     .deck-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 10px; padding: 20px;
+      display: grid; grid-template-columns: repeat(4, 2fr);
+      gap: 8px; padding: 10px; background: rgba(0,0,0,0.2);
     }
 
     .slot {
-      aspect-ratio: 3/4; background: #1e293b; border-radius: 12px;
-      border: 2px solid #334155; display: flex; align-items: center;
-      justify-content: center; font-size: 10px; text-align: center;
-      cursor: pointer; position: relative; transition: 0.2s;
+      aspect-ratio: 1/1.2; background: #1e293b; border-radius: 8px;
+      border: 2px solid #334155; cursor: pointer; position: relative;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
 
-    .slot.active { border-color: var(--cr-blue); box-shadow: 0 0 15px var(--cr-blue); }
-    .slot.filled { border-style: solid; background: #334155; }
+    .slot img { width: 100%; height: 100%; object-fit: contain; }
 
     .elixir-badge {
-      position: absolute; top: -5px; right: -5px;
-      background: #f0f; color: white; border-radius: 50%;
-      width: 20px; height: 20px; font-size: 11px;
-      display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
+      position: absolute; top: 2px; right: 2px; background: var(--pink);
+      color: white; border-radius: 50%; width: 18px; height: 18px;
+      font-size: 10px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid #fff; z-index: 5; font-weight: 900;
     }
 
-    /* СЕЛЕКТОР КАРТ */
-    .card-picker {
-      position: fixed; bottom: 0; left: 0; width: 100%; height: 50%;
-      background: #1e293b; border-top: 4px solid var(--cr-blue);
-      display: none; grid-template-columns: repeat(3, 1fr);
-      overflow-y: auto; padding: 10px; gap: 10px; z-index: 100;
+    /* ПАНЕЛЬ ВЫБОРА */
+    .picker-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      z-index: 1000; display: none; flex-direction: column;
     }
 
-    .picker-card {
-      background: #0f172a; padding: 10px; border-radius: 8px;
-      font-size: 12px; text-align: center; border: 1px solid #334155;
+    .picker-content {
+      margin-top: auto; background: #1e293b; height: 70%;
+      border-top: 5px solid var(--cr-blue); border-radius: 20px 20px 0 0;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; padding: 15px; overflow-y: auto;
     }
 
-    /* КНОПКА АНАЛИЗА */
-    .footer { padding: 20px; }
+    .card-item { text-align: center; font-size: 10px; }
+    .card-item img { width: 100%; border-radius: 5px; }
+
+    /* КНОПКА */
+    .btn-container { padding: 15px; }
     .rate-btn {
-      width: 100%; background: var(--cr-blue); border: none;
-      padding: 20px; border-radius: 15px; color: white;
-      font-size: 18px; font-weight: 900; letter-spacing: 1px;
-      box-shadow: 0 4px 0 #0052a3;
+      width: 100%; background: #22c55e; border: none; padding: 18px;
+      border-radius: 12px; color: #fff; font-size: 18px; font-weight: 900;
+      box-shadow: 0 5px 0 #166534; cursor: pointer;
     }
-    .rate-btn:active { transform: translateY(4px); box-shadow: none; }
 
-    /* ВЕРДИКТ */
+    /* РЕЗУЛЬТАТ ДЛЯ ТИКТОКА */
     .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-      display: none; flex-direction: column; align-items: center;
-      justify-content: center; padding: 30px; z-index: 200; text-align: center;
+      position: fixed; inset: 0; background: #000;
+      z-index: 2000; display: none; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px;
     }
-    .verdict-title { font-size: 40px; color: var(--cr-gold); margin: 0; }
-    .verdict-text { font-size: 18px; margin: 20px 0; line-height: 1.4; }
+
+    .result-deck-mini {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+      width: 100%; max-width: 300px; margin-bottom: 20px;
+    }
+
+    .mini-card { aspect-ratio: 1/1.2; background: #222; border-radius: 4px; border: 1px solid #444; overflow: hidden; }
+    .mini-card img { width: 100%; height: 100%; object-fit: cover; }
+
+    .verdict-box {
+      background: #1e293b; padding: 20px; border-radius: 15px;
+      border: 2px solid var(--cr-gold); text-align: center; width: 90%;
+    }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1 style="margin:0; font-size: 24px;">DECK CHECKER</h1>
-  <p style="opacity:0.6; font-size:12px; margin:5px 0 0;">Выбери 8 карт, чтобы узнать правду</p>
+  <h2 style="margin:0; font-size: 18px; color: var(--cr-gold);">CLASH DECK ROASTER</h2>
 </div>
 
-<div class="deck-grid" id="deck-view">
-  <div class="slot" onclick="openPicker(0)" id="s0">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(1)" id="s1">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(2)" id="s2">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(3)" id="s3">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(4)" id="s4">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(5)" id="s5">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(6)" id="s6">ВЫБРАТЬ</div>
-  <div class="slot" onclick="openPicker(7)" id="s7">ВЫБРАТЬ</div>
+<div class="deck-grid" id="main-deck">
+  <div class="slot" onclick="openPicker(0)" id="s0">➕</div>
+  <div class="slot" onclick="openPicker(1)" id="s1">➕</div>
+  <div class="slot" onclick="openPicker(2)" id="s2">➕</div>
+  <div class="slot" onclick="openPicker(3)" id="s3">➕</div>
+  <div class="slot" onclick="openPicker(4)" id="s4">➕</div>
+  <div class="slot" onclick="openPicker(5)" id="s5">➕</div>
+  <div class="slot" onclick="openPicker(6)" id="s6">➕</div>
+  <div class="slot" onclick="openPicker(7)" id="s7">➕</div>
 </div>
 
-<div class="footer">
-  <button class="rate-btn" onclick="analyze()">ОЦЕНИТЬ ГОВНОПИК</button>
+<div class="btn-container">
+  <button class="rate-btn" onclick="analyze()">ОЦЕНИТЬ МОЙ ПИК</button>
 </div>
 
-<div class="card-picker" id="picker">
+<div id="picker" class="picker-overlay" onclick="this.style.display='none'">
+  <div class="picker-content" onclick="event.stopPropagation()" id="picker-list"></div>
+</div>
+
+<div id="result-screen" class="overlay">
+  <div style="font-size: 12px; opacity: 0.6; margin-bottom: 10px;">МОЯ КОЛОДА:</div>
+  <div class="result-deck-mini" id="res-mini-grid"></div>
+  
+  <div class="verdict-box">
+    <div id="res-emoji" style="font-size: 50px;">🤡</div>
+    <h1 id="res-title" style="margin: 10px 0; color: var(--cr-gold);">КЛОУН</h1>
+    <p id="res-text" style="font-size: 14px; line-height: 1.5;"></p>
   </div>
-
-<div class="overlay" id="result-overlay">
-  <div style="font-size: 60px;">🤡</div>
-  <h2 class="verdict-title" id="v-title">КЛОУН</h2>
-  <p class="verdict-text" id="v-text"></p>
-  <button class="rate-btn" style="background:#444; box-shadow: 0 4px 0 #222;" onclick="closeResult()">ПОНЯЛ, Я ТУПОЙ</button>
+  
+  <button class="rate-btn" style="background:#444; box-shadow:0 4px 0 #222; margin-top:20px;" onclick="location.reload()">ЗАНОВО</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// База данных карт (названия соответствуют официальным ID для картинок)
 const CARDS = [
-  { n: "Мегарыцарь", e: 7, t: "midladder" },
-  { n: "Всадник на кабане", e: 4, t: "wincon" },
-  { n: "П.Е.К.К.А", e: 7, t: "heavy" },
-  { n: "Бревно", e: 2, t: "spell" },
-  { n: "Огненный шар", e: 4, t: "spell" },
-  { n: "Яд", e: 4, t: "spell" },
-  { n: "Элитные варвары", e: 6, t: "cancer" },
-  { n: "Гоблинская бочка", e: 3, t: "bait" },
-  { n: "Адская башня", e: 5, t: "def" },
-  { n: "Армия скелетов", e: 3, t: "swarm" },
-  { n: "Ледяной дух", e: 1, t: "cycle" },
-  { n: "Голем", e: 8, t: "heavy" },
-  { n: "Шар", e: 5, t: "wincon" },
-  { n: "Маленький дракон", e: 4, t: "support" }
+  {id: "mega-knight", n: "Мегарыцарь", e: 7, t: "mid"},
+  {id: "hog-rider", n: "Хог", e: 4, t: "win"},
+  {id: "pekka", n: "ПЕККА", e: 7, t: "heavy"},
+  {id: "the-log", n: "Бревно", e: 2, t: "spell"},
+  {id: "fireball", n: "Файербол", e: 4, t: "spell"},
+  {id: "electro-giant", n: "Электрогигант", e: 7, t: "mid"},
+  {id: "elite-barbarians", n: "Элитки", e: 6, t: "mid"},
+  {id: "balloon", n: "Шар", e: 5, t: "win"},
+  {id: "goblin-barrel", n: "Бочка", e: 3, t: "win"},
+  {id: "inferno-tower", n: "Инферно", e: 5, t: "def"},
+  {id: "skeletons", n: "Скелеты", e: 1, t: "cycle"},
+  {id: "ice-spirit", n: "Дух", e: 1, t: "cycle"},
+  {id: "x-bow", n: "Арбалет", e: 6, t: "cancer"},
+  {id: "mortar", n: "Мортира", e: 4, t: "win"},
+  {id: "graveyard", n: "Кладбище", e: 5, t: "win"},
+  {id: "electro-wizard", n: "Электромаг", e: 4, t: "sup"}
 ];
 
-let selectedIndex = null;
-let deck = [null, null, null, null, null, null, null, null];
+let deck = Array(8).fill(null);
+let curIdx = 0;
 
-function openPicker(index) {
-  selectedIndex = index;
-  const picker = document.getElementById('picker');
-  picker.style.display = 'grid';
-  picker.innerHTML = CARDS.map(c => `
-    <div class="picker-card" onclick="selectCard('${c.n}')">
-      ${c.n} <br> <span style="color:#f0f">${c.e}💧</span>
+function openPicker(idx) {
+  curIdx = idx;
+  const list = document.getElementById('picker-list');
+  list.innerHTML = CARDS.map(c => `
+    <div class="card-item" onclick="select('${c.id}')">
+      <img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png">
+      <div>${c.n}</div>
     </div>
   `).join('');
+  document.getElementById('picker').style.display = 'flex';
 }
 
-function selectCard(cardName) {
-  const card = CARDS.find(c => c.n === cardName);
-  deck[selectedIndex] = card;
-  
-  const slot = document.getElementById(`s${selectedIndex}`);
-  slot.innerHTML = `<div class="elixir-badge">${card.e}</div>${card.n}`;
-  slot.classList.add('filled');
-  
+function select(id) {
+  const card = CARDS.find(c => c.id === id);
+  deck[curIdx] = card;
+  const slot = document.getElementById(`s${curIdx}`);
+  slot.innerHTML = `<div class="elixir-badge">${card.e}</div><img src="https://royaleapi.github.io/cr-api-assets/cards/${id}.png">`;
   document.getElementById('picker').style.display = 'none';
   tg.HapticFeedback.selectionChanged();
 }
 
 function analyze() {
-  if (deck.includes(null)) {
-    tg.showAlert("Ты чё, дебил? Заполни все 8 слотов!");
-    return;
-  }
+  if (deck.includes(null)) return tg.showAlert("Сначала выбери все 8 карт, тормоз!");
 
-  let avg = deck.reduce((a, b) => a + b.e, 0) / 8;
-  let hasMidladder = deck.some(c => c.t === 'midladder' || c.t === 'cancer');
-  let hasSpell = deck.some(c => c.t === 'spell');
-  let wincons = deck.filter(c => c.t === 'wincon' || c.t === 'bait').length;
+  const avg = (deck.reduce((a,b) => a+b.e, 0) / 8).toFixed(1);
+  const hasMid = deck.some(c => c.t === 'mid' || c.e > 6);
+  const hasWin = deck.some(c => c.t === 'win' || c.t === 'cancer');
+  const hasSpell = deck.some(c => c.t === 'spell');
 
-  let title = "";
-  let text = "";
-  let emoji = "🤔";
+  let title, text, emoji;
 
-  if (hasMidladder && avg > 4.2) {
+  if (hasMid && avg > 4.4) {
     emoji = "🤡";
-    title = "КУСОК МИДЛАДДЕРА";
-    text = `Твой средний эликсир ${avg.toFixed(1)}, ты там чё, под спайсом? Мегарыцарь и Элитки — это не колода, это диагноз. Тебя любой 2.6 разнесет в сухую, пока ты будешь копить на свой мусор.`;
-  } else if (wincons === 0) {
+    title = "МИДЛАДДЕР-ТВАРЬ";
+    text = `Средний эликсир ${avg}. Ты серьезно? Накидал элиток, мегарыцаря и думаешь, что ты умный? Твой предел - 5000 кубков и пожизненный хейт. Удаляй игру.`;
+  } else if (!hasWin) {
     emoji = "🤨";
-    title = "А ЧЕМ ТЫКАТЬ?";
-    text = "У тебя в колоде 0 условий победы. Ты как собрался башни сносить? Молитвами? Добавь Хога или Бочку, не позорься.";
+    title = "БЕЗДАРЬ";
+    text = "В твоей колоде нет ни одной карты, которая бьет башни. Ты собрался выигрывать на ничью? Добавь Хога или Шара, не позорься в ТикТоке.";
   } else if (!hasSpell) {
     emoji = "🤬";
-    title = "ГДЕ СПЕЛЛЫ?";
-    text = "Ни одного заклинания. Желаю удачи смотреть, как тебя дефает одна пачка скелетов, а ты ничего не можешь сделать. Бревно хотя бы возьми, овощ.";
+    title = "ЖЕРТВА АБОРТА";
+    text = "Ни одного спелла. Ты просто корм для Гоблинской бочки. Даже Бревно не взял, гений стратегии.";
   } else if (avg < 3.0) {
-    emoji = "⚡";
-    title = "КИБЕРКОТЛЕТА";
-    text = `Средний эликсир ${avg.toFixed(1)}. Либо ты бог цикла, либо ты просто дрочишь карту за картой без смысла. Если не умеешь в скилл — эта колода тебя похоронит.`;
+    emoji = "🌚";
+    title = "ПОТНЫЙ ЦИКЛЕР";
+    text = `Эликсир ${avg}. Опять Хог 2.6 или подобная дичь? Ты либо киберкотлета, либо задрот, у которого нет личной жизни. Но за скилл уважение.`;
   } else {
-    emoji = "😎";
+    emoji = "🔥";
     title = "ГИГАЧАД";
-    text = "Слушай, а ты неплох. Баланс есть, винкон на месте. Либо ты украл эту деку у профиков, либо у тебя реально есть мозг. Иди и ломай кабины.";
+    text = `Средний эликсир ${avg}. Удивительно, но это адекватная колода. Баланс, спеллы, винкон — всё на месте. С этим можно и в киберспорт.`;
   }
 
-  document.getElementById('v-title').innerText = title;
-  document.getElementById('v-text').innerText = text;
-  document.getElementById('result-overlay').querySelector('div').innerText = emoji;
-  document.getElementById('result-overlay').style.display = 'flex';
+  // Заполняем результат
+  document.getElementById('res-emoji').innerText = emoji;
+  document.getElementById('res-title').innerText = title;
+  document.getElementById('res-text').innerText = text;
+  
+  const mini = document.getElementById('res-mini-grid');
+  mini.innerHTML = deck.map(c => `<div class="mini-card"><img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png"></div>`).join('');
+  
+  document.getElementById('result-screen').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('warning');
-}
-
-function closeResult() {
-  document.getElementById('result-overlay').style.display = 'none';
 }
 </script>
 </body>
