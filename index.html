@@ -1,5 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Deck Roaster AI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070a;
+      --accent: #00f2ff;
+      --glass: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif;
+      margin: 0; padding: 0; height: 100vh; overflow: hidden;
+      background: radial-gradient(circle at 50% 0%, #111827 0%, #05070a 100%);
+    }
+
+    .app { display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; }
+
+    .header { padding: 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 900; background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header p { font-size: 10px; opacity: 0.5; letter-spacing: 2px; }
+
+    /* СЕТКА СЛОТОВ */
+    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 15px; }
+    .slot {
+      aspect-ratio: 1/1.25; background: var(--glass); border: 1px solid var(--border);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      position: relative; transition: 0.2s; cursor: pointer; backdrop-filter: blur(5px);
+    }
+    .slot.filled { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+    .slot img { width: 90%; height: 90%; object-fit: contain; display: none; }
+    .slot.filled img { display: block; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .elixir-badge {
+      position: absolute; top: -5px; right: -5px; background: linear-gradient(135deg, #f0f, #80f);
+      color: #fff; border-radius: 6px; width: 20px; height: 20px; font-size: 10px;
+      font-weight: 900; display: none; align-items: center; justify-content: center; border: 1px solid #fff;
+    }
+    .slot.filled .elixir-badge { display: flex; }
+
+    /* МОДАЛКА ВЫБОРА */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000;
+      display: none; flex-direction: column; backdrop-filter: blur(15px);
+    }
+    .modal-content {
+      margin-top: auto; background: #0f172a; border-top: 2px solid var(--accent);
+      border-radius: 30px 30px 0 0; height: 85vh; display: flex; flex-direction: column;
+    }
+    .modal-header { padding: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); }
+    #search { flex: 1; background: #1e293b; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: #fff; outline: none; }
+
+    .cards-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; overflow-y: auto; }
+    .card-item { transition: 0.2s; position: relative; }
+    .card-item img { width: 100%; border-radius: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+    .card-item.selected { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
+
+    /* МЕНЮ УДАЛЕНИЯ (ACTION SHEET) */
+    .sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: flex-end; }
+    .sheet-body { background: #1e293b; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box; }
+    .sheet-btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 800; margin-bottom: 12px; font-family: 'Outfit'; font-size: 16px; }
+
+    .footer { padding: 30px 20px; }
+    .btn-analyze {
+      width: 100%; padding: 20px; border-radius: 18px; border: none;
+      background: linear-gradient(90deg, #3b82f6, var(--accent));
+      color: #fff; font-weight: 900; font-size: 16px; text-transform: uppercase;
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result-view { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 25px; text-align: center; }
+    .res-card { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 35px 20px; width: 100%; box-sizing: border-box; backdrop-filter: blur(10px); }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>DECK ROASTER AI</h1>
+    <p>ТВОЯ ДЕКА — МОЙ ЮМОР</p>
+  </div>
+
+  <div class="deck-grid">
+    <script>
+      for(let i=0; i<8; i++) {
+        document.write(`
+          <div class="slot" id="s${i}" onclick="handleSlotClick(${i})">
+            <span style="opacity:0.1" id="p${i}">＋</span>
+            <div class="elixir-badge" id="e${i}"></div>
+            <img id="img${i}" src="">
+          </div>
+        `);
+      }
+    </script>
+  </div>
+
+  <div class="footer">
+    <button class="btn-analyze" onclick="analyze()">Прожарить билд</button>
+  </div>
+</div>
+
+<div id="modal" class="modal" onclick="closeModal()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
+      <button onclick="closeModal()" style="background:none; border:none; color:#fff; font-size:24px;">✕</button>
+    </div>
+    <div class="cards-list" id="card-list"></div>
+  </div>
+</div>
+
+<div id="sheet" class="sheet" onclick="closeSheet()">
+  <div class="sheet-body" onclick="event.stopPropagation()">
+    <button class="sheet-btn" style="background:var(--accent); color:#000;" onclick="openPicker(lastIdx)">Заменить карту</button>
+    <button class="sheet-btn" style="background:#ef4444; color:#fff;" onclick="removeCard()">Удалить из колоды</button>
+    <button class="sheet-btn" style="background:#334155; color:#fff;" onclick="closeSheet()">Отмена</button>
+  </div>
+</div>
+
+<div id="result" class="result-view">
+  <div id="res-grid" style="display:grid; grid-template-columns: repeat(8, 1fr); gap:4px; width:100%; margin-bottom:30px;"></div>
+  <div class="res-card">
+    <div id="v-emoji" style="font-size:70px; margin-bottom:10px;"></div>
+    <h2 id="v-title" style="color:var(--accent); margin: 10px 0;"></h2>
+    <p id="v-text" style="line-height:1.6; opacity:0.9;"></p>
+  </div>
+  <button class="btn-analyze" style="margin-top:40px; background:#334155;" onclick="location.reload()">Собрать заново</button>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// БАЗА КАРТ (Абсолютно все)
+const ALL_CARDS = [
+  {id:"hog-rider",n:"Хог",e:4,t:"win"},{id:"balloon",n:"Шар",e:5,t:"win"},{id:"goblin-barrel",n:"Бочка",e:3,t:"win"},
+  {id:"mega-knight",n:"Мегарыцарь",e:7,t:"mid"},{id:"pekka",n:"ПЕККА",e:7,t:"heavy"},{id:"mini-pekka",n:"Мини ПЕККА",e:4,t:"heavy"},
+  {id:"the-log",n:"Бревно",e:2,t:"spell"},{id:"fireball",n:"Файербол",e:4,t:"spell"},{id:"arrows",n:"Стрелы",e:3,t:"spell"},
+  {id:"zap",n:"Разряд",e:2,t:"spell"},{id:"poison",n:"Яд",e:4,t:"spell"},{id:"rocket",n:"Ракета",e:6,t:"spell"},
+  {id:"valkyrie",n:"Валькирия",e:4,t:"def"},{id:"knight",n:"Рыцарь",e:3,t:"def"},{id:"giant",n:"Гигант",e:5,t:"win"},
+  {id:"royal-giant",n:"Королевский гигант",e:6,t:"win"},{id:"golem",n:"Голем",e:8,t:"win"},
+  {id:"electro-giant",n:"Электрогигант",e:7,t:"win"},{id:"x-bow",n:"Арбалет",e:6,t:"cancer"},{id:"mortar",n:"Мортира",e:4,t:"win"},
+  {id:"wizard",n:"Маг",e:5,t:"mid"},{id:"electro-wizard",n:"Электромаг",e:4,t:"sup"},{id:"musketeer",n:"Мушкетер",e:4,t:"sup"},
+  {id:"witch",n:"Ведьма",e:5,t:"mid"},{id:"miner",n:"Шахтер",e:3,t:"win"},{id:"princess",n:"Принцесса",e:3,t:"win"},
+  {id:"little-prince",n:"Маленький принц",e:3,t:"sup"},{id:"monk",n:"Монах",e:5,t:"sup"},{id:"archer-queen",n:"Королева",e:5,t:"sup"},
+  {id:"skeletons",n:"Скелеты",e:1,t:"cycle"},{id:"ice-spirit",n:"Ледяной дух",e:1,t:"cycle"},{id:"inferno-tower",n:"Инферно",e:5,t:"def"}
+];
+
+let deck = Array(8).fill(null);
+let lastIdx = 0;
+
+function handleSlotClick(i) {
+  lastIdx = i;
+  if(deck[i]) document.getElementById('sheet').style.display = 'flex';
+  else openPicker(i);
+}
+
+function openPicker(i) {
+  lastIdx = i; closeSheet();
+  document.getElementById('modal').style.display = 'flex';
+  renderCards();
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+function closeSheet() { document.getElementById('sheet').style.display = 'none'; }
+
+function removeCard() {
+  deck[lastIdx] = null;
+  const s = document.getElementById(`s${lastIdx}`);
+  s.classList.remove('filled');
+  document.getElementById(`img${lastIdx}`).src = "";
+  document.getElementById(`p${lastIdx}`).style.display = "block";
+  closeSheet();
+  tg.HapticFeedback.impactOccurred('light');
+}
+
+function renderCards() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const list = document.getElementById('card-list');
+  const used = deck.filter(c => c).map(c => c.id);
+
+  list.innerHTML = ALL_CARDS.filter(c => c.n.toLowerCase().includes(q)).map(c => `
+    <div class="card-item ${used.includes(c.id) ? 'selected' : ''}" onclick="selectCard('${c.id}')">
+      <img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png">
+    </div>
+  `).join('');
+}
+
+function selectCard(id) {
+  const card = ALL_CARDS.find(c => c.id === id);
+  deck[lastIdx] = card;
+  const s = document.getElementById(`s${lastIdx}`);
+  document.getElementById(`img${lastIdx}`).src = `https://royaleapi.github.io/cr-api-assets/cards/${id}.png`;
+  document.getElementById(`e${lastIdx}`).innerText = card.e;
+  document.getElementById(`p${lastIdx}`).style.display = "none";
+  s.classList.add('filled');
+  closeModal();
+  tg.HapticFeedback.notificationOccurred('success');
+}
+
 function analyze() {
-  if(deck.includes(null)) return tg.showAlert("Сначала собери полную пачку (8 карт)!");
+  if(deck.includes(null)) return tg.showAlert("Собери все 8 карт, иначе магии не будет!");
 
   const avg = (deck.reduce((a,b)=>a+b.e,0)/8).toFixed(1);
   const spells = deck.filter(c => c.t==='spell').length;
@@ -8,80 +217,36 @@ function analyze() {
   const cancer = deck.filter(c => c.t==='cancer').length;
   const cycle = deck.filter(c => c.e <= 2).length;
 
+  const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
   let emoji, title, text;
 
-  // ГЕНЕРАТОР ВЕРДИКТОВ
-  const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
   if (cancer > 0) {
-    emoji = "☣️";
-    title = random(["РАК МОЗГА", "АРБАЛЕТЧИК detected", "ТОКСИЧНАЯ ПОМОЙКА"]);
-    text = random([
-      `О, Арбалет/Мортира. Ты из тех, кто ставит здание у реки и надеется, что у противника сдадут нервы? Сходи помойся.`,
-      `Твоя колода вызывает желание выйти из игры еще на загрузке. Как там в 2017-м? Все еще веришь, что это "скилловый" билд?`,
-      `Ставить Спарки или Арбалет — это как признаться, что у тебя нет друзей. Надеюсь, ты доволен собой, чудовище.`
-    ]);
-  } 
-  else if (mid >= 3 && avg > 4.4) {
-    emoji = "🤡";
-    title = random(["КОРОЛЬ МИДЛАДДЕРА", "МЕГАРЫЦАРЬ MOMENT", "8-Я АРЕНА FOREVER"]);
-    text = random([
-      `Средний эликсир ${avg}? Ты что, пытаешься компенсировать что-то этими тяжелыми картами? Один быстрый цикл — и ты в канаве.`,
-      `Мегарыцарь, ПЕККА, Элитки... Тебе не колоду собирать надо, а в цирке выступать. Твой IQ равен стоимости твоей самой дешевой карты.`,
-      `Если ты выиграешь этой декой, то только потому, что у противника случился сердечный приступ от смеха при виде твоих 7-эликсирных танков.`
-    ]);
-  }
-  else if (cycle >= 4 && avg < 2.8) {
-    emoji = "💦";
-    title = random(["ПОТНЫЙ ЗАДРОТ", "2.6 ЭНТУЗИАСТ", "КЛАВИАТУРНЫЙ ГЕРОЙ"]);
-    text = random([
-      `Ого, какой быстрый цикл! Спорим, ты нажимаешь на экран чаще, чем дышишь? Расслабься, это просто игра, а не финал чемпионата мира.`,
-      `Твоя дека весит ${avg} эликсира. Ты, наверное, из тех, кто кидает ледяного духа просто потому, что палец дернулся? Попей воды, ты перепотел.`,
-      `Скелетики, духи, пушка... Как оригинально (нет). Твой стиль игры такой же предсказуемый, как сюжет в турецком сериале.`
-    ]);
-  }
-  else if (wins === 0) {
-    emoji = "🧱";
-    title = random(["БЕЗДАРНЫЙ ДЕФ", "МАСТЕР НИЧЬИ", "ПАЦИФИСТ"]);
-    text = random([
-      `В колоде НОЛЬ условий победы. Ты как башни ломать собрался, силой мысли? Или ждешь, пока у врага телефон сядет?`,
-      `Ты собрал 8 карт защиты. Это не Clash Royale, это какой-то Tower Defense в твоем исполнении. Добавь вин-кон, не беси людей.`,
-      `Твоя стратегия — терпеть до овертайма и надеяться на чудо? Спойлер: чуда не будет, тебя просто переедут Големом.`
-    ]);
-  }
-  else if (spells === 0) {
-    emoji = "🧙‍♂️";
-    title = random(["ГДЕ СПЕЛЛЫ?", "БЕЗМАГИЧЕСКИЙ ЧЕЛ", "СЛАБОУМИЕ И ОТВАГА"]);
-    text = random([
-      `Ни одного заклинания. Ты в курсе, что Гоблинская бочка тебя просто уничтожит? Хотя с такой декой тебя и обычные скелеты загрызут.`,
-      `Играть без Бревна или Файербола в 2026 году — это особый вид мазохизма. Удачи дефать Орду миньонов пальцем.`,
-      `Ты настолько уверен в своих юнитах, что решил забить на магию? Земля тебе пухом, когда увидишь Инферно-башню.`
-    ]);
-  }
-  else if (spells >= 2 && wins >= 1 && avg >= 3.0 && avg <= 3.9) {
-    emoji = "🔥";
-    title = random(["АДЕКВАТНЫЙ? НЕ ВЕРЮ", "СЛИШКОМ ХОРОШО", "КИБЕРКОТЛЕТА"]);
-    text = random([
-      `Слушай, а дека-то реально сочная. Баланс ${avg}, всё на месте. Признавайся, у кого слизал билд? Сам ты такое собрать не мог.`,
-      `Идеальный билд. Скучно даже. Ты, наверное, из тех правильных парней, которые моют руки перед едой и не донатят в игру. Тьфу, противно смотреть.`,
-      `Хорошая колода. Настолько хорошая, что я уверен — ты потратил три часа на YouTube, изучая гайды. Иди играй, про-игрок комнатный.`
-    ]);
-  }
-  else {
-    emoji = "🧐";
-    title = random(["НУ ТАКОЕ...", "СРЕДНЯЧОК", "НИ РЫБА НИ МЯСО"]);
-    text = random([
-      `Вроде и не мусор, но и не имба. Такая колода обычно бывает у тех, кто застрял на 5000 кубков и винит во всем лаги.`,
-      `Собрал что-то среднее. Ни души, ни идеи. Как твой завтрак — съедобно, но радости ноль.`,
-      `Играть можно, но зачем? Есть куча дек лучше, но ты выбрал это... Невыразительное нечто.`
-    ]);
+    emoji = "☣️"; title = "ТОКСИЧНАЯ ПОМОЙКА";
+    text = random(["Арбалет или Мортира? Ты из тех людей, которые ставят здание и надеются, что у врага сдадут нервы. Сходи помойся.","Твоя колода вызывает желание удалить игру даже у разработчиков. Ужасно.","Надеюсь, ты ставишь это только от безысходности. Противно смотреть."]);
+  } else if (mid >= 3 && avg > 4.4) {
+    emoji = "🤡"; title = "МЕГАРЫЦАРЬ MOMENT";
+    text = random([`Ср. эликсир ${avg}? Твой IQ явно ниже стоимости твоей самой тяжелой карты.`, `Мегарыцарь и ПЕККА? В цирке сегодня выходной, раз ты тут деки собираешь?`, `Если ты выиграешь этим, то только потому, что противник умер от смеха.`]);
+  } else if (cycle >= 4 && avg < 2.9) {
+    emoji = "💦"; title = "ПОТНЫЙ ЗАДРОТ";
+    text = random(["2.6 или что-то похожее? Спорим, ты нажимаешь на экран чаще, чем дышишь? Расслабься, это игра, а не финал ЧМ.","Скелетики, духи... Как оригинально (нет). Твой стиль игры предсказуем как утро.","Попей воды, ты слишком перепотел, пока ставил ледяного духа."]);
+  } else if (wins === 0) {
+    emoji = "🧱"; title = "БЕЗДАРНЫЙ ДЕФ";
+    text = "В деке ноль вин-конов. Как ты собрался побеждать? Молитвами? Добавь Хога, не позорься.";
+  } else if (spells >= 2 && avg >= 3.0 && avg <= 3.9) {
+    emoji = "🔥"; title = "СЛИШКОМ ХОРОШО";
+    text = random(["Идеальный билд. Признавайся, у кого слизал? Сам бы ты до такого не додумался.","Хорошая дека. Настолько хорошая, что я уверен — ты копипастер со стажем.","Даже придраться сложно. Иди ломай башни, киберкотлета."]);
+  } else {
+    emoji = "🧐"; title = "НИ РЫБА НИ МЯСО";
+    text = "Вроде и не мусор, но и не имба. Такая дека обычно бывает у тех, кто застрял на 5000 кубков и винит во всем лаги.";
   }
 
-  // ВЫВОД РЕЗУЛЬТАТА
   document.getElementById('v-emoji').innerText = emoji;
   document.getElementById('v-title').innerText = title;
   document.getElementById('v-text').innerText = text;
-  document.getElementById('res-grid').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%; border-radius:4px;">`).join('');
+  document.getElementById('res-grid').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%">`).join('');
   document.getElementById('result').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('warning');
 }
+</script>
+</body>
+</html>
