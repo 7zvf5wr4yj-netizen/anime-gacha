@@ -3,185 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CR: Pro Strategy Analyst</title>
+  <title>CR: Analytics Elite</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --main-bg: #0b0e14;
+      --bg: #080a0f;
       --accent: #00d2ff;
-      --glass: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --text: #e2e8f0;
+      --pink: #ff00ff;
+      --glass: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
     }
 
     body {
-      background: radial-gradient(circle at 50% 0%, #1a2a44 0%, #0b0e14 100%);
-      color: var(--text); font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, #1c2d4d 0%, #080a0f 100%);
+      color: #fff; font-family: 'Montserrat', sans-serif;
       margin: 0; padding: 0; height: 100vh; overflow: hidden;
     }
 
-    /* АНИМАЦИИ КЛЮЧЕВЫХ КАДРОВ */
-    @keyframes slotPop {
-      0% { transform: scale(0.5); opacity: 0; }
-      70% { transform: scale(1.1); }
+    /* АНИМАЦИИ */
+    @keyframes cardJump {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.15); }
       100% { transform: scale(1); opacity: 1; }
     }
 
-    @keyframes slideInUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
     }
 
-    @keyframes glowPulse {
-      0% { box-shadow: 0 0 5px var(--accent); }
-      50% { box-shadow: 0 0 20px var(--accent); }
-      100% { box-shadow: 0 0 5px var(--accent); }
+    @keyframes shine {
+      from { left: -100%; }
+      to { left: 100%; }
     }
 
-    .app-container { display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; }
+    .app { display: flex; flex-direction: column; height: 100%; max-width: 450px; margin: 0 auto; }
 
-    .header { padding: 30px 20px; text-align: center; }
+    .header { padding: 25px 20px; text-align: center; }
     .header h1 { 
-      margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 2px;
-      background: linear-gradient(to right, #00d2ff, #9cedff);
+      margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--accent), #fff);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-transform: uppercase;
     }
 
-    /* СЕТКА КОЛОДЫ */
-    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 20px; }
+    /* СЕТКА СЛОТОВ */
+    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 20px; }
 
     .slot {
-      aspect-ratio: 1/1.3; background: var(--glass);
-      border: 1px solid var(--glass-border); border-radius: 12px;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      aspect-ratio: 1/1.25; background: var(--glass);
+      border: 1px solid var(--border); border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; transition: 0.3s; overflow: visible;
     }
+    .slot.active-glow { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
 
-    .slot.filled img {
-      animation: slotPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    .slot.filled {
-      border-color: var(--accent);
-      background: rgba(0, 210, 255, 0.05);
-    }
-
-    .slot img { width: 85%; height: 85%; object-fit: contain; }
+    .slot img { width: 90%; height: 90%; object-fit: contain; display: none; }
+    .slot.filled img { display: block; animation: cardJump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    
+    .plus-icon { font-size: 24px; color: var(--border); transition: 0.3s; }
+    .slot.filled .plus-icon { display: none; }
 
     .elixir-tag {
-      position: absolute; top: -8px; right: -8px;
-      background: linear-gradient(135deg, #ff00ff, #8a2be2);
-      color: white; border-radius: 50%; width: 22px; height: 22px;
-      font-size: 11px; font-weight: 900; display: flex; 
-      align-items: center; justify-content: center; border: 2px solid var(--main-bg);
-      z-index: 10;
+      position: absolute; top: -5px; right: -5px;
+      background: linear-gradient(135deg, #ff00ff, #aa00ff);
+      color: white; border-radius: 50%; width: 20px; height: 20px;
+      font-size: 10px; font-weight: 900; display: none;
+      align-items: center; justify-content: center; border: 2px solid var(--bg); z-index: 5;
+    }
+    .slot.filled .elixir-tag { display: flex; }
+
+    /* МОДАЛКА ВЫБОРА */
+    .picker-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px); z-index: 100; display: none;
+      flex-direction: column;
     }
 
-    /* МОДАЛЬНОЕ ОКНО ВЫБОРА */
-    .picker-modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(15px); z-index: 100; display: none;
-      flex-direction: column; 
+    .picker-sheet {
+      margin-top: auto; background: #12161f; border-top: 2px solid var(--accent);
+      border-radius: 25px 25px 0 0; height: 80vh; overflow-y: auto;
+      animation: slideUp 0.3s ease-out;
     }
 
-    .picker-content {
-      margin-top: auto; background: #161b22; 
-      border-top: 2px solid var(--accent);
-      border-radius: 30px 30px 0 0;
-      height: 75vh; overflow-y: auto;
-      animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    .search-box {
+      position: sticky; top: 0; background: #12161f; padding: 20px;
+      z-index: 10; border-bottom: 1px solid var(--border);
+    }
+    #search {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      padding: 12px; border-radius: 10px; color: #fff; outline: none; box-sizing: border-box;
     }
 
-    .picker-header { 
-      position: sticky; top: 0; background: #161b22; z-index: 5;
-      padding: 20px; border-bottom: 1px solid var(--glass-border);
-      display: flex; gap: 10px; align-items: center;
+    .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; }
+    
+    .card-btn { transition: 0.2s; position: relative; }
+    .card-btn img { width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+    .card-btn:active { transform: scale(0.9); }
+    .card-btn.in-deck { opacity: 0.15; pointer-events: none; filter: grayscale(1); }
+
+    /* КНОПКА АНАЛИЗА */
+    .footer { padding: 30px 20px; }
+    .btn-main {
+      width: 100%; padding: 20px; border-radius: 15px; border: none;
+      background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+      color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;
+      cursor: pointer; box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
     }
 
-    #search { 
-      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
-      border-radius: 12px; padding: 12px; color: white; font-family: 'Montserrat';
-    }
-
-    .picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; }
-
-    .card-option { transition: transform 0.2s; position: relative; }
-    .card-option:active { transform: scale(0.9); }
-    .card-option img { width: 100%; border-radius: 10px; }
-    .card-option.disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
-
-    /* КНОПКА */
-    .action-area { padding: 30px 20px; }
-    .analyze-btn {
-      width: 100%; padding: 20px; border-radius: 16px; border: none;
-      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
-      color: white; font-size: 16px; font-weight: 900; text-transform: uppercase;
-      cursor: pointer; box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
-    }
-
-    /* ЭКРАН РЕЗУЛЬТАТА */
+    /* РЕЗУЛЬТАТ */
     .result-screen {
-      position: fixed; inset: 0; background: var(--main-bg);
-      z-index: 200; display: none; flex-direction: column; align-items: center;
-      padding: 40px 25px; justify-content: center;
-      animation: slideInUp 0.5s ease;
+      position: fixed; inset: 0; background: var(--bg); z-index: 200;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 25px; animation: slideUp 0.4s ease;
+    }
+    .result-box {
+      background: var(--glass); border: 1px solid var(--border);
+      padding: 40px 20px; border-radius: 25px; width: 100%; box-sizing: border-box;
     }
   </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="app">
   <div class="header">
-    <h1>PRO ANALYST</h1>
-    <p>VERSION 2.0 • ANIMATED</p>
+    <h1>STRATEGY ANALYST</h1>
+    <p style="font-size: 9px; opacity: 0.4; letter-spacing: 2px;">NEURAL DECK EVALUATION</p>
   </div>
 
-  <div class="deck-grid" id="deck-slots">
-    <div class="slot" onclick="openPicker(0)" id="s0">➕</div>
-    <div class="slot" onclick="openPicker(1)" id="s1">➕</div>
-    <div class="slot" onclick="openPicker(2)" id="s2">➕</div>
-    <div class="slot" onclick="openPicker(3)" id="s3">➕</div>
-    <div class="slot" onclick="openPicker(4)" id="s4">➕</div>
-    <div class="slot" onclick="openPicker(5)" id="s5">➕</div>
-    <div class="slot" onclick="openPicker(6)" id="s6">➕</div>
-    <div class="slot" onclick="openPicker(7)" id="s7">➕</div>
+  <div class="deck-grid">
+    <script>
+      for(let i=0; i<8; i++) {
+        document.write(`
+          <div class="slot" id="s${i}" onclick="openPicker(${i})">
+            <div class="plus-icon">＋</div>
+            <div class="elixir-tag" id="e${i}"></div>
+            <img id="img${i}" src="">
+          </div>
+        `);
+      }
+    </script>
   </div>
 
-  <div class="action-area">
-    <button class="analyze-btn" onclick="startAnalysis()">Анализировать билд</button>
+  <div class="footer">
+    <button class="btn-main" onclick="analyze()">Проверить билд</button>
   </div>
 </div>
 
-<div id="picker-modal" class="picker-modal" onclick="closePicker()">
-  <div class="picker-content" onclick="event.stopPropagation()">
-    <div class="picker-header">
-      <input type="text" id="search" placeholder="Поиск карты..." oninput="renderPicker()">
-      <div onclick="closePicker()" style="font-size: 24px; padding: 5px;">✕</div>
+<div id="picker-modal" class="picker-overlay" onclick="closePicker()">
+  <div class="picker-sheet" onclick="event.stopPropagation()">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
     </div>
-    <div class="picker-grid" id="picker-list"></div>
+    <div class="cards-grid" id="cards-list"></div>
   </div>
 </div>
 
 <div id="result-screen" class="result-screen">
-  <div id="res-content" style="width: 100%; max-width: 400px; text-align: center;">
-    <div id="mini-deck-view" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 30px;"></div>
-    <div style="background: var(--glass); padding: 40px 20px; border-radius: 24px; border: 1px solid var(--glass-border);">
-        <span id="v-emoji" style="font-size: 60px;"></span>
-        <h2 id="v-title" style="color: var(--accent); margin: 15px 0;"></h2>
-        <p id="v-text" style="line-height: 1.6; opacity: 0.9;"></p>
-    </div>
-    <button class="analyze-btn" style="margin-top: 30px; background: rgba(255,255,255,0.05);" onclick="location.reload()">Пересобрать</button>
+  <div id="mini-deck" style="display:grid; grid-template-columns: repeat(8, 1fr); gap:5px; width:100%; margin-bottom:20px;"></div>
+  <div class="result-box">
+    <div id="v-emoji" style="font-size: 60px; margin-bottom: 15px;">🧐</div>
+    <h2 id="v-title" style="color:var(--accent); margin: 0 0 15px 0; font-size: 24px;"></h2>
+    <p id="v-text" style="line-height: 1.6; opacity: 0.8; font-size: 14px;"></p>
   </div>
+  <button class="btn-main" style="margin-top: 30px; background: rgba(255,255,255,0.05);" onclick="location.reload()">Изменить билд</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Полный список ID карт для картинок
+// БАЗА КАРТ
 const CARDS = [
   {id:"mega-knight",n:"Мегарыцарь",e:7,t:"mid"},{id:"hog-rider",n:"Хог",e:4,t:"win"},
   {id:"pekka",n:"ПЕККА",e:7,t:"heavy"},{id:"the-log",n:"Бревно",e:2,t:"spell"},
@@ -192,84 +185,85 @@ const CARDS = [
   {id:"miner",n:"Шахтер",e:3,t:"win"},{id:"poison",n:"Яд",e:4,t:"spell"},
   {id:"skeletons",n:"Скелеты",e:1,t:"cycle"},{id:"ice-spirit",n:"Ледяной дух",e:1,t:"cycle"},
   {id:"valkyrie",n:"Валькирия",e:4,t:"def"},{id:"executioner",n:"Палач",e:5,t:"def"},
-  {id:"zap",n:"Разряд",e:2,t:"spell"},{id:"inferno-tower",n:"Инферно",e:5,t:"def"}
+  {id:"zap",n:"Разряд",e:2,t:"spell"},{id:"tornado",n:"Торнадо",e:3,t:"spell"},
+  {id:"arrows",n:"Стрелы",e:3,t:"spell"},{id:"princess",n:"Принцесса",e:3,t:"win"},
+  {id:"baby-dragon",n:"Дракончик",e:4,t:"sup"},{id:"witch",n:"Ведьма",e:5,t:"mid"}
 ];
 
 let deck = Array(8).fill(null);
-let currentSlot = 0;
+let activeSlot = null;
 
 function openPicker(idx) {
-  currentSlot = idx;
+  activeSlot = idx;
   document.getElementById('picker-modal').style.display = 'flex';
-  renderPicker();
+  renderCards();
   tg.HapticFeedback.impactOccurred('medium');
 }
 
 function closePicker() {
-  const content = document.querySelector('.picker-content');
-  content.style.transform = 'translateY(100%)';
-  setTimeout(() => {
-    document.getElementById('picker-modal').style.display = 'none';
-    content.style.transform = 'translateY(0)';
-  }, 300);
+  document.getElementById('picker-modal').style.display = 'none';
 }
 
-function renderPicker() {
+function renderCards() {
   const query = document.getElementById('search').value.toLowerCase();
-  const container = document.getElementById('picker-list');
-  const selectedIds = deck.filter(x => x).map(x => x.id);
+  const list = document.getElementById('cards-list');
+  const usedIds = deck.filter(c => c).map(c => c.id);
 
-  container.innerHTML = CARDS.filter(c => c.n.toLowerCase().includes(query)).map(c => {
-    const isSelected = selectedIds.includes(c.id);
-    return `
-      <div class="card-option ${isSelected ? 'disabled' : ''}" onclick="selectCard('${c.id}')">
-        <img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png">
-      </div>
-    `;
-  }).join('');
+  list.innerHTML = CARDS.filter(c => c.n.toLowerCase().includes(query)).map(c => `
+    <div class="card-btn ${usedIds.includes(c.id) ? 'in-deck' : ''}" onclick="selectCard('${c.id}')">
+      <img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png">
+    </div>
+  `).join('');
 }
 
 function selectCard(id) {
-  const card = CARDS.find(x => x.id === id);
-  deck[currentSlot] = card;
+  const card = CARDS.find(c => c.id === id);
+  deck[activeSlot] = card;
+
+  const slot = document.getElementById(`s${activeSlot}`);
+  const img = document.getElementById(`img${activeSlot}`);
+  const elixir = document.getElementById(`e${activeSlot}`);
+
+  // СБРОС АНИМАЦИИ (чтобы сработала заново)
+  slot.classList.remove('filled');
+  void slot.offsetWidth; // Магия для рестарта анимации
   
-  const slot = document.getElementById(`s${currentSlot}`);
-  // Очищаем и добавляем с анимацией
-  slot.innerHTML = `<div class="elixir-tag">${card.e}</div><img src="https://royaleapi.github.io/cr-api-assets/cards/${id}.png">`;
+  img.src = `https://royaleapi.github.io/cr-api-assets/cards/${id}.png`;
+  elixir.innerText = card.e;
   slot.classList.add('filled');
-  
+
   closePicker();
   tg.HapticFeedback.notificationOccurred('success');
 }
 
-function startAnalysis() {
-  if (deck.includes(null)) return tg.showAlert("Заполни все 8 слотов!");
+function analyze() {
+  if (deck.includes(null)) return tg.showAlert("Заполни все 8 слотов, стратег!");
 
   const avg = (deck.reduce((a,b) => a+b.e, 0) / 8).toFixed(1);
   const midCount = deck.filter(c => c.t === 'mid' || c.e >= 7).length;
   const spellCount = deck.filter(c => c.t === 'spell').length;
   const winCount = deck.filter(c => c.t === 'win' || c.t === 'cancer').length;
 
-  let title, text, emoji;
+  let emoji, title, text;
 
   if (midCount >= 3 && avg > 4.2) {
     emoji = "🤡"; title = "МАСТЕР МИДЛАДДЕРА";
-    text = `Средний эликсир ${avg}. Твоя стратегия — просто задавить массой? Удачного дефа против Хога 2.6, сказочник.`;
+    text = `Средний эликсир ${avg}. Набрал тяжелого мусора и доволен? Твой максимум — это спамить смайликами, когда Мегарыцарь прыгает на мушкетера. Учи матчасть.`;
   } else if (spellCount >= 2 && winCount >= 1 && avg >= 3.0 && avg <= 3.9) {
-    emoji = "🔥"; title = "СОЛИДНЫЙ ПИК";
-    text = `Красиво собрал. Баланс идеальный, спеллы на месте. Ты либо профи, либо удачно скопировал деку у топа.`;
+    emoji = "🔥"; title = "ЭЛИТНЫЙ ПИК";
+    text = `Слушай, а это реально грамотно. Баланс есть, вин-кон на месте. Признавайся, украл деку у топа или сам додумался? Если сам — снимаю шляпу, иди ломай кабины.`;
   } else if (winCount === 0) {
-    emoji = "🧱"; title = "ТУПОЙ ДЕФ";
-    text = "У тебя нет вин-кона. Собираешься выигрывать на ничью? Добавь Хога или Шара.";
+    emoji = "🧱"; title = "ГЛУХАЯ ОБОРОНА";
+    text = "В деке нет вин-кона. Ты как башни ломать собрался? Молитвами? Добавь Хога или Шара, не позорься в ТикТоке.";
   } else {
-    emoji = "🧐"; title = "ПОЙДЕТ...";
-    text = `Колода (Ср. эликсир ${avg}) нормальная, но без души. Играть можно, но легенду так будешь брать долго.`;
+    emoji = "🤔"; title = "СОЙДЕТ ДЛЯ СЕЛЬСКОЙ МЕСТНОСТИ";
+    text = `Билд (Avg: ${avg}) играбельный, но без искры. Вроде всё есть, а вроде и скучно. Попробуй добавить что-то более дерзкое.`;
   }
 
   document.getElementById('v-emoji').innerText = emoji;
   document.getElementById('v-title').innerText = title;
   document.getElementById('v-text').innerText = text;
-  document.getElementById('mini-deck-view').innerHTML = deck.map(c => `<div style="aspect-ratio:1/1; overflow:hidden; border-radius:4px;"><img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%"></div>`).join('');
+  document.getElementById('mini-deck').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%; border-radius:2px;">`).join('');
   
   document.getElementById('result-screen').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('warning');
