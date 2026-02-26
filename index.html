@@ -3,383 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime RNG: Ultimate</title>
+  <title>Clash RNG: Deck rater</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #09090b;
-      --neon-blue: #00f3ff;
-      --neon-purple: #bc13fe;
-      --neon-pink: #ff0055;
-      --neon-gold: #ffd700;
-      --glass: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --card-bg: linear-gradient(145deg, rgba(20,20,30,0.95), rgba(10,10,15,0.95));
+      --cr-blue: #0072ff;
+      --cr-dark-blue: #003c8b;
+      --cr-gold: #ffcc00;
+      --cr-rarity-legendary: linear-gradient(135deg, #00f3ff, #bc13fe);
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: #fff;
-      font-family: 'Rajdhani', sans-serif;
-      margin: 0; padding: 0;
-      height: 100vh; overflow: hidden;
-      display: flex; flex-direction: column;
+      background: #1a1a1a;
+      background-image: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%);
+      color: #fff; font-family: 'Rubik', sans-serif;
+      margin: 0; padding: 0; height: 100vh; overflow: hidden;
     }
 
-    /* ФОНОВЫЕ ЭФФЕКТЫ */
-    .bg-gradient {
-      position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.15), transparent 70%);
-      z-index: -2; animation: pulseBg 10s infinite alternate;
+    /* ШАПКА */
+    .header {
+      background: linear-gradient(180deg, var(--cr-blue) 0%, var(--cr-dark-blue) 100%);
+      padding: 15px; text-align: center; border-bottom: 4px solid #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
+
+    /* СЕТКА КОЛОДЫ (8 СЛОТОВ) */
+    .deck-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 8px; padding: 15px; background: rgba(0,0,0,0.3);
+      margin: 10px; border-radius: 12px; border: 2px solid #444;
+    }
+
+    .slot {
+      aspect-ratio: 3/4; background: #333; border-radius: 8px;
+      border: 2px dashed #555; display: flex; align-items: center;
+      justify-content: center; font-size: 24px; position: relative;
+      overflow: hidden;
+    }
+
+    .slot.filled { border: 2px solid #fff; background: #444; }
+
+    .card-img { width: 100%; height: 100%; object-fit: cover; }
     
-    .grid-overlay {
-      position: fixed; width: 200%; height: 200%; top: -50%; left: -50%;
-      background-image: 
-        linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      transform: perspective(500px) rotateX(60deg);
-      z-index: -1; pointer-events: none;
+    .elixir-tag {
+      position: absolute; top: 2px; left: 2px;
+      background: #ff00ff; border-radius: 50%; width: 18px; height: 18px;
+      font-size: 10px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid #fff; z-index: 2;
     }
 
-    @keyframes pulseBg { 0% { opacity: 0.5; } 100% { opacity: 1; } }
-
-    /* КОНТЕЙНЕР ЭКРАНОВ */
-    .app-screen {
-      display: none; flex-direction: column; height: 100%; padding: 20px;
-      box-sizing: border-box; overflow-y: auto;
-      animation: fadeIn 0.3s ease-out;
-    }
-    .app-screen.active { display: flex; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* HEADER */
-    .top-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      background: var(--glass);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      padding: 15px; border-radius: 16px; border: 1px solid var(--glass-border);
-      margin-bottom: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-    }
-    .currency-tag { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-blue); display: flex; align-items: center; gap: 5px; }
-
-    /* ГЛАВНОЕ МЕНЮ (ПЛИТКИ) */
-    .menu-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1; align-content: center;
-    }
-    .menu-card {
-      background: var(--glass); border: 1px solid var(--glass-border);
-      border-radius: 20px; padding: 20px; text-align: center;
-      transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 120px;
-    }
-    .menu-card:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
-    .menu-icon { font-size: 30px; margin-bottom: 10px; }
-    .menu-title { font-family: 'Orbitron'; font-weight: 700; font-size: 14px; letter-spacing: 1px; }
-    .card-large { grid-column: span 2; background: linear-gradient(135deg, rgba(188, 19, 254, 0.2), rgba(0, 243, 255, 0.1)); border: 1px solid var(--neon-purple); }
-
-    /* ЭКРАН ПРИЗЫВА И РЕЗУЛЬТАТА */
-    .summon-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-    
-    .result-card {
-      background: var(--card-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px; padding: 25px;
-      width: 100%; max-width: 320px;
-      box-shadow: 0 0 50px rgba(0,0,0,0.8);
-      position: relative; overflow: hidden;
-      display: none; /* Скрыто по умолчанию */
-      animation: cardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    @keyframes cardPop { from { transform: scale(0.5) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-
-    .card-glow-bg {
-      position: absolute; top:0; left:0; width:100%; height:5px;
-      background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue);
+    /* ПАНЕЛЬ ПРИЗЫВА */
+    .summon-zone {
+      flex-grow: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
     }
 
-    .hero-avatar {
-      width: 80px; height: 80px; background: #222; border-radius: 50%;
-      margin: 0 auto 15px; border: 2px solid #fff;
-      display: flex; align-items: center; justify-content: center; font-size: 30px;
+    .roll-btn {
+      background: #ff8000;
+      background: linear-gradient(180deg, #ffb347 0%, #ff8c00 100%);
+      border: none; border-bottom: 5px solid #b36200;
+      color: #fff; padding: 15px 40px; border-radius: 12px;
+      font-size: 24px; font-weight: 900; cursor: pointer;
+      text-shadow: 2px 2px #000;
     }
 
-    .r-name { font-family: 'Orbitron'; font-size: 28px; font-weight: 900; margin: 0; text-transform: uppercase; line-height: 1; }
-    .r-source { font-size: 12px; color: #888; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; }
-    .r-rarity { font-family: 'Orbitron'; font-size: 14px; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.1); display: inline-block; margin-bottom: 20px; }
-
-    .r-desc-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px; }
-    .r-label { font-size: 10px; color: #666; font-weight: bold; display: block; margin-bottom: 3px; }
-    .r-text { font-size: 13px; line-height: 1.4; color: #ddd; }
-    .r-skill { color: var(--neon-blue); font-weight: bold; }
-
-    .action-btn {
-      width: 100%; padding: 18px; border-radius: 14px; border: none;
-      font-family: 'Orbitron'; font-weight: 900; font-size: 16px;
-      cursor: pointer; color: #fff; margin-top: 15px;
-      background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
-      box-shadow: 0 5px 20px rgba(188, 19, 254, 0.4);
-    }
-    .action-btn:active { transform: scale(0.98); }
-
-    /* АНИМАЦИИ ЦВЕТОВ РЕДКОСТИ */
-    .col-COMMON { color: #aaa; --glow: #aaa; }
-    .col-RARE { color: var(--neon-blue); --glow: var(--neon-blue); }
-    .col-EPIC { color: var(--neon-purple); --glow: var(--neon-purple); }
-    .col-LEGENDARY { color: var(--neon-gold); --glow: var(--neon-gold); }
-    .col-GODLY { 
-      background: linear-gradient(90deg, #ff0000, #ff8800, #ffff00, #00ff00, #0000ff, #ee00ff); 
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; --glow: #fff;
+    .rate-btn {
+      background: #4caf50; border: none; border-bottom: 5px solid #2e7d32;
+      color: #fff; padding: 10px 20px; border-radius: 8px;
+      margin-top: 10px; font-weight: bold;
     }
 
-    /* ПРОСТАЯ КНОПКА НАЗАД */
-    .nav-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-    
-    /* ИНВЕНТАРЬ */
-    .inv-list { display: flex; flex-direction: column; gap: 10px; }
-    .inv-row { 
-      display: flex; align-items: center; background: var(--glass); 
-      padding: 10px; border-radius: 10px; border: 1px solid var(--glass-border);
+    /* ПОПАП ОЦЕНКИ */
+    .rating-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100; text-align: center; padding: 20px; box-sizing: border-box;
     }
-    .inv-info { margin-left: 10px; }
+
+    .score { font-size: 80px; color: var(--cr-gold); margin: 0; }
   </style>
 </head>
 <body>
-  <div class="bg-gradient"></div>
-  <div class="grid-overlay"></div>
 
-  <div id="screen-menu" class="app-screen active">
-    <div class="top-bar">
-      <div style="font-weight: bold; font-family:'Orbitron';">ANIME RNG <span style="font-size:10px; opacity:0.5">ULTIMATE</span></div>
-      <div class="currency-tag">💎 <span id="val-dmd">0</span></div>
-    </div>
-
-    <div class="menu-grid">
-      <div class="menu-card card-large" onclick="openScreen('screen-summon')">
-        <div class="menu-icon">🔮</div>
-        <div class="menu-title">ПРИЗЫВАТЬ</div>
-        <div style="font-size:10px; opacity:0.7; margin-top:5px;">Цена: 10 💎</div>
-      </div>
-      <div class="menu-card" onclick="openScreen('screen-inv')">
-        <div class="menu-icon">🎒</div>
-        <div class="menu-title">КОЛЛЕКЦИЯ</div>
-      </div>
-      <div class="menu-card" onclick="tg.showAlert('PvP Арена обновляется...')">
-        <div class="menu-icon">⚔️</div>
-        <div class="menu-title">БИТВА</div>
-      </div>
-      <div class="menu-card" onclick="tg.showAlert('Магазин закрыт на учет')">
-        <div class="menu-icon">🛍️</div>
-        <div class="menu-title">МАГАЗИН</div>
-      </div>
-      <div class="menu-card" onclick="tg.showAlert('Твой ранг: Новичок')">
-        <div class="menu-icon">🏆</div>
-        <div class="menu-title">РЕЙТИНГ</div>
-      </div>
-    </div>
+  <div class="header">
+    <div style="font-size: 20px; text-transform: uppercase;">Оцени Колоду</div>
+    <div style="font-size: 12px; opacity: 0.8;">Средний эликсир: <span id="avg-elixir">0.0</span> 💧</div>
   </div>
 
-  <div id="screen-summon" class="app-screen">
-    <div class="top-bar">
-      <button class="nav-btn" onclick="openScreen('screen-menu')">←</button>
-      <div class="currency-tag">💎 <span id="val-dmd-sum">0</span></div>
-    </div>
-
-    <div class="summon-area">
-      <div id="summon-placeholder">
-        <div style="font-family:'Orbitron'; font-size:12px; letter-spacing:4px; opacity:0.5; margin-bottom:20px;">SYSTEM READY</div>
-        <button class="action-btn" onclick="doRoll()">SUMMON x1 (10💎)</button>
-      </div>
-
-      <div id="rolling-anim" style="display:none;">
-        <div style="font-family:'Orbitron'; font-size:40px; color:var(--neon-blue);" id="roll-counter">0000</div>
-        <div style="font-size:12px; opacity:0.7;">SEARCHING SOUL DATA...</div>
-      </div>
-
-      <div id="result-card" class="result-card">
-        <div class="card-glow-bg" id="card-glow"></div>
-        <div class="hero-avatar" id="res-icon">👤</div>
-        
-        <div class="r-source" id="res-source">UNIVERSE</div>
-        <div class="r-name" id="res-name">NAME</div>
-        <div class="r-rarity" id="res-rarity">RARITY</div>
-
-        <div class="r-desc-box">
-          <span class="r-label">БИОГРАФИЯ</span>
-          <div class="r-text" id="res-desc">Описание персонажа...</div>
-        </div>
-
-        <div class="r-desc-box" style="border: 1px solid rgba(0,243,255,0.2);">
-          <span class="r-label">СПОСОБНОСТЬ</span>
-          <div class="r-text r-skill" id="res-skill">Название скилла</div>
-        </div>
-
-        <button class="action-btn" onclick="resetRoll()">CONTINUE</button>
-      </div>
-    </div>
+  <div class="deck-grid" id="deck">
+    <div class="slot" id="s0"></div>
+    <div class="slot" id="s1"></div>
+    <div class="slot" id="s2"></div>
+    <div class="slot" id="s3"></div>
+    <div class="slot" id="s4"></div>
+    <div class="slot" id="s5"></div>
+    <div class="slot" id="s6"></div>
+    <div class="slot" id="s7"></div>
   </div>
 
-  <div id="screen-inv" class="app-screen">
-    <div class="top-bar">
-      <button class="nav-btn" onclick="openScreen('screen-menu')">←</button>
-      <div>ИНВЕНТАРЬ</div>
-    </div>
-    <div class="inv-list" id="inv-container">
-      </div>
+  <div class="summon-zone">
+    <div id="last-rolled" style="margin-bottom: 20px; font-size: 18px; height: 30px;"></div>
+    <button class="roll-btn" onclick="rollCard()">КРУТИТЬ КАРТУ</button>
+    <button class="rate-btn" onclick="rateDeck()">ОЦЕНИТЬ МОЙ ПИК</button>
+  </div>
+
+  <div id="rating-screen" class="rating-overlay">
+    <h2 id="rating-verdict">АНАЛИЗ...</h2>
+    <p class="score" id="rating-score">A+</p>
+    <p id="rating-comment" style="font-style: italic; color: #ccc;"></p>
+    <button class="roll-btn" style="margin-top: 30px;" onclick="closeRating()">OK</button>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.setHeaderColor('#09090b'); // Цвет хедера Телеграма под цвет фона
 
-    // == БАЗА ДАННЫХ ГЕРОЕВ С ОПИСАНИЕМ И СПОСОБНОСТЯМИ ==
-    const DATA = [
-      { 
-        n: "Юкихира Сома", s: "Food Wars", r: "COMMON", c: 5, icon: "🍳",
-        desc: "Гениальный повар, стремящийся превзойти своего отца.",
-        skill: "Кулинарный взрыв: Восстанавливает 50 HP."
-      },
-      { 
-        n: "Танджиро", s: "Demon Slayer", r: "RARE", c: 20, icon: "🌊",
-        desc: "Истребитель демонов с добрым сердцем и твердым лбом.",
-        skill: "Дыхание Воды: Наносит 150 урона."
-      },
-      { 
-        n: "Куросаки Ичиго", s: "Bleach", r: "EPIC", c: 50, icon: "⚔️",
-        desc: "Временный Шинигами с огромной духовной силой.",
-        skill: "Гетсуга Теншо: Удар волной тьмы (300 урона)."
-      },
-      { 
-        n: "Сатору Годжо", s: "Jujutsu Kaisen", r: "LEGENDARY", c: 200, icon: "🤞",
-        desc: "Сильнейший маг современности. Владеет техникой Бесконечности.",
-        skill: "Ryoiki Tenkai: Оглушает врага на 3 хода."
-      },
-      { 
-        n: "Айзен Соуске", s: "Bleach", r: "LEGENDARY", c: 1000, icon: "🦋",
-        desc: "Бывший капитан, предавший Общество Душ ради божественной силы.",
-        skill: "Полный Гипноз: Противник атакует сам себя."
-      },
-      { 
-        n: "Сайтама", s: "One Punch Man", r: "GODLY", c: 5000, icon: "👊",
-        desc: "Герой по хобби. Слишком силен, поэтому ему скучно.",
-        skill: "Обычный удар: Мгновенно побеждает любого (9999 урона)."
-      }
+    const CARDS = [
+      { n: "Скелеты", e: 1, r: "Common", t: "Swarms" },
+      { n: "Всадник на кабане", e: 4, r: "Rare", t: "WinCon" },
+      { n: "П.Е.К.К.А", e: 7, r: "Epic", t: "Tank" },
+      { n: "Мегарыцарь", e: 7, r: "Legendary", t: "Splash" },
+      { n: "Бревном", e: 2, r: "Legendary", t: "Spell" },
+      { n: "Огненный шар", e: 4, r: "Rare", t: "Spell" },
+      { n: "Принцесса", e: 3, r: "Legendary", t: "Ranged" },
+      { n: "Адская башня", e: 5, r: "Rare", t: "Building" },
+      { n: "Маленький дракон", e: 4, r: "Epic", t: "Splash" },
+      { n: "Гоблинская бочка", e: 3, r: "Epic", t: "WinCon" }
     ];
 
-    let state = JSON.parse(localStorage.getItem('anime_rng_ultimate')) || {
-      dmd: 1000,
-      inv: []
-    };
+    let myDeck = [null, null, null, null, null, null, null, null];
+    let slotIndex = 0;
 
-    function save() {
-      localStorage.setItem('anime_rng_ultimate', JSON.stringify(state));
-      updateUI();
-    }
-
-    function updateUI() {
-      document.getElementById('val-dmd').innerText = state.dmd.toLocaleString();
-      document.getElementById('val-dmd-sum').innerText = state.dmd.toLocaleString();
+    function rollCard() {
+      const card = CARDS[Math.floor(Math.random() * CARDS.length)];
+      document.getElementById('last-rolled').innerText = `Выпал: ${card.n} (${card.e}💧)`;
       
-      // Рендер инвентаря
-      const cont = document.getElementById('inv-container');
-      cont.innerHTML = "";
-      if(state.inv.length === 0) cont.innerHTML = "<div style='text-align:center; opacity:0.5; margin-top:50px'>Пусто...</div>";
+      // Заполняем слоты по очереди
+      myDeck[slotIndex] = card;
+      const slot = document.getElementById(`s${slotIndex}`);
+      slot.innerHTML = `<div class="elixir-tag">${card.e}</div><div style="font-size:10px; padding:5px; text-align:center">${card.n}</div>`;
+      slot.className = "slot filled";
       
-      state.inv.slice().reverse().forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'inv-row';
-        div.innerHTML = `
-          <div style="font-size:24px">${item.icon}</div>
-          <div class="inv-info">
-            <div style="font-weight:bold; font-size:14px">${item.n}</div>
-            <div style="font-size:10px; opacity:0.7">${item.r}</div>
-          </div>
-        `;
-        cont.appendChild(div);
-      });
-    }
-
-    function openScreen(id) {
-      document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    async function doRoll() {
-      if(state.dmd < 10) return tg.showAlert("Не хватает 10 💎!");
-      state.dmd -= 10;
-      save();
-
-      // UI переключение
-      document.getElementById('summon-placeholder').style.display = 'none';
-      document.getElementById('rolling-anim').style.display = 'block';
-      document.getElementById('result-card').style.display = 'none';
-
-      const counter = document.getElementById('roll-counter');
+      slotIndex = (slotIndex + 1) % 8;
+      
       tg.HapticFeedback.impactOccurred('medium');
-
-      // Логика выбора (с учетом редкости)
-      let rolled = DATA[0];
-      for(let h of [...DATA].reverse()) {
-        if(Math.random() < (1/h.c)) { rolled = h; break; }
-      }
-
-      // Анимация чисел
-      for(let i=0; i<15; i++) {
-        counter.innerText = "1 : " + Math.floor(Math.random() * (i*50 + 10));
-        await new Promise(r => setTimeout(r, 60));
-        if(i%3===0) tg.HapticFeedback.selectionChanged();
-      }
-      
-      counter.innerText = "1 : " + rolled.c;
-      await new Promise(r => setTimeout(r, 200));
-
-      // Показ результата
-      document.getElementById('rolling-anim').style.display = 'none';
-      showResult(rolled);
-      
-      state.inv.push(rolled);
-      save();
+      calcElixir();
     }
 
-    function showResult(hero) {
-      const card = document.getElementById('result-card');
-      const glow = document.getElementById('card-glow');
-      const rarityEl = document.getElementById('res-rarity');
-      const nameEl = document.getElementById('res-name');
-
-      // Заполнение данных
-      document.getElementById('res-icon').innerText = hero.icon;
-      document.getElementById('res-source').innerText = hero.s;
-      document.getElementById('res-desc').innerText = hero.desc;
-      document.getElementById('res-skill').innerText = hero.skill;
-      
-      nameEl.innerText = hero.n;
-      nameEl.className = `r-name col-${hero.r}`;
-      
-      rarityEl.innerText = hero.r;
-      rarityEl.className = `r-rarity col-${hero.r}`;
-      rarityEl.style.border = `1px solid var(--glow)`;
-      
-      // Цвет полоски сверху
-      glow.style.background = getComputedStyle(rarityEl).color;
-      glow.style.boxShadow = `0 0 20px ${getComputedStyle(rarityEl).color}`;
-
-      if(hero.c >= 200) tg.HapticFeedback.notificationOccurred('success');
-
-      card.style.display = 'block';
+    function calcElixir() {
+      const filled = myDeck.filter(c => c !== null);
+      if(filled.length === 0) return;
+      const sum = filled.reduce((a, b) => a + b.e, 0);
+      document.getElementById('avg-elixir').innerText = (sum / filled.length).toFixed(1);
     }
 
-    function resetRoll() {
-      document.getElementById('result-card').style.display = 'none';
-      document.getElementById('summon-placeholder').style.display = 'block';
+    function rateDeck() {
+      if(myDeck.includes(null)) return tg.showAlert("Собери полную колоду (8 карт)!");
+
+      const filled = myDeck;
+      let score = "B";
+      let comment = "";
+
+      const hasSpell = filled.some(c => c.t === "Spell");
+      const hasTank = filled.some(c => c.t === "Tank" || c.e >= 6);
+      const hasWinCon = filled.some(c => c.t === "WinCon");
+      const avg = filled.reduce((a,b) => a+b.e,0) / 8;
+
+      if (hasSpell && hasWinCon && hasTank) { score = "S"; comment = "Идеальный баланс! С этой колодой можно брать Топ-1 мира."; }
+      else if (hasSpell && hasWinCon) { score = "A"; comment = "Хорошая колода, но не хватает жирного танка."; }
+      else if (avg > 4.5) { score = "D"; comment = "Слишком дорого! Ты не успеешь выставить карты, как тебя снесут."; }
+      else { score = "C"; comment = "Колода странная. Нет условий для победы или заклинаний."; }
+
+      document.getElementById('rating-score').innerText = score;
+      document.getElementById('rating-comment').innerText = comment;
+      document.getElementById('rating-screen').style.display = "flex";
+      tg.HapticFeedback.notificationOccurred('success');
     }
 
-    // Старт
-    updateUI();
+    function closeRating() {
+      document.getElementById('rating-screen').style.display = "none";
+    }
   </script>
 </body>
 </html>
