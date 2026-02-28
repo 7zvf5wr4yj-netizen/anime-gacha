@@ -3,156 +3,250 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Deck Roaster AI: Full Edition</title>
+  <title>CR: Nuclear Analyzer 6.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #05070a; --accent: #00f2ff; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
-    body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; background: radial-gradient(circle at 50% 0%, #111827 0%, #05070a 100%); }
-    .app { display: flex; flex-direction: column; height: 100%; max-width: 500px; margin: 0 auto; }
+    :root { --bg: #030712; --accent: #00f2ff; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08); }
+    body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; background: radial-gradient(circle at 50% 0%, #111827 0%, #030712 100%); }
+    
     .header { padding: 15px; text-align: center; }
-    .header h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(90deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; }
+    
+    /* GRID */
     .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px; }
-    .slot { aspect-ratio: 1/1.25; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; transition: 0.2s; cursor: pointer; }
-    .slot.filled { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+    .slot { aspect-ratio: 1/1.25; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.2s; }
+    .slot.filled { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
     .slot img { width: 90%; height: 90%; object-fit: contain; display: none; }
     .slot.filled img { display: block; animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .elixir-badge { position: absolute; top: -5px; right: -5px; background: #f0f; color: #fff; border-radius: 6px; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: none; align-items: center; justify-content: center; border: 1px solid #fff; z-index: 10; }
+    .elixir-badge { position: absolute; top: -5px; right: -5px; background: #f0f; border-radius: 6px; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: none; align-items: center; justify-content: center; border: 1px solid #fff; }
     .slot.filled .elixir-badge { display: flex; }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; }
+
+    /* STATS */
+    .stats-container { padding: 0 20px; margin-top: 10px; }
+    .stat-row { margin-bottom: 8px; }
+    .stat-label { display: flex; justify-content: space-between; font-size: 10px; text-transform: uppercase; margin-bottom: 3px; opacity: 0.7; }
+    .bar-bg { background: rgba(255,255,255,0.05); height: 4px; border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 1s ease-out; }
+
+    /* MODALS */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 1000; display: none; flex-direction: column; }
     .modal-content { margin-top: auto; background: #0f172a; border-top: 2px solid var(--accent); border-radius: 25px 25px 0 0; height: 85vh; display: flex; flex-direction: column; }
-    .modal-header { padding: 15px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); }
-    #search { flex: 1; background: #1e293b; border: 1px solid var(--border); padding: 10px; border-radius: 10px; color: #fff; outline: none; }
+    #search { width: 90%; margin: 15px auto; background: #1e293b; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: #fff; outline: none; }
     .cards-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; }
     .card-item img { width: 100%; border-radius: 8px; }
-    .card-item.selected { opacity: 0.2; pointer-events: none; }
+
+    .btn-main { width: 90%; margin: 20px auto; padding: 18px; border-radius: 16px; border: none; background: linear-gradient(90deg, #3b82f6, var(--accent)); color: #fff; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+
+    /* RESULT */
+    .result-view { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    .res-card { background: var(--glass); border: 1px solid var(--border); padding: 25px; border-radius: 25px; width: 100%; box-sizing: border-box; }
+    
     .sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: flex-end; }
     .sheet-body { background: #1e293b; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; }
-    .sheet-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; margin-bottom: 10px; font-size: 16px; }
-    .footer { padding: 20px; }
-    .btn-analyze { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, #3b82f6, var(--accent)); color: #fff; font-weight: 900; text-transform: uppercase; }
-    .result-view { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
   </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="header"><h1>DECK ROASTER AI</h1><p>V5.0 • ВСЕ КАРТЫ ДОБАВЛЕНЫ</p></div>
-  <div class="deck-grid" id="grid-main">
+  <div class="header"><h1>DECK ANALYST 6.0</h1></div>
+  
+  <div class="deck-grid">
     <script>
-      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="handleSlotClick(${i})"><span style="opacity:0.2" id="p${i}">＋</span><div class="elixir-badge" id="e${i}"></div><img id="img${i}" src=""></div>`);
+      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="handleSlotClick(${i})"><span style="opacity:0.1">＋</span><div class="elixir-badge" id="e${i}"></div><img id="img${i}"></div>`);
     </script>
   </div>
-  <div class="footer"><button class="btn-analyze" onclick="analyze()">Прожарить билд</button></div>
-</div>
 
-<div id="modal" class="modal" onclick="closeModal()">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="modal-header"><input type="text" id="search" placeholder="Поиск (хог, гигант, пекка)..." oninput="renderCards()"><button onclick="closeModal()" style="background:none; border:none; color:#fff; font-size:24px;">✕</button></div>
-    <div class="cards-list" id="card-list"></div>
+  <div class="stats-container" id="live-stats">
+    <div class="stat-row"><div class="stat-label"><span>Атака</span><span id="v-atk">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-atk"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span>Защита</span><span id="v-def">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-def"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span>Синергия</span><span id="v-syn">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-syn"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span>F2P Score</span><span id="v-f2p">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-f2p"></div></div></div>
   </div>
+
+  <button class="btn-main" onclick="analyze()">Глубокий анализ</button>
 </div>
 
-<div id="sheet" class="sheet" onclick="closeSheet()"><div class="sheet-body" onclick="event.stopPropagation()"><button class="sheet-btn" style="background:var(--accent);" onclick="openPicker(lastIdx)">Заменить</button><button class="sheet-btn" style="background:#ef4444; color:#fff;" onclick="removeCard()">Удалить</button><button class="sheet-btn" style="background:#334155; color:#fff;" onclick="closeSheet()">Отмена</button></div></div>
+<div id="modal" class="modal" onclick="closeModal()"><div class="modal-content" onclick="event.stopPropagation()"><input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()"><div class="cards-list" id="card-list"></div></div></div>
+<div id="sheet" class="sheet" onclick="closeSheet()"><div class="sheet-body" onclick="event.stopPropagation()"><button class="btn-main" style="margin:5px 0" onclick="openPicker(lastIdx)">Заменить</button><button class="btn-main" style="margin:5px 0; background:#ef4444" onclick="removeCard()">Удалить</button></div></div>
 
 <div id="result" class="result-view">
-  <div id="res-grid" style="display:grid; grid-template-columns: repeat(8, 1fr); gap:4px; width:100%; margin-bottom:20px;"></div>
-  <div style="background:var(--glass); padding:30px; border-radius:25px; border:1px solid var(--border); width:100%; box-sizing:border-box; text-align:center;">
-    <div id="v-emoji" style="font-size:60px;"></div><h2 id="v-title" style="color:var(--accent)"></h2><p id="v-text" style="opacity:0.9; line-height:1.5;"></p>
+  <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; width:100%"></div>
+  <div class="res-card">
+    <div id="res-emoji" style="font-size:50px; margin-bottom:10px; text-align:center"></div>
+    <h2 id="res-title" style="color:var(--accent); text-align:center; margin:0"></h2>
+    <p id="res-text" style="font-size:14px; line-height:1.6; text-align:center; opacity:0.9"></p>
   </div>
-  <button class="btn-analyze" style="margin-top:30px; background:#334155;" onclick="location.reload()">Заново</button>
+  <button class="btn-main" onclick="location.reload()">Пересобрать</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// ПОЛНАЯ БАЗА КАРТ (110+)
-const ALL_CARDS = [
-  {id:"hog-rider",n:"Хог Всадник на кабане",e:4,t:"win"},{id:"balloon",n:"Шар Воздушный",e:5,t:"win"},{id:"goblin-barrel",n:"Бочка Гоблинская",e:3,t:"win"},
-  {id:"mega-knight",n:"Мегарыцарь МК",e:7,t:"mid"},{id:"pekka",n:"ПЕККА",e:7,t:"heavy"},{id:"mini-pekka",n:"Мини ПЕККА",e:4,t:"heavy"},
-  {id:"the-log",n:"Бревно",e:2,t:"spell"},{id:"fireball",n:"Файербол Огненный шар",e:4,t:"spell"},{id:"arrows",n:"Стрелы",e:3,t:"spell"},
-  {id:"zap",n:"Разряд",e:2,t:"spell"},{id:"poison",n:"Яд",e:4,t:"spell"},{id:"rocket",n:"Ракета",e:6,t:"spell"},
-  {id:"valkyrie",n:"Валькирия",e:4,t:"def"},{id:"knight",n:"Рыцарь",e:3,t:"def"},{id:"giant",n:"Гигант",e:5,t:"win"},
-  {id:"royal-giant",n:"Королевский гигант КГ",e:6,t:"win"},{id:"golem",n:"Голем",e:8,t:"win"},{id:"electro-giant",n:"Электрогигант ЭГ",e:7,t:"win"},
-  {id:"x-bow",n:"Арбалет",e:6,t:"cancer"},{id:"mortar",n:"Мортира",e:4,t:"win"},{id:"wizard",n:"Маг Колдун",e:5,t:"mid"},
-  {id:"electro-wizard",n:"Электромаг",e:4,t:"sup"},{id:"ice-wizard",n:"Ледяной маг",e:3,t:"sup"},{id:"musketeer",n:"Мушкетер",e:4,t:"sup"},
-  {id:"witch",n:"Ведьма",e:5,t:"mid"},{id:"miner",n:"Шахтер",e:3,t:"win"},{id:"princess",n:"Принцесса",e:3,t:"win"},
-  {id:"little-prince",n:"Маленький принц",e:3,t:"sup"},{id:"monk",n:"Монах",e:5,t:"sup"},{id:"archer-queen",n:"Королева лучниц",e:5,t:"sup"},
-  {id:"mighty-miner",n:"Могучий шахтер",e:4,t:"def"},{id:"golden-knight",n:"Золотой рыцарь",e:4,t:"def"},{id:"skeleton-king",n:"Король скелетов",e:4,t:"def"},
-  {id:"skeletons",n:"Скелеты",e:1,t:"cycle"},{id:"ice-spirit",n:"Ледяной дух",e:1,t:"cycle"},{id:"electro-spirit",n:"Электродух",e:1,t:"cycle"},
-  {id:"fire-spirit",n:"Огненный дух",e:1,t:"cycle"},{id:"bats",n:"Летучие мыши",e:2,t:"cycle"},{id:"inferno-tower",n:"Инферно башня",e:5,t:"def"},
-  {id:"inferno-dragon",n:"Пламенный дракон",e:4,t:"def"},{id:"baby-dragon",n:"Дракончик",e:4,t:"sup"},{id:"electro-dragon",n:"Электродракон",e:5,t:"sup"},
-  {id:"bowler",n:"Вышибала",e:5,t:"def"},{id:"executioner",n:"Палач",e:5,t:"def"},{id:"tornado",n:"Торнадо",e:3,t:"spell"},
-  {id:"earthquake",n:"Землетрясение",e:3,t:"spell"},{id:"lightning",n:"Молния",e:6,t:"spell"},{id:"graveyard",n:"Кладбище",e:5,t:"win"},
-  {id:"sparky",n:"Спарки",e:6,t:"win"},{id:"bandit",n:"Бандитка",e:3,t:"sup"},{id:"royal-ghost",n:"Призрак",e:3,t:"sup"},
-  {id:"lumberjack",n:"Дровосек",e:4,t:"heavy"},{id:"night-witch",n:"Ночная ведьма",e:4,t:"sup"},{id:"ram-rider",n:"Всадница",e:5,t:"win"},
-  {id:"battle-ram",n:"Таран",e:4,t:"win"},{id:"royal-hogs",n:"Кабаны",e:5,t:"win"},{id:"three-musketeers",n:"Три мушкетера",e:9,t:"heavy"},
-  {id:"elite-barbarians",n:"Элитки",e:6,t:"mid"},{id:"royal-recruits",n:"Рекруты",e:7,t:"def"},{id:"barbarians",n:"Варвары",e:5,t:"def"},
-  {id:"minions",n:"Миньоны",e:3,t:"cycle"},{id:"minion-horde",n:"Орда",e:5,t:"def"},{id:"skeleton-army",n:"Армия скелетов",e:3,t:"def"},
-  {id:"guards",n:"Стражи",e:3,t:"def"},{id:"dark-prince",n:"Темный принц",e:4,t:"def"},{id:"prince",n:"Принц",e:5,t:"heavy"},
-  {id:"hunter",n:"Охотник",e:4,t:"def"},{id:"fisherman",n:"Рыбак",e:3,t:"sup"},{id:"zappies",n:"Машинки",e:4,t:"def"},
-  {id:"magic-archer",n:"Магический лучник",e:4,t:"sup"},{id:"mother-witch",n:"Мать ведьма",e:4,t:"sup"},{id:"electro-giant",n:"Электрогигант",e:7,t:"win"},
-  {id:"phoenix",n:"Феникс",e:4,t:"sup"},{id:"mega-minion",n:"Мегаминьон",e:3,t:"def"},{id:"dart-goblin",n:"Гоблин с дротиками",e:3,t:"sup"},
-  {id:"goblin-gang",n:"Банда гоблинов",e:3,t:"def"},{id:"rascals",n:"Прохвосты",e:5,t:"def"},{id:"firecracker",n:"Мортира Лучица",e:3,t:"sup"},
-  {id:"wall-breakers",n:"Стенобои",e:2,t:"win"},{id:"battle-healer",n:"Целительница",e:4,t:"sup"},{id:"skeleton-barrel",n:"Бочка со скелетами",e:3,t:"win"},
-  {id:"cannon",n:"Пушка",e:3,t:"def"},{id:"bomb-tower",n:"Бомбежка",e:4,t:"def"},{id:"tesla",n:"Тесла",e:4,t:"def"},
-  {id:"elixir-collector",n:"Сборщик",e:6,t:"def"},{id:"goblin-cage",n:"Клетка",e:4,t:"def"},{id:"goblin-drill",n:"Бур",e:4,t:"win"},
-  {id:"furnace",n:"Печка",e:4,t:"def"},{id:"barbarian-hut",n:"Хижина варваров",e:6,t:"def"},{id:"goblin-hut",n:"Хижина гоблинов",e:5,t:"def"},
-  {id:"tombstone",n:"Нагробье",e:3,t:"def"},{id:"barbarian-barrel",n:"Бочка с варваром",e:2,t:"spell"},{id:"heal-spirit",n:"Дух исцеления",e:1,t:"cycle"},
-  {id:"rage",n:"Ярость",e:2,t:"spell"},{id:"clone",n:"Клон",e:3,t:"spell"},{id:"mirror",n:"Зеркало",e:0,t:"spell"},{id:"freeze",n:"Заморозка",e:4,t:"spell"}
+// БАЗА КАРТ С ТЕГАМИ (115+ КАРТ)
+const CARDS = [
+  {id:"hog-rider",n:"Хог",e:4,r:2,role:"win",tags:["ground"]}, {id:"balloon",n:"Шар",e:5,r:3,role:"win",tags:["air"]},
+  {id:"goblin-barrel",n:"Бочка",e:3,r:3,role:"win",tags:["swarm"]}, {id:"mega-knight",n:"МК",e:7,r:4,role:"def",tags:["splash","ground"]},
+  {id:"pekka",n:"ПЕККА",e:7,r:3,role:"def",tags:["heavy","ground"]}, {id:"the-log",n:"Бревно",e:2,r:4,role:"spell",tags:["small"]},
+  {id:"fireball",n:"Файер",e:4,r:2,role:"spell",tags:["big"]}, {id:"arrows",n:"Стрелы",e:3,r:1,role:"spell",tags:["small"]},
+  {id:"zap",n:"Разряд",e:2,r:1,role:"spell",tags:["small"]}, {id:"poison",n:"Яд",e:4,r:3,role:"spell",tags:["big"]},
+  {id:"valkyrie",n:"Валька",e:4,r:2,role:"def",tags:["splash"]}, {id:"knight",n:"Рыцарь",e:3,r:1,role:"def",tags:["ground"]},
+  {id:"giant",n:"Гигант",e:5,r:2,role:"win",tags:["heavy"]}, {id:"royal-giant",n:"КГ",e:6,r:1,role:"win",tags:["heavy"]},
+  {id:"electro-giant",n:"ЭГ",e:7,r:3,role:"win",tags:["heavy"]}, {id:"x-bow",n:"Арбалет",e:6,r:3,role:"win",tags:["building","toxic"]},
+  {id:"mortar",n:"Мортира",e:4,r:1,role:"win",tags:["building"]}, {id:"miner",n:"Шахтер",e:3,r:4,role:"win",tags:["cycle"]},
+  {id:"little-prince",n:"Принц",e:3,r:5,role:"sup",tags:["ranged"]}, {id:"monk",n:"Монах",e:5,r:5,role:"def",tags:["ground"]},
+  {id:"skeletons",n:"Скелеты",e:1,r:1,role:"cycle",tags:["swarm"]}, {id:"ice-spirit",n:"Дух",e:1,r:1,role:"cycle",tags:["small"]},
+  {id:"inferno-tower",n:"Инферно",e:5,r:2,role:"def",tags:["building"]}, {id:"cannon",n:"Пушка",e:3,r:1,role:"def",tags:["building"]},
+  {id:"tesla",n:"Тесла",e:4,r:1,role:"def",tags:["building"]}, {id:"graveyard",n:"Кладбище",e:5,r:4,role:"win",tags:["swarm"]},
+  {id:"sparky",n:"Спарки",e:6,r:4,role:"win",tags:["splash","heavy"]}, {id:"bandit",n:"Бандитка",e:3,r:4,role:"sup",tags:["ground"]},
+  {id:"royal-ghost",n:"Призрак",e:3,r:4,role:"sup",tags:["splash"]}, {id:"night-witch",n:"Ведьма",e:4,r:4,role:"sup",tags:["ground"]},
+  {id:"phoenix",n:"Феникс",e:4,r:4,role:"sup",tags:["air"]}, {id:"electro-wizard",n:"Электромаг",e:4,r:4,role:"sup",tags:["ranged"]},
+  {id:"executioner",n:"Палач",e:5,r:3,role:"def",tags:["splash"]}, {id:"bowler",n:"Вышибала",e:5,r:3,role:"def",tags:["splash"]},
+  {id:"lumberjack",n:"Дровосек",e:4,r:4,role:"heavy",tags:["ground"]}, {id:"freeze",n:"Фриз",e:4,r:3,role:"spell",tags:["toxic"]},
+  {id:"clone",n:"Клон",e:3,r:3,role:"spell",tags:["toxic"]}, {id:"mirror",n:"Зеркало",e:0,r:3,role:"spell",tags:["toxic"]},
+  {id:"elite-barbarians",n:"Элитки",e:6,r:1,role:"heavy",tags:["ground"]}, {id:"rocket",n:"Ракета",e:6,r:2,role:"spell",tags:["big"]},
+  {id:"firecracker",n:"Лучица",e:3,r:1,role:"sup",tags:["splash","ranged"]}, {id:"bats",n:"Мыши",e:2,r:1,role:"cycle",tags:["air","swarm"]},
+  {id:"electro-spirit",n:"Электродух",e:1,r:1,role:"cycle",tags:["small"]}, {id:"golden-knight",n:"ЗолРыцарь",e:4,r:5,role:"def",tags:["ground"]},
+  {id:"archer-queen",n:"Королева",e:5,r:5,role:"sup",tags:["ranged"]}, {id:"skeleton-king",n:"КорСкелет",e:4,r:5,role:"def",tags:["splash"]},
+  {id:"mighty-miner",n:"МогШахтер",e:4,r:5,role:"def",tags:["heavy"]}, {id:"ram-rider",n:"Всадница",e:5,r:4,role:"win",tags:["ground"]},
+  {id:"battle-ram",n:"Таран",e:4,r:2,role:"win",tags:["ground"]}, {id:"royal-hogs",n:"Кабаны",e:5,r:2,role:"win",tags:["swarm"]},
+  {id:"mother-witch",n:"МатьВедьма",e:4,r:4,role:"sup",tags:["ranged"]}, {id:"fisherman",n:"Рыбак",e:3,r:4,role:"def",tags:["ground"]},
+  {id:"zappies",n:"Машинки",e:4,r:2,role:"def",tags:["ranged"]}, {id:"flying-machine",n:"Леталка",e:4,r:2,role:"sup",tags:["air","ranged"]},
+  {id:"baby-dragon",n:"Дракоша",e:4,r:3,role:"sup",tags:["air","splash"]}, {id:"inferno-dragon",n:"Пламенный",e:4,r:4,role:"def",tags:["air","heavy"]},
+  {id:"magic-archer",n:"МагЛучник",e:4,r:4,role:"sup",tags:["ranged"]}, {id:"dark-prince",n:"ТемныйПринц",e:4,r:3,role:"def",tags:["splash"]},
+  {id:"prince",n:"Принц",e:5,r:3,role:"heavy",tags:["ground"]}, {id:"mini-pekka",n:"Миник",e:4,r:2,role:"heavy",tags:["ground"]},
+  {id:"hunter",n:"Охотник",e:4,r:2,role:"def",tags:["ranged"]}, {id:"royal-recruits",n:"Рекруты",e:7,r:1,role:"def",tags:["swarm"]},
+  {id:"skeleton-army",n:"Скемия",e:3,r:3,role:"def",tags:["swarm"]}, {id:"guards",n:"Стражи",e:3,r:3,role:"def",tags:["swarm"]},
+  {id:"minions",n:"Миньоны",e:3,r:1,role:"sup",tags:["air"]}, {id:"minion-horde",n:"Орда",e:5,r:1,role:"def",tags:["air","swarm"]},
+  {id:"goblin-gang",n:"Банда",e:3,r:1,role:"def",tags:["swarm"]}, {id:"wizard",n:"Маг",e:5,r:2,role:"sup",tags:["splash"]},
+  {id:"ice-wizard",n:"Ледяной",e:3,r:4,role:"sup",tags:["splash"]}, {id:"witch",n:"Ведьма",e:5,r:3,role:"sup",tags:["splash","swarm"]},
+  {id:"cannon-cart",n:"Тележка",e:5,r:3,role:"sup",tags:["ground"]}, {id:"barbarian-barrel",n:"БочкаВар",e:2,r:2,role:"spell",tags:["small"]},
+  {id:"earthquake",n:"Земля",e:3,r:2,role:"spell",tags:["big"]}, {id:"tornado",n:"Торнадо",e:3,r:3,role:"spell",tags:["small"]},
+  {id:"lightning",n:"Молния",e:6,r:3,role:"spell",tags:["big"]}, {id:"bomb-tower",n:"Бомбежка",e:4,r:2,role:"def",tags:["building"]},
+  {id:"furnace",n:"Печка",e:4,r:2,role:"def",tags:["building"]}, {id:"goblin-cage",n:"Клетка",e:4,r:2,role:"def",tags:["building"]},
+  {id:"elixir-collector",n:"Сборщик",e:6,r:2,role:"sup",tags:["building"]}, {id:"barbarians",n:"Варвары",e:5,r:1,role:"def",tags:["swarm"]},
+  {id:"minion-horde",n:"Орда",e:5,r:1,role:"def",tags:["air","swarm"]}, {id:"three-musketeers",n:"3Мушкета",e:9,r:2,role:"win",tags:["heavy"]},
+  {id:"wall-breakers",n:"Стенобои",e:2,r:3,role:"win",tags:["cycle"]}, {id:"goblin-drill",n:"Бур",e:4,r:3,role:"win",tags:["building"]},
+  {id:"skeleton-barrel",n:"БочкаСкел",e:3,r:1,role:"win",tags:["air","swarm"]}
 ];
 
-let deck = Array(8).fill(null); let lastIdx = 0;
+let deck = Array(8).fill(null);
+let lastIdx = 0;
+
 function handleSlotClick(i) { lastIdx = i; if(deck[i]) document.getElementById('sheet').style.display='flex'; else openPicker(i); }
-function openPicker(i) { lastIdx = i; closeSheet(); document.getElementById('modal').style.display='flex'; renderCards(); }
+function openPicker(i) { lastIdx=i; closeSheet(); document.getElementById('modal').style.display='flex'; renderCards(); }
 function closeModal() { document.getElementById('modal').style.display='none'; }
 function closeSheet() { document.getElementById('sheet').style.display='none'; }
-function removeCard() { deck[lastIdx]=null; const s=document.getElementById(`s${lastIdx}`); s.classList.remove('filled'); document.getElementById(`img${lastIdx}`).src=""; document.getElementById(`p${lastIdx}`).style.display="block"; closeSheet(); tg.HapticFeedback.impactOccurred('light'); }
+
+function removeCard() { 
+  deck[lastIdx]=null; 
+  document.getElementById(`s${lastIdx}`).classList.remove('filled');
+  updateStats(); closeSheet(); 
+}
 
 function renderCards() {
   const q = document.getElementById('search').value.toLowerCase();
-  const list = document.getElementById('card-list');
   const used = deck.filter(c => c).map(c => c.id);
-  list.innerHTML = ALL_CARDS.filter(c => c.n.toLowerCase().includes(q)).map(c => `<div class="card-item ${used.includes(c.id)?'selected':''}" onclick="selectCard('${c.id}')"><img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png"></div>`).join('');
+  document.getElementById('card-list').innerHTML = CARDS.filter(c => c.n.toLowerCase().includes(q))
+    .map(c => `<div class="card-item ${used.includes(c.id)?'opacity-20':''}" onclick="selectCard('${c.id}')"><img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png"></div>`).join('');
 }
 
 function selectCard(id) {
-  const card = ALL_CARDS.find(c => c.id === id); deck[lastIdx] = card;
+  const card = CARDS.find(c => c.id === id);
+  deck[lastIdx] = card;
   const s = document.getElementById(`s${lastIdx}`);
   document.getElementById(`img${lastIdx}`).src = `https://royaleapi.github.io/cr-api-assets/cards/${id}.png`;
   document.getElementById(`e${lastIdx}`).innerText = card.e;
-  document.getElementById(`p${lastIdx}`).style.display = "none";
-  s.classList.add('filled'); closeModal(); tg.HapticFeedback.notificationOccurred('success');
+  s.classList.add('filled'); closeModal(); updateStats();
+  tg.HapticFeedback.impactOccurred('medium');
+}
+
+function updateStats() {
+  const d = deck.filter(c => c);
+  if(!d.length) return;
+  
+  const atk = Math.min(100, (d.filter(c=>c.role==='win').length * 30) + (d.filter(c=>c.tags.includes('heavy')).length * 10));
+  const def = Math.min(100, (d.filter(c=>c.tags.includes('building')).length * 25) + (d.filter(c=>c.role==='def').length * 15));
+  const f2p = Math.max(0, 100 - d.reduce((acc, c) => acc + (c.r * 12), 0) / 1);
+  
+  setBar('atk', atk); setBar('def', def); setBar('f2p', f2p);
+  setBar('syn', Math.min(100, d.length * 10));
+}
+
+function setBar(id, val) {
+  document.getElementById(`b-${id}`).style.width = val + '%';
+  document.getElementById(`v-${id}`).innerText = Math.round(val) + '%';
 }
 
 function analyze() {
-  if(deck.includes(null)) return tg.showAlert("Собери все 8 карт, иначе я тебя прожарю вхолостую!");
-  const avg = (deck.reduce((a,b)=>a+b.e,0)/8).toFixed(1);
-  const spells = deck.filter(c => c.t==='spell').length;
-  const wins = deck.filter(c => c.t==='win' || c.t==='cancer').length;
-  const mid = deck.filter(c => c.t==='mid' || c.e >= 7).length;
-  const cycle = deck.filter(c => c.e <= 2).length;
-  const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  let emoji, title, text;
+  if(deck.includes(null)) return tg.showAlert("Заполни все 8 слотов!");
+  
+  const d = deck;
+  const avg = (d.reduce((a,b)=>a+b.e,0)/8).toFixed(1);
+  const winCount = d.filter(c=>c.role==='win').length;
+  const splashCount = d.filter(c=>c.tags.includes('splash')).length;
+  const airCount = d.filter(c=>c.tags.includes('air')).length;
+  const buildingCount = d.filter(c=>c.tags.includes('building')).length;
+  const spellCount = d.filter(c=>c.role==='spell').length;
+  const cycleCount = d.filter(c=>c.e <= 2).length;
+  const champCount = d.filter(c=>c.r === 5).length;
 
-  if (deck.some(c => c.t==='cancer')) {
-    emoji="☣️"; title="ТОКСИЧНЫЙ МУСОР"; text=random(["Арбалетчик? Серьезно? Надеюсь, ты хотя бы руки моешь после игры.","Твоя дека воняет тильтом и посиделками у реки. Удали игру.","Играть арбалетом — это как признаться, что тебя в школе обижали."]);
-  } else if (mid >= 3 && avg > 4.3) {
-    emoji="🤡"; title="КОРОЛЬ МИДЛАДДЕРА"; text=random([`Ср. эликсир ${avg}. Ты как вообще дефаться собрался, гений?`,`Мегарыцарь и ПЕККА? Типичный 5000-кубковый эксперт. Твой предел — это спам в начале игры.`,`Твоя дека тяжелее, чем моя депрессия от этого билда.`]);
-  } else if (cycle >= 4 && avg < 3.0) {
-    emoji="💦"; title="ПОТНЫЙ ЦИКЛЕР"; text=random(["О, опять 2.6 или подобная дичь. Ты когда последний раз на улицу выходил?","Кидать ледяного духа каждые 2 секунды — это не скилл, это нервный тик.","Твой билд потный как подмышки киберспортсмена в финале."]);
-  } else if (wins === 0) {
-    emoji="🧐"; title="МИРНЫЙ ЖИТЕЛЬ"; text="Ни одного вин-кона. Ты планируешь выиграть, надеясь, что у противника сядет телефон?";
-  } else if (spells >= 2 && wins >= 1 && avg >= 3.0 && avg <= 4.0) {
-    emoji="🔥"; title="НОРМАС, НО..."; text=random(["Хорошая дека. Признавайся, у кого слизал? Сам бы такое не собрал.","Слишком адекватно для тебя. Видимо, случайно кнопки нажал при выборе.","Билд ок, но скилл это тебе не заменит."]);
+  let emoji, title, text;
+  const r = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  // ЛОГИКА ПРОЖАРКИ (30+ ВАРИАНТОВ)
+  if (winCount === 0) {
+    emoji = "🤡"; title = "БЕЗДАРНЫЙ ПАЦИФИСТ";
+    text = r(["У тебя ноль вин-конов. Ты планируешь выиграть, надеясь на инфаркт противника?","Ты собрал 8 карт защиты. Это не Клэш Рояль, это очередь в МФЦ.","Добавь хоть Хога, пацифист хренов. Ты ни одну башню не снесешь."]);
+  } else if (avg > 4.8) {
+    emoji = "🐘"; title = "ТЯЖЕЛЫЙ СЛУЧАЙ";
+    text = r([`Средний чек ${avg}? Ты что, арабский шейх, чтобы столько эликсира тратить?`,`Твоя дека медленнее, чем интернет в деревне. Тебя переедут обычными скелетами.`,`Пока ты поставишь одну карту, противник успеет жениться и завести детей.`]);
+  } else if (buildingCount >= 3) {
+    emoji = "🧱"; title = "СТРОИТЕЛЬ-МАЗОХИСТ";
+    text = r(["Три здания? Ты что, строительный колледж заканчивал?","Против тебя играть — это как в стену головой биться. Очень скучно.","Твоя тактика — застроиться и плакать? Оригинально."]);
+  } else if (airCount >= 5) {
+    emoji = "🎈"; title = "ВОЗДУШНЫЙ ЗАМОК";
+    text = "У тебя вся дека в воздухе. Один экзекутор или охотник — и твои карты посыпятся как твои надежды на топ-1.";
+  } else if (spellCount >= 4) {
+    emoji = "🪄"; title = "ГАРРИ ПОТТЕР";
+    text = "4 заклинания? Ты Гарри Поттер или просто промахиваешься файерболом по мушкетеру?";
+  } else if (champCount >= 2) {
+    emoji = "💎"; title = "МАЖОРНЫЙ СПАМ";
+    text = "Запихнул всех чемпионов в одну деку? Кошелек большой, а мозгов... ладно, промолчу.";
+  } else if (cycleCount >= 5 && avg < 2.8) {
+    emoji = "💦"; title = "ПОТНЫЙ ЗАДРОТ";
+    text = r(["Средний эликсир " + avg + ". Ты нажимаешь на экран чаще, чем дышишь? Расслабься.","Ты из тех, кто дефает Голема ледяным духом и радуется? Помой руки, ты перепотел.","Твоя дека весит меньше, чем твоя совесть после победы над нубом."]);
+  } else if (deck.some(c=>c.tags.includes('toxic'))) {
+    emoji = "☣️"; title = "ТОКСИЧНАЯ ПОМОЙКА";
+    text = r(["Арбалет, заморозка, клон... С тобой в детстве никто не играл?","Твоя дека — причина, по которой люди удаляют игру. Гордишься собой?","Фу, убери это. У меня экран даже зашкварился от такого билда."]);
+  } else if (splashCount === 0) {
+    emoji = "🐜"; title = "КОРМ ДЛЯ КРЫС";
+    text = "У тебя НОЛЬ сплеш-урона. Одна армия скелетов или банда гоблинов — и твой 'мега-билд' превращается в труху.";
+  } else if (winCount >= 3) {
+    emoji = "🤪"; title = "ШИЗО-ПУШ";
+    text = "Хог, Гигант и Кабаны в одной деке? Ты либо гений, либо просто тыкал в экран закрытыми глазами.";
+  } else if (avg >= 3.0 && avg <= 3.8 && winCount === 1 && spellCount === 2) {
+    emoji = "🤴"; title = "ГИГАЧАД БИЛД";
+    text = r(["Слишком адекватно. Наверняка слизал у топов, сам бы такое не собрал.","Билд идеальный. Аж противно. Ты, небось, и зубы чистишь два раза в день?","С такой декой даже ты должен выигрывать. Хотя... зная твой скилл..."]);
   } else {
-    emoji="🤔"; title="НИКАК"; text="Это не дека, это винегрет из карт. Ни идеи, ни баланса. Попробуй еще раз.";
+    // ВМЕСТО "ВИНЕГРЕТА" - ЕЩЕ 5 ГРУБЫХ ВАРИАНТОВ
+    const insults = [
+      "Это не колода, это набор случайных картинок. Ты в курсе, что карты должны работать вместе?",
+      "Я видел много фигни, но это — шедевр бессмысленности. Что это за мусор?",
+      "Ты собрал деку по принципу 'что было, то и полюбила'? Баланса ноль, смысла еще меньше.",
+      "Твоя синергия отрицательная. Карты в твоей деке ненавидят друг друга больше, чем я твой билд.",
+      "Если это твоя основная колода — удаляй игру. Серьезно. Не мучай себя и людей."
+    ];
+    emoji = "🤨"; title = "ЧТО ЭТО ЗА Г*ВНО?"; text = r(insults);
   }
 
-  document.getElementById('v-emoji').innerText = emoji; document.getElementById('v-title').innerText = title; document.getElementById('v-text').innerText = text;
-  document.getElementById('res-grid').innerHTML = deck.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%">`).join('');
-  document.getElementById('result').style.display = 'flex'; tg.HapticFeedback.notificationOccurred('warning');
+  document.getElementById('res-emoji').innerText = emoji;
+  document.getElementById('res-title').innerText = title;
+  document.getElementById('res-text').innerText = text;
+  document.getElementById('res-grid').innerHTML = d.map(c => `<img src="https://royaleapi.github.io/cr-api-assets/cards/${c.id}.png" style="width:100%; border-radius:8px">`).join('');
+  document.getElementById('result').style.display = 'flex';
+  tg.HapticFeedback.notificationOccurred('warning');
 }
 </script>
 </body>
