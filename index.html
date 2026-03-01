@@ -3,122 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DECK ROASTER AI - FULL VERSION</title>
+  <title>DECK ROASTER AI - ULTIMATE FULL</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --red: #ff003c; --cyan: #00f2ff; --bg: #000000; }
+    :root { --red: #ff003c; --cyan: #00f2ff; --bg: #000; }
     body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; padding: 0; overflow: hidden; }
-    
-    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; border: 1px solid #111; }
-    
+    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; }
     .header { padding: 15px; text-align: center; border-bottom: 2px solid var(--red); background: #050505; }
-    .glitch { font-family: 'Orbitron'; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px var(--red); }
-
+    .glitch { font-family: 'Orbitron'; font-size: 20px; text-shadow: 2px 2px var(--red); text-transform: uppercase; }
     .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #080808; }
-    .slot { aspect-ratio: 1/1.2; background: #111; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.3s; overflow: hidden; }
+    .slot { aspect-ratio: 1/1.2; background: #111; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
     .slot.filled { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,242,255,0.2); }
     .slot img { width: 100%; height: 100%; object-fit: contain; }
-    .slot span { font-size: 20px; opacity: 0.2; font-weight: 900; }
-
-    .stats { padding: 15px 20px; background: #050505; flex-grow: 1; }
-    .stat-row { margin-bottom: 15px; }
-    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 10px; color: #666; margin-bottom: 5px; }
-    .bar-bg { background: #1a1a1a; height: 6px; border-radius: 3px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s cubic-bezier(0.1, 0.7, 1.0, 0.1); box-shadow: 0 0 10px var(--cyan); }
-
-    .btn-main { margin: 15px; padding: 20px; border: none; border-radius: 12px; background: var(--red); color: white; font-family: 'Orbitron'; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 0 #80001e; }
-    .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #80001e; }
-
-    /* МОДАЛЬНОЕ ОКНО ВЫБОРА */
+    .stats { padding: 15px 20px; flex-grow: 1; background: #000; }
+    .stat-row { margin-bottom: 12px; }
+    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 10px; color: #666; }
+    .bar-bg { background: #1a1a1a; height: 6px; border-radius: 3px; margin-top: 4px; }
+    .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s ease; box-shadow: 0 0 10px var(--cyan); }
+    .btn-main { margin: 15px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: #fff; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #80001e; }
+    .btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 #80001e; }
     .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-    .search-area { padding: 20px; background: #0a0a0a; border-bottom: 1px solid #222; }
-    #search { width: 100%; padding: 15px; background: #111; border: 1px solid var(--red); border-radius: 10px; color: white; font-size: 16px; outline: none; box-sizing: border-box; }
-    
+    .search-area { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #222; }
+    #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; }
     .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; flex-grow: 1; }
     .card-item { background: #0a0a0a; border: 1px solid #222; border-radius: 10px; padding: 5px; text-align: center; }
-    .card-item img { width: 100%; border-radius: 5px; margin-bottom: 5px; }
-    .card-item div { font-size: 9px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* ВЕРДИКТ */
+    .card-item img { width: 100%; border-radius: 5px; background: #111; }
+    .card-item div { font-size: 9px; color: #888; margin-top: 5px; white-space: nowrap; overflow: hidden; }
     .result-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-    .result-card { background: #0a0a0a; border: 3px solid var(--red); border-radius: 20px; padding: 25px; width: 100%; box-sizing: border-box; text-align: center; box-shadow: 0 0 40px rgba(255, 0, 60, 0.3); }
-    #res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 20px; }
-    #res-grid img { width: 100%; border-radius: 5px; border: 1px solid #333; }
+    .result-card { background: #0a0a0a; border: 3px solid var(--red); border-radius: 20px; padding: 20px; text-align: center; width: 100%; box-sizing: border-box; }
+    #res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
+    #res-grid img { width: 100%; border-radius: 4px; }
   </style>
 </head>
 <body>
 
 <div class="app">
   <div class="header"><div class="glitch">DECK ROASTER AI</div></div>
-  
   <div class="deck-grid">
     <script>
-      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><span>?</span><img id="img${i}" style="display:none"></div>`);
+      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><img id="img${i}" style="display:none"><span id="p${i}" style="opacity:0.2">+</span></div>`);
     </script>
   </div>
-
   <div class="stats">
-    <div class="stat-row">
-      <div class="stat-label"><span>TOXICITY LEVEL</span><span id="v-tox">0%</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="b-tox"></div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-label"><span>SKILL ISSUE</span><span id="v-skill">0%</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="b-skill"></div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-label"><span style="color:var(--red)">GIRLFRIEND CHANCE</span><span id="v-love">100%</span></div>
-      <div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div>
-    </div>
+    <div class="stat-row"><div class="stat-label"><span>TOXICITY</span><span id="v-tox">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-tox"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span>SKILL ISSUE</span><span id="v-skill">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-skill"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span style="color:var(--red)">LOVE CHANCE</span><span id="v-love">100%</span></div><div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div></div>
   </div>
-
-  <button class="btn-main" onclick="startRoast()">ПРОЖАРИТЬ ЭТО ДЕРЬМО</button>
+  <button class="btn-main" onclick="startRoast()">ПРОЖАРИТЬ ДЕКУ</button>
 </div>
 
 <div id="modal" class="modal">
   <div class="search-area">
-    <input type="text" id="search" placeholder="Поиск карты (например: Хог)..." oninput="renderCards()">
-    <button onclick="closeModal()" style="background:none; border:none; color:var(--red); margin-top:10px; width:100%; font-weight:900; cursor:pointer;">ЗАКРЫТЬ</button>
+    <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
+    <button onclick="closeModal()" style="background:none; border:none; color:var(--red); margin-top:10px; width:100%; font-weight:bold; cursor:pointer;">ЗАКРЫТЬ</button>
   </div>
   <div class="card-list" id="card-list"></div>
 </div>
 
 <div id="result" class="result-view">
   <div id="capture-area" class="result-card">
-    <div id="res-emoji" style="font-size: 60px;">🤮</div>
-    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--red); margin: 10px 0;"></h2>
-    <p id="res-text" style="font-size: 14px; color: #bbb; line-height: 1.5;"></p>
+    <div id="res-emoji" style="font-size: 50px;"></div>
+    <h2 id="res-title" style="color:var(--red); font-family:'Orbitron'; margin: 10px 0;"></h2>
+    <p id="res-text" style="font-size: 13px; line-height: 1.4; color: #ccc; min-height: 60px;"></p>
     <div id="res-grid"></div>
   </div>
-  <button class="btn-main" style="width:100%;" onclick="saveResult()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
+  <button class="btn-main" style="width:100%" onclick="saveResult()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
   <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:10px; cursor:pointer;">ПОПРОБОВАТЬ СНОВА</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// ПОЛНЫЙ, НЕУРЕЗАННЫЙ СПИСОК
 const FULL_LIST = ["Адская башня","Адская гончая","Арбалет","Армия скелетов","Банда гоблинов","Бандитка","Башня-бомбёжка","Бездна","Берсеркша","Боевой таран","Бочка со скелетами","Бревно","Валькирия","Варварская бочка","Варварская пусковая установка","Варвары","Ведьма","Ведьмина бабушка","Всадник на кабане","Всадница на баране","Вышибала","Гигант","Гигантский скелет","Гигантский снежок","Главная бандитка","Гоблин с дротиками","Гоблин-гигант","Гоблин-подрывник","Гоблинская бочка","Гоблинский бур","Гоблинштейн","Гоблины","Гоблины-копейщики","Гоблинята","Голем","Графиня с кинжалами","Громовержец","Дракончик","Дровосек","Дух исцеления","Заморозка","Землетрясение","Зеркало","Золотой рыцарь","Императрица духов","Исцеление","Канонир","Кладбище","Клетка с гоблином","Клон","Колдун","Королева лучниц","Королевская почта","Королевские кабаны","Королевские рекруты","Королевский гигант","Королевский повар","Королевский призрак","Король Royale","Король скелетов","Костяные драконы","Ледяной голем","Ледяной дух","Ледяной колдун","Ледяной суперголем","Летучие мыши","Летучка","Лоза","Лучницы","Магический лучник","Маленький Принц","Мегаминьон","Мегарыцарь","Мини-генераторы","Мини-П.Е.К.К.А.","Миньоны","Молния","Монах","Мортира","Мушкетёр","Надгробие","Ночная ведьма","Огненная лучница","Огненный дух","Огненный шар","Орда миньонов","Охотник","П.Е.К.К.А.","Палач","Печь","Пламенный дракон","Повозка с пушкой","Подозрительный куст","Подрывник","Праздничная ракета","Праздничная хижина","Принц","Принцесса","Принцесса из башни","Пушка","Разбойники","Разряд","Ракета","Руническая гигантша","Рыбак","Рыцарь","Санта на кабане","Сборщик эликсира","Скелеты","Спарки","Стенобои","Стражи","Стрелы","Супер-адская гончая","Суперведьма","Супермагический лучник","Супермини-П.Е.К.К.А.","Тёмный принц","Терри","Тесла","Торнадо","Три мушкетёра","Трио колдунов","Феникс","Хижина варваров","Хижина гоблинов","Целительница-воин","Шар","Шахтёр","Шустрый шахтёр","Эволюция","Электрический дух","Электрогигант","Электродракон","Эликсирный голем","Элитные варвары","Яд","Ярость"];
 
-// Маппинг для исправлений имен файлов
-const nameFix = (s) => {
-  let id = s.toLowerCase().replace(/ /g, '-').replace(/\./g, '').replace(/ё/g, 'e').replace(/ё/g, 'e');
-  if (id === 'п-е-к-к-а') return 'pekka';
-  if (id === 'мини-п-е-к-к-а') return 'mini-pekka';
-  if (id === 'всадник-на-кабане') return 'hog-rider';
-  if (id === 'бревно') return 'the-log';
-  if (id === 'шар') return 'balloon';
+const nameFix = (n) => {
+  let id = n.toLowerCase().replace(/ /g, '-').replace(/\./g, '').replace(/ё/g, 'e');
+  if(id === 'п-е-к-к-а') return 'pekka';
+  if(id === 'мини-п-е-к-к-а') return 'mini-pekka';
+  if(id === 'всадник-на-кабане') return 'hog-rider';
+  if(id === 'бревно') return 'the-log';
+  if(id === 'шар') return 'balloon';
   return id;
 };
 
-const ALL_CARDS = FULL_LIST.map(name => ({
-  name: name,
-  id: nameFix(name),
-  url: `https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/docs/img/cards/${nameFix(name)}.png`,
-  isToxic: ["Арбалет","Заморозка","Зеркало","Мортира","Электрогигант","Ярость","Торнадо","Элитные варвары"].includes(name),
-  isNoob: ["Мегарыцарь","Колдун","Ведьма","Гигантский скелет","Варвары"].includes(name)
+const ALL_CARDS = FULL_LIST.map(n => ({
+  name: n,
+  url: `https://royaleapi.com/static/img/cards-150/${nameFix(n)}.png`,
+  tox: ["Арбалет","Заморозка","Зеркало","Мортира","Электрогигант","Ярость","Торнадо","Элитные варвары","Спарки"].includes(n),
+  noob: ["Мегарыцарь","Колдун","Ведьма","Варвары","Гигантский скелет"].includes(n)
 }));
 
 let deck = Array(8).fill(null);
@@ -129,30 +103,29 @@ function closeModal() { document.getElementById('modal').style.display = 'none';
 
 function renderCards() {
   const q = document.getElementById('search').value.toLowerCase();
-  const container = document.getElementById('card-list');
-  container.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
+  const list = document.getElementById('card-list');
+  list.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
     <div class="card-item" onclick="selectCard('${c.name}')">
-      <img src="${c.url}" onerror="this.src='https://placehold.co/120x150?text=CR'">
+      <img src="${c.url}" loading="lazy" onerror="this.src='https://placehold.co/100x130?text=CR'">
       <div>${c.name}</div>
     </div>
   `).join('');
 }
 
 function selectCard(name) {
-  const card = ALL_CARDS.find(c => c.name === name);
-  deck[currentSlot] = card;
+  const c = ALL_CARDS.find(x => x.name === name);
+  deck[currentSlot] = c;
   const img = document.getElementById(`img${currentSlot}`);
-  img.src = card.url;
-  img.style.display = 'block';
+  img.src = c.url; img.style.display = 'block';
+  document.getElementById(`p${currentSlot}`).style.display = 'none';
   document.getElementById(`s${currentSlot}`).classList.add('filled');
-  closeModal();
-  updateStats();
+  closeModal(); updateStats();
 }
 
 function updateStats() {
-  const d = deck.filter(c => c);
-  const tox = (d.filter(c => c.isToxic).length / 3) * 100;
-  const noob = (d.filter(c => c.isNoob).length / 3) * 100;
+  const d = deck.filter(x => x);
+  const tox = (d.filter(x => x.tox).length / 3) * 100;
+  const noob = (d.filter(x => x.noob).length / 3) * 100;
   document.getElementById('b-tox').style.width = Math.min(100, tox) + '%';
   document.getElementById('v-tox').innerText = Math.round(tox) + '%';
   document.getElementById('b-skill').style.width = Math.min(100, noob) + '%';
@@ -163,41 +136,51 @@ function updateStats() {
 }
 
 function startRoast() {
-  if(deck.includes(null)) return tg.showAlert("Заполни все 8 слотов, не тупи!");
+  if(deck.includes(null)) return tg.showAlert("Сначала собери полную пачку (8 карт)!");
+  const tCount = deck.filter(x => x.tox).length;
+  const nCount = deck.filter(x => x.noob).length;
   
-  const tox = deck.filter(c => c.isToxic).length;
-  const noob = deck.filter(c => c.isNoob).length;
-  
-  let title, text, emoji;
-  if(tox >= 3) {
-    title = "ТОКСИЧНАЯ ПОМОЙКА";
-    emoji = "☣️";
-    text = "Твоя дека воняет хуже, чем подмышки Гиганта. С тобой никто не хочет дружить, а твои родители, скорее всего, поставили пароль на Wi-Fi, чтобы ты не позорил семью.";
-  } else if(noob >= 3) {
-    title = "МАСТЕР МИДЛАДДЕРА";
+  let title, emoji, text;
+  const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  if(tCount >= 3) {
+    emoji = "☢️";
+    title = random(["РАК МОЗГА", "ТОКСИЧНАЯ ПОМОЙКА", "АРБАЛЕТЧИК DETECTED"]);
+    text = random([
+      "О, Арбалет или Спарки. Ты из тех, кто ставит здание у реки и надеется на чудо? Сходи помойся.",
+      "Твоя колода вызывает желание выйти из игры еще на загрузке. Как там в 2017-м? Все еще веришь в этот билд?",
+      "Ставить Спарки или Арбалет — это как признаться, что у тебя нет друзей. Надеюсь, ты доволен собой."
+    ]);
+  } else if(nCount >= 3) {
     emoji = "🤡";
-    text = "Мегарыцарь и Ведьма? Серьезно? Ты просто кидаешь карты на мост и молишься. Твой IQ равен количеству эликсира у Скелетов.";
+    title = random(["КОРОЛЬ МИДЛАДДЕРА", "МЕГАРЫЦАРЬ MOMENT", "8-Я АРЕНА FOREVER"]);
+    text = random([
+      "Мегарыцарь, ПЕККА, Элитки... Тебе не колоду собирать надо, а в цирке выступать. Твой IQ равен стоимости твоей самой дешевой карты.",
+      "Ты что, пытаешься компенсировать что-то этими тяжелыми картами? Один быстрый цикл — и ты в канаве.",
+      "Если ты выиграешь этой декой, то только потому, что у противника случился сердечный приступ от смеха."
+    ]);
   } else {
-    title = "МЕТА-РАБ БЕЗ МОЗГА";
     emoji = "🤖";
-    text = "Ого, дека из топа. Своего ума не хватило? Ты как попугай — просто повторяешь за киберспортсменами, но играешь всё равно как курица лапой.";
+    title = "МЕТА-РАБ БЕЗ МОЗГА";
+    text = "Ого, очередной быстрый цикл или мета-дека из Ютуба. Своих идей ноль, просто скопировал и думаешь, что киберспортсмен? Спойлер: нет.";
   }
 
   document.getElementById('res-title').innerText = title;
   document.getElementById('res-emoji').innerText = emoji;
   document.getElementById('res-text').innerText = text;
-  document.getElementById('res-grid').innerHTML = deck.map(c => `<img src="${c.url}">`).join('');
+  document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="${x.url}">`).join('');
   document.getElementById('result').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('error');
 }
 
 function saveResult() {
-  html2canvas(document.getElementById('capture-area')).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'roast.png';
-    link.href = canvas.toDataURL();
-    link.click();
-    tg.showAlert("Скриншот в загрузках! Ждем в ТикТоке!");
+  const target = document.getElementById('capture-area');
+  html2canvas(target, { backgroundColor: '#0a0a0a' }).then(canvas => {
+    const a = document.createElement('a');
+    a.download = 'roast_result.png';
+    a.href = canvas.toDataURL();
+    a.click();
+    tg.showAlert("Результат сохранен!");
   });
 }
 </script>
