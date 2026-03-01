@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DECK ROASTER AI - FIX IMAGES</title>
+  <title>DECK ROASTER AI - TOTAL EDITION</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
@@ -12,25 +12,24 @@
     body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; padding: 0; overflow: hidden; }
     .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; }
     .header { padding: 15px; text-align: center; border-bottom: 2px solid var(--red); background: #050505; }
-    .glitch { font-family: 'Orbitron'; font-size: 20px; text-shadow: 2px 2px var(--red); text-transform: uppercase; }
+    .glitch { font-family: 'Orbitron'; font-size: 18px; text-shadow: 2px 2px var(--red); text-transform: uppercase; letter-spacing: 1px; }
     .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #080808; }
     .slot { aspect-ratio: 1/1.2; background: #111; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
     .slot.filled { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,242,255,0.2); }
     .slot img { width: 100%; height: 100%; object-fit: contain; }
-    .stats { padding: 15px 20px; flex-grow: 1; background: #000; }
-    .stat-row { margin-bottom: 12px; }
-    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 10px; color: #666; }
+    .stats { padding: 10px 20px; flex-grow: 1; background: #000; }
+    .stat-row { margin-bottom: 10px; }
+    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 9px; color: #666; }
     .bar-bg { background: #1a1a1a; height: 6px; border-radius: 3px; margin-top: 4px; }
     .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s ease; box-shadow: 0 0 10px var(--cyan); }
-    .btn-main { margin: 15px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: #fff; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #80001e; }
-    .btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 #80001e; }
+    .btn-main { margin: 10px 15px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: #fff; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #80001e; }
     .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
     .search-area { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #222; }
     #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; }
     .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; flex-grow: 1; }
     .card-item { background: #0a0a0a; border: 1px solid #222; border-radius: 10px; padding: 5px; text-align: center; }
     .card-item img { width: 100%; border-radius: 5px; background: #111; min-height: 80px; }
-    .card-item div { font-size: 9px; color: #888; margin-top: 5px; white-space: nowrap; overflow: hidden; }
+    .card-item div { font-size: 8px; color: #888; margin-top: 5px; white-space: nowrap; overflow: hidden; }
     .result-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
     .result-card { background: #0a0a0a; border: 3px solid var(--red); border-radius: 20px; padding: 20px; text-align: center; width: 100%; box-sizing: border-box; }
     #res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
@@ -41,7 +40,7 @@
 
 <div class="app">
   <div class="header"><div class="glitch">DECK ROASTER AI</div></div>
-  <div class="deck-grid">
+  <div class="deck-grid" id="main-grid">
     <script>
       for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><img id="img${i}" style="display:none"><span id="p${i}" style="opacity:0.2">+</span></div>`);
     </script>
@@ -49,9 +48,9 @@
   <div class="stats">
     <div class="stat-row"><div class="stat-label"><span>TOXICITY</span><span id="v-tox">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-tox"></div></div></div>
     <div class="stat-row"><div class="stat-label"><span>SKILL ISSUE</span><span id="v-skill">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-skill"></div></div></div>
-    <div class="stat-row"><div class="stat-label"><span style="color:var(--red)">LOVE CHANCE</span><span id="v-love">100%</span></div><div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div></div>
+    <div class="stat-row"><div class="stat-label"><span style="color:var(--red)">GIRLFRIEND CHANCE</span><span id="v-love">100%</span></div><div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div></div>
   </div>
-  <button class="btn-main" onclick="startRoast()">ПРОЖАРИТЬ</button>
+  <button class="btn-main" onclick="startRoast()">ПРОЖАРИТЬ ДЕКУ</button>
 </div>
 
 <div id="modal" class="modal">
@@ -69,149 +68,165 @@
     <p id="res-text" style="font-size: 13px; line-height: 1.4; color: #ccc; min-height: 60px;"></p>
     <div id="res-grid"></div>
   </div>
-  <button class="btn-main" style="width:100%" onclick="saveResult()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
+  <button class="btn-main" style="width:100%" onclick="saveResult()">СОХРАНИТЬ РЕЗУЛЬТАТ</button>
   <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:10px; cursor:pointer;">ЗАНОВО</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// Массив с правильными ID для сервера RoyaleAPI
-const CARDS_DATA = [
-  {n: "Арбалет", id: "x-bow", t: 1}, {n: "Мегарыцарь", id: "mega-knight", nb: 1},
-  {n: "Всадник на кабане", id: "hog-rider"}, {n: "Бревно", id: "the-log"},
-  {n: "Адская гончая", id: "lava-hound"}, {n: "Шар", id: "balloon"},
-  {n: "П.Е.К.К.А.", id: "pekka"}, {n: "Мини П.Е.К.К.А.", id: "mini-pekka"},
-  {n: "Гоблинская бочка", id: "goblin-barrel", t: 1}, {n: "Ведьма", id: "witch", nb: 1},
-  {n: "Колдун", id: "wizard", nb: 1}, {n: "Элитные варвары", id: "elite-barbarians", t: 1},
-  {n: "Заморозка", id: "freeze", t: 1}, {n: "Ярость", id: "rage", t: 1},
-  {n: "Спарки", id: "sparky", t: 1}, {n: "Валькирия", id: "valkyrie"},
-  {n: "Принц", id: "prince"}, {n: "Темный принц", id: "dark-prince"},
-  {n: "Громовержец", id: "electro-wizard"}, {n: "Магический лучник", id: "magic-archer"},
-  {n: "Принцесса", id: "princess"}, {n: "Бандитка", id: "bandit"},
-  {n: "Рыцарь", id: "knight"}, {n: "Лучницы", id: "archers"},
-  {n: "Скелеты", id: "skeletons"}, {n: "Разряд", id: "zap"},
-  {n: "Огненный шар", id: "fireball"}, {n: "Яд", id: "poison"},
-  {n: "Стрелы", id: "arrows"}, {n: "Ракета", id: "rocket", t: 1},
-  {n: "Мортира", id: "mortar", t: 1}, {n: "Адская башня", id: "inferno-tower"},
-  {n: "Гигант", id: "giant"}, {n: "Голем", id: "golem"},
-  {n: "Электрогигант", id: "electro-giant", t: 1}, {n: "Всадница на баране", id: "ram-rider"},
-  {n: "Боевой таран", id: "battle-ram"}, {n: "Три мушкетера", id: "three-musketeers"},
-  {n: "Вышибала", id: "bowler"}, {n: "Палач", id: "executioner"},
-  {n: "Дракончик", id: "baby-dragon"}, {n: "Пламенный дракон", id: "inferno-dragon"},
-  {n: "Мегаминьон", id: "mega-minion"}, {n: "Миньоны", id: "minions"},
-  {n: "Орда миньонов", id: "minion-horde", nb: 1}, {n: "Банда гоблинов", id: "goblin-gang"},
-  {n: "Гоблины", id: "goblins"}, {n: "Гоблины-копейщики", id: "spear-goblins"},
-  {n: "Гоблин с дротиками", id: "dart-goblin"}, {n: "Стенобои", id: "wall-breakers"},
-  {n: "Шахтер", id: "miner"}, {n: "Кладбище", id: "graveyard"},
-  {n: "Ледяной колдун", id: "ice-wizard"}, {n: "Ночная ведьма", id: "night-witch"},
-  {n: "Дровосек", id: "lumberjack"}, {n: "Феникс", id: "phoenix"},
-  {n: "Монах", id: "monk"}, {n: "Королева лучниц", id: "archer-queen"},
-  {n: "Король скелетов", id: "skeleton-king"}, {n: "Золотой рыцарь", id: "golden-knight"},
-  {n: "Маленький принц", id: "little-prince"}, {n: "Гоблинштейн", id: "goblinstein"},
-  {n: "Башня-бомбежка", id: "bomb-tower"}, {n: "Тесла", id: "tesla"},
-  {n: "Пушка", id: "cannon"}, {n: "Печь", id: "furnace", nb: 1},
-  {n: "Надгробие", id: "tombstone"}, {n: "Клетка с гоблином", id: "goblin-cage"},
-  {n: "Хижина гоблинов", id: "goblin-hut", nb: 1}, {n: "Хижина варваров", id: "barbarian-hut", nb: 1},
-  {n: "Сборщик эликсира", id: "elixir-collector"}, {n: "Торнадо", id: "tornado", t: 1},
-  {n: "Землетрясение", id: "earthquake"}, {n: "Зеркало", id: "mirror", t: 1},
-  {n: "Клон", id: "clone", t: 1}, {n: "Молния", id: "lightning"},
-  {n: "Ледяной голем", id: "ice-golem"}, {n: "Варвары", id: "barbarians", nb: 1},
-  {n: "Охотник", id: "hunter"}, {n: "Рыбак", id: "fisherman"},
-  {n: "Целительница", id: "battle-healer"}, {n: "Электродракон", id: "electro-dragon"},
-  {n: "Костяные драконы", id: "skeleton-dragons"}, {n: "Летучие мыши", id: "bats"},
-  {n: "Ледяной дух", id: "ice-spirit"}, {n: "Огненный дух", id: "fire-spirit"},
-  {n: "Электрический дух", id: "electro-spirit"}, {n: "Дух исцеления", id: "heal-spirit"},
-  {n: "Королевские кабаны", id: "royal-hogs"}, {n: "Королевские рекруты", id: "royal-recruits"},
-  {n: "Королевский гигант", id: "royal-giant"}, {n: "Королевский призрак", id: "royal-ghost"},
-  {n: "Бочка со скелетами", id: "skeleton-barrel"}, {n: "Варварская бочка", id: "barbarian-barrel"},
-  {n: "Гигантский скелет", id: "giant-skeleton", nb: 1}
+// ПОЛНЫЙ СПИСОК С ПРАВИЛЬНЫМИ ID ДЛЯ СЕРВЕРА
+const RAW_DATA = [
+    {n: "Адская башня", id: "inferno-tower"}, {n: "Адская гончая", id: "lava-hound"}, {n: "Арбалет", id: "x-bow", t: 1}, 
+    {n: "Армия скелетов", id: "skeleton-army"}, {n: "Банда гоблинов", id: "goblin-gang"}, {n: "Бандитка", id: "bandit"}, 
+    {n: "Башня-бомбёжка", id: "bomb-tower"}, {n: "Бездна", id: "void"}, {n: "Берсеркша", id: "valkyrie"}, 
+    {n: "Боевой таран", id: "battle-ram"}, {n: "Бочка со скелетами", id: "skeleton-barrel"}, {n: "Бревно", id: "the-log"}, 
+    {n: "Валькирия", id: "valkyrie"}, {n: "Варварская бочка", id: "barbarian-barrel"}, {n: "Варварская пусковая установка", id: "barbarian-launcher"}, 
+    {n: "Варвары", id: "barbarians", nb: 1}, {n: "Ведьма", id: "witch", nb: 1}, {n: "Ведьмина бабушка", id: "mother-witch"}, 
+    {n: "Всадник на кабане", id: "hog-rider"}, {n: "Всадница на баране", id: "ram-rider"}, {n: "Вышибала", id: "bowler"}, 
+    {n: "Гигант", id: "giant"}, {n: "Гигантский скелет", id: "giant-skeleton", nb: 1}, {n: "Гигантский снежок", id: "giant-snowball"}, 
+    {n: "Главная бандитка", id: "bandit"}, {n: "Гоблин с дротиками", id: "dart-goblin"}, {n: "Гоблин-гигант", id: "goblin-giant"}, 
+    {n: "Гоблин-подрывник", id: "bomber"}, {n: "Гоблинская бочка", id: "goblin-barrel", t: 1}, {n: "Гоблинский бур", id: "goblin-drill"}, 
+    {n: "Гоблинштейн", id: "goblinstein"}, {n: "Гоблины", id: "goblins"}, {n: "Гоблины-копейщики", id: "spear-goblins"}, 
+    {n: "Гоблинята", id: "bush"}, {n: "Голем", id: "golem"}, {n: "Графиня с кинжалами", id: "dagger-duchess"}, 
+    {n: "Громовержец", id: "electro-wizard"}, {n: "Дракончик", id: "baby-dragon"}, {n: "Дровосек", id: "lumberjack"}, 
+    {n: "Дух исцеления", id: "heal-spirit"}, {n: "Заморозка", id: "freeze", t: 1}, {n: "Землетрясение", id: "earthquake"}, 
+    {n: "Зеркало", id: "mirror", t: 1}, {n: "Золотой рыцарь", id: "golden-knight"}, {n: "Императрица духов", id: "mother-witch"}, 
+    {n: "Исцеление", id: "heal"}, {n: "Канонир", id: "cannoneer"}, {n: "Кладбище", id: "graveyard"}, 
+    {n: "Клетка с гоблином", id: "goblin-cage"}, {n: "Клон", id: "clone", t: 1}, {n: "Колдун", id: "wizard", nb: 1}, 
+    {n: "Королева лучниц", id: "archer-queen"}, {n: "Королевская почта", id: "royal-delivery"}, {n: "Королевские кабаны", id: "royal-hogs"}, 
+    {n: "Королевские рекруты", id: "royal-recruits"}, {n: "Королевский гигант", id: "royal-giant"}, {n: "Королевский повар", id: "executioner"}, 
+    {n: "Королевский призрак", id: "royal-ghost"}, {n: "Король Royale", id: "king"}, {n: "Король скелетов", id: "skeleton-king"}, 
+    {n: "Костяные драконы", id: "skeleton-dragons"}, {n: "Ледяной голем", id: "ice-golem"}, {n: "Ледяной дух", id: "ice-spirit"}, 
+    {n: "Ледяной колдун", id: "ice-wizard"}, {n: "Ледяной суперголем", id: "ice-golem"}, {n: "Летучие мыши", id: "bats"}, 
+    {n: "Летучка", id: "flying-machine"}, {n: "Лоза", id: "poison"}, {n: "Лучницы", id: "archers"}, 
+    {n: "Магический лучник", id: "magic-archer"}, {n: "Маленький Принц", id: "little-prince"}, {n: "Мегаминьон", id: "mega-minion"}, 
+    {n: "Мегарыцарь", id: "mega-knight", nb: 1}, {n: "Мини-генераторы", id: "zappies"}, {n: "Мини-П.Е.К.К.А.", id: "mini-pekka"}, 
+    {n: "Миньоны", id: "minions"}, {n: "Молния", id: "lightning"}, {n: "Монах", id: "monk"}, 
+    {n: "Мортира", id: "mortar", t: 1}, {n: "Мушкетёр", id: "musketeer"}, {n: "Надгробие", id: "tombstone"}, 
+    {n: "Ночная ведьма", id: "night-witch"}, {n: "Огненная лучница", id: "firecracker"}, {n: "Огненный дух", id: "fire-spirit"}, 
+    {n: "Огненный шар", id: "fireball"}, {n: "Орда миньонов", id: "minion-horde", nb: 1}, {n: "Охотник", id: "hunter"}, 
+    {n: "П.Е.К.К.А.", id: "pekka"}, {n: "Палач", id: "executioner"}, {n: "Печь", id: "furnace", nb: 1}, 
+    {n: "Пламенный дракон", id: "inferno-dragon"}, {n: "Повозка с пушкой", id: "cannon-cart"}, {n: "Подозрительный куст", id: "suspicious-bush"}, 
+    {n: "Подрывник", id: "bomber"}, {n: "Праздничная ракета", id: "rocket"}, {n: "Праздничная хижина", id: "goblin-hut"}, 
+    {n: "Принц", id: "prince"}, {n: "Принцесса", id: "princess"}, {n: "Принцесса из башни", id: "tower-princess"}, 
+    {n: "Пушка", id: "cannon"}, {n: "Разбойники", id: "rascals"}, {n: "Разряд", id: "zap"}, 
+    {n: "Ракета", id: "rocket", t: 1}, {n: "Руническая гигантша", id: "giant"}, {n: "Рыбак", id: "fisherman"}, 
+    {n: "Рыцарь", id: "knight"}, {n: "Санта на кабане", id: "hog-rider"}, {n: "Сборщик эликсира", id: "elixir-collector"}, 
+    {n: "Скелеты", id: "skeletons"}, {n: "Спарки", id: "sparky", t: 1}, {n: "Стенобои", id: "wall-breakers"}, 
+    {n: "Стражи", id: "guards"}, {n: "Стрелы", id: "arrows"}, {n: "Супер-адская гончая", id: "lava-hound"}, 
+    {n: "Суперведьма", id: "witch"}, {n: "Супермагический лучник", id: "magic-archer"}, {n: "Супермини-П.Е.К.К.А.", id: "mini-pekka"}, 
+    {n: "Тёмный принц", id: "dark-prince"}, {n: "Терри", id: "ram-rider"}, {n: "Тесла", id: "tesla"}, 
+    {n: "Торнадо", id: "tornado", t: 1}, {n: "Три мушкетёра", id: "three-musketeers"}, {n: "Трио колдунов", id: "wizard"}, 
+    {n: "Феникс", id: "phoenix"}, {n: "Хижина варваров", id: "barbarian-hut", nb: 1}, {n: "Хижина гоблинов", id: "goblin-hut", nb: 1}, 
+    {n: "Целительница-воин", id: "battle-healer"}, {n: "Шар", id: "balloon"}, {n: "Шахтёр", id: "miner"}, 
+    {n: "Шустрый шахтёр", id: "mighty-miner"}, {n: "Эволюция", id: "firecracker"}, {n: "Электрический дух", id: "electro-spirit"}, 
+    {n: "Электрогигант", id: "electro-giant", t: 1}, {n: "Электродракон", id: "electro-dragon"}, {n: "Эликсирный голем", id: "elixir-golem"}, 
+    {n: "Элитные варвары", id: "elite-barbarians", t: 1}, {n: "Яд", id: "poison"}, {n: "Ярость", id: "rage", t: 1}
 ];
 
-const ALL_CARDS = CARDS_DATA.map(c => ({
-  name: c.n,
-  url: `https://royaleapi.com/static/img/cards-150/${c.id}.png`,
-  tox: c.t || 0,
-  noob: c.nb || 0
+const ALL_CARDS = RAW_DATA.map(c => ({
+    name: c.n,
+    url: `https://royaleapi.com/static/img/cards-150/${c.id}.png`,
+    tox: c.t || 0,
+    noob: c.nb || 0
 }));
 
 let deck = Array(8).fill(null);
-let currentSlot = 0;
+let currentSlotIdx = 0;
 
-function openModal(i) { currentSlot = i; document.getElementById('modal').style.display = 'flex'; renderCards(); }
+function openModal(i) {
+    currentSlotIdx = i;
+    document.getElementById('modal').style.display = 'flex';
+    renderCards();
+}
+
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
 function renderCards() {
-  const q = document.getElementById('search').value.toLowerCase();
-  const list = document.getElementById('card-list');
-  list.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
-    <div class="card-item" onclick="selectCard('${c.name}')">
-      <img src="${c.url}" loading="lazy" onerror="this.src='https://placehold.co/100x130?text=CR'">
-      <div>${c.name}</div>
-    </div>
-  `).join('');
+    const q = document.getElementById('search').value.toLowerCase();
+    const list = document.getElementById('card-list');
+    list.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
+        <div class="card-item" onclick="selectCard('${c.name}')">
+            <img src="${c.url}" loading="lazy" onerror="this.src='https://placehold.co/100x130?text=CARD'">
+            <div>${c.name}</div>
+        </div>
+    `).join('');
 }
 
 function selectCard(name) {
-  const c = ALL_CARDS.find(x => x.name === name);
-  deck[currentSlot] = c;
-  const img = document.getElementById(`img${currentSlot}`);
-  img.src = c.url; img.style.display = 'block';
-  document.getElementById(`p${currentSlot}`).style.display = 'none';
-  document.getElementById(`s${currentSlot}`).classList.add('filled');
-  closeModal(); updateStats();
+    // ПРОВЕРКА НА ОДИНАКОВЫЕ КАРТЫ
+    if (deck.some(c => c && c.name === name)) {
+        tg.showAlert("Эта карта уже есть в деке! Выбери другую.");
+        return;
+    }
+
+    const card = ALL_CARDS.find(x => x.name === name);
+    deck[currentSlotIdx] = card;
+    
+    const img = document.getElementById(`img${currentSlotIdx}`);
+    img.src = card.url;
+    img.style.display = 'block';
+    document.getElementById(`p${currentSlotIdx}`).style.display = 'none';
+    document.getElementById(`s${currentSlotIdx}`).classList.add('filled');
+    
+    closeModal();
+    updateStats();
 }
 
 function updateStats() {
-  const d = deck.filter(x => x);
-  const tox = (d.filter(x => x.tox).length / 3) * 100;
-  const noob = (d.filter(x => x.noob).length / 3) * 100;
-  document.getElementById('b-tox').style.width = Math.min(100, tox) + '%';
-  document.getElementById('v-tox').innerText = Math.round(tox) + '%';
-  document.getElementById('b-skill').style.width = Math.min(100, noob) + '%';
-  document.getElementById('v-skill').innerText = Math.round(noob) + '%';
-  const love = Math.max(0, 100 - (tox + noob));
-  document.getElementById('b-love').style.width = love + '%';
-  document.getElementById('v-love').innerText = Math.round(love) + '%';
+    const d = deck.filter(x => x);
+    const t = (d.filter(x => x.tox).length / 3) * 100;
+    const n = (d.filter(x => x.noob).length / 3) * 100;
+    
+    document.getElementById('b-tox').style.width = Math.min(100, t) + '%';
+    document.getElementById('v-tox').innerText = Math.round(t) + '%';
+    document.getElementById('b-skill').style.width = Math.min(100, n) + '%';
+    document.getElementById('v-skill').innerText = Math.round(n) + '%';
+    
+    const love = Math.max(0, 100 - (t + n));
+    document.getElementById('b-love').style.width = love + '%';
+    document.getElementById('v-love').innerText = Math.round(love) + '%';
 }
 
 function startRoast() {
-  if(deck.includes(null)) return tg.showAlert("Выбери 8 карт!");
-  const tCount = deck.filter(x => x.tox).length;
-  const nCount = deck.filter(x => x.noob).length;
-  let title, emoji, text;
+    if (deck.includes(null)) return tg.showAlert("Собери все 8 карт!");
+    
+    const tCount = deck.filter(x => x.tox).length;
+    const nCount = deck.filter(x => x.noob).length;
+    
+    let title, emoji, text;
 
-  if(tCount >= 3) {
-    emoji = "☢️";
-    title = "ТОКСИЧНАЯ ПОМОЙКА";
-    text = "Твоя дека воняет. Спарки, Арбалет или Заморозка? Ты просто не даешь людям играть. Сходи помойся.";
-  } else if(nCount >= 3) {
-    emoji = "🤡";
-    title = "МАСТЕР МИДЛАДДЕРА";
-    text = "Мегарыцарь и Ведьма? Стандартный набор игрока с 5000 кубков. Удали игру и не позорься.";
-  } else {
-    emoji = "🤖";
-    title = "МЕТА-РАБ";
-    text = "Очередная дека из топа. Своего мозга нет, просто скопировал билд. Но играть ты лучше не стал.";
-  }
+    if (tCount >= 3) {
+        title = "ТОКСИЧНАЯ ПОМОЙКА";
+        emoji = "☣️";
+        text = "Арбалет, Зеркало, Заморозка... Твой батя ушел за хлебом, когда увидел, чем ты играешь. С тобой никто не хочет дружить, даже боты.";
+    } else if (nCount >= 3) {
+        title = "МАСТЕР МИДЛАДДЕРА";
+        emoji = "🤡";
+        text = "Мегарыцарь и Элитки. Типичный обитатель 5000 кубков. Ты просто кидаешь всё на мост и надеешься, что у противника вылетит интернет.";
+    } else {
+        title = "МЕТА-РАБ БЕЗ МОЗГА";
+        emoji = "🤖";
+        text = "О, очередная дека из топа. Своего ума не хватило? Ты как робот — просто копируешь чужие билды, но скилла это не добавляет.";
+    }
 
-  document.getElementById('res-title').innerText = title;
-  document.getElementById('res-emoji').innerText = emoji;
-  document.getElementById('res-text').innerText = text;
-  document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="${x.url}">`).join('');
-  document.getElementById('result').style.display = 'flex';
-  tg.HapticFeedback.notificationOccurred('error');
+    document.getElementById('res-title').innerText = title;
+    document.getElementById('res-emoji').innerText = emoji;
+    document.getElementById('res-text').innerText = text;
+    document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="${x.url}">`).join('');
+    document.getElementById('result').style.display = 'flex';
+    tg.HapticFeedback.notificationOccurred('error');
 }
 
 function saveResult() {
-  const target = document.getElementById('capture-area');
-  html2canvas(target, { backgroundColor: '#0a0a0a' }).then(canvas => {
-    const a = document.createElement('a');
-    a.download = 'roast.png';
-    a.href = canvas.toDataURL();
-    a.click();
-    tg.showAlert("Сохранено!");
-  });
+    html2canvas(document.getElementById('capture-area')).then(canvas => {
+        const a = document.createElement('a');
+        a.download = 'roast.png';
+        a.href = canvas.toDataURL();
+        a.click();
+        tg.showAlert("Сохранено!");
+    });
 }
 </script>
 </body>
