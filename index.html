@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DECK ROASTER NUCLEAR 9.0</title>
+  <title>DECK ROASTER NUCLEAR 10.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
     :root { --red: #ff003c; --cyan: #00f2ff; --bg: #030303; }
     body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; overflow: hidden; }
     
-    /* Стилизация скроллбара */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 10px; }
 
@@ -21,7 +20,7 @@
     .glitch { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px var(--red); }
 
     .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; }
-    .slot { aspect-ratio: 1/1.2; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.3s; }
+    .slot { aspect-ratio: 1/1.2; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.3s; overflow: hidden; }
     .slot.filled { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
     .slot img { width: 100%; height: 100%; object-fit: contain; }
     .slot span { font-size: 20px; opacity: 0.3; }
@@ -32,27 +31,29 @@
     .bar-bg { background: #111; height: 4px; border-radius: 2px; }
     .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s cubic-bezier(0.17, 0.67, 0.83, 0.67); box-shadow: 0 0 8px var(--cyan); }
 
-    .btn-main { margin: 10px 20px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: white; font-family: 'Orbitron'; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
-    .btn-main:active { transform: scale(0.96); opacity: 0.8; }
+    .btn-main { margin: 10px 20px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: white; font-family: 'Orbitron'; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #900; }
+    .btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 #900; }
 
-    /* МОДАЛКА */
     .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-    .search-area { padding: 20px; background: #0a0a0a; }
-    #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: white; outline: none; }
+    .search-area { padding: 20px; background: #0a0a0a; border-bottom: 1px solid #222; }
+    #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
+    
     .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; flex: 1; }
-    .card-item { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 5px; text-align: center; }
+    .card-item { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 5px; text-align: center; transition: 0.2s; }
+    .card-item:active { transform: scale(0.95); border-color: var(--cyan); }
     .card-item img { width: 100%; border-radius: 4px; }
-    .card-name { font-size: 8px; margin-top: 5px; opacity: 0.7; white-space: nowrap; overflow: hidden; }
+    .card-name { font-size: 8px; margin-top: 5px; opacity: 0.7; height: 20px; overflow: hidden; }
 
-    /* РЕЗУЛЬТАТ */
     .result-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-    .result-card { background: #0a0a0a; border: 2px solid var(--red); padding: 30px; border-radius: 20px; width: 85%; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 60, 0.2); }
+    .result-card { background: #0a0a0a; border: 2px solid var(--red); padding: 25px; border-radius: 20px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 60, 0.2); box-sizing: border-box; }
+    #res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
+    #res-grid img { width: 100%; border-radius: 4px; border: 1px solid #333; }
   </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="header"><div class="glitch">ROAST ENGINE</div></div>
+  <div class="header"><div class="glitch" data-text="ROAST ENGINE">ROAST ENGINE</div></div>
   
   <div class="deck-grid" id="grid">
     <script>
@@ -75,50 +76,71 @@
     </div>
   </div>
 
-  <button class="btn-main" onclick="analyze()">АНАЛИЗИРОВАТЬ</button>
+  <button class="btn-main" onclick="analyze()">ЗАПУСТИТЬ ПРОЖАРКУ</button>
 </div>
 
 <div id="modal" class="modal">
   <div class="search-area">
     <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
-    <button onclick="closeModal()" style="background:none; border:none; color:#555; margin-top:10px; width:100%">ОТМЕНА</button>
+    <button onclick="closeModal()" style="background:none; border:none; color:var(--red); margin-top:10px; width:100%; font-weight:bold; cursor:pointer;">ОТМЕНА</button>
   </div>
   <div class="card-list" id="card-list"></div>
 </div>
 
 <div id="result" class="result-view">
   <div id="capture-area" class="result-card">
-    <div id="res-emoji" style="font-size: 60px;">🤮</div>
-    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--red); margin: 10px 0;"></h2>
-    <p id="res-text" style="font-size: 14px; opacity: 0.8; line-height: 1.5;"></p>
-    <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:20px;"></div>
+    <div id="res-emoji" style="font-size: 50px;">🤮</div>
+    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--red); margin: 10px 0; font-size: 18px;"></h2>
+    <p id="res-text" style="font-size: 13px; opacity: 0.9; line-height: 1.4; min-height: 60px;"></p>
+    <div id="res-grid"></div>
   </div>
-  <button class="btn-main" onclick="saveImage()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
-  <button class="btn-main" style="background:#222;" onclick="location.reload()">ПОПРОБОВАТЬ СНОВА</button>
+  <button class="btn-main" style="width:90%;" onclick="saveImage()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
+  <button class="btn-main" style="background:#222; width:90%; box-shadow: 0 4px 0 #000;" onclick="location.reload()">НОВЫЙ ТЕСТ</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// ПОЛНЫЙ МАССИВ КАРТ БЕЗ УРЕЗАНИЙ
-const ALL_CARDS = ["Адская башня","Адская гончая","Арбалет","Армия скелетов","Банда гоблинов","Бандитка","Башня-бомбёжка","Бездна","Берсеркша","Боевой таран","Бочка со скелетами","Бревно","Валькирия","Варварская бочка","Варварская пусковая установка","Варвары","Ведьма","Ведьмина бабушка","Всадник на кабане","Всадница на баране","Вышибала","Гигант","Гигантский скелет","Гигантский снежок","Главная бандитка","Гоблин с дротиками","Гоблин-гигант","Гоблин-подрывник","Гоблинская бочка","Гоблинский бур","Гоблинштейн","Гоблины","Гоблины-копейщики","Гоблинята","Голем","Графиня с кинжалами","Громовержец","Дракончик","Дровосек","Дух исцеления","Заморозка","Землетрясение","Зеркало","Золотой рыцарь","Императрица духов","Исцеление","Канонир","Кладбище","Клетка с гоблином","Клон","Колдун","Королева лучниц","Королевская почта","Королевские кабаны","Королевские рекруты","Королевский гигант","Королевский повар","Королевский призрак","Король Royale","Король скелетов","Костяные драконы","Ледяной голем","Ледяной дух","Ледяной колдун","Ледяной суперголем","Летучие мыши","Летучка","Лоза","Лучницы","Магический лучник","Маленький Принц","Мегаминьон","Мегарыцарь","Мини-генераторы","Мини-П.Е.К.К.А.","Миньоны","Молния","Монах","Мортира","Мушкетёр","Надгробие","Ночная ведьма","Огненная лучница","Огненный дух","Огненный шар","Орда миньонов","Охотник","П.Е.К.К.А.","Палач","Печь","Пламенный дракон","Повозка с пушкой","Подозрительный куст","Подрывник","Праздничная ракета","Праздничная хижина","Принц","Принцесса","Принцесса из башни","Пушка","Разбойники","Разряд","Ракета","Руническая гигантша","Рыбак","Рыцарь","Санта на кабане","Сборщик эликсира","Скелеты","Спарки","Стенобои","Стражи","Стрелы","Супер-адская гончая","Суперведьма","Супермагический лучник","Супермини-П.Е.К.К.А.","Тёмный принц","Терри","Тесла","Торнадо","Три мушкетёра","Трио колдунов","Феникс","Хижина варваров","Хижина гоблинов","Целительница-воин","Шар","Шахтёр","Шустрый шахтёр","Электрический дух","Электрогигант","Электродракон","Эликсирный голем","Элитные варвары","Яд","Ярость"].map(name => ({
-  name,
-  id: name.toLowerCase().replace(/ /g, '-').replace(/\./g, '').replace(/ё/g, 'e'),
-  toxic: ["Арбалет","Заморозка","Зеркало","Мортира","Электрогигант","Ярость","Торнадо"].includes(name),
-  noob: ["Мегарыцарь","Колдун","Ведьма","Элитные варвары","Гигантский скелет"].includes(name)
-}));
+// ПОЛНЫЙ СПИСОК КАРТ (БЕЗ УРЕЗАНИЙ)
+const RAW_NAMES = ["Адская башня","Адская гончая","Арбалет","Армия скелетов","Банда гоблинов","Бандитка","Башня-бомбёжка","Бездна","Берсеркша","Боевой таран","Бочка со скелетами","Бревно","Валькирия","Варварская бочка","Варварская пусковая установка","Варвары","Ведьма","Ведьмина бабушка","Всадник на кабане","Всадница на баране","Вышибала","Гигант","Гигантский скелет","Гигантский снежок","Главная бандитка","Гоблин с дротиками","Гоблин-гигант","Гоблин-подрывник","Гоблинская бочка","Гоблинский бур","Гоблинштейн","Гоблины","Гоблины-копейщики","Гоблинята","Голем","Графиня с кинжалами","Громовержец","Дракончик","Дровосек","Дух исцеления","Заморозка","Землетрясение","Зеркало","Золотой рыцарь","Императрица духов","Исцеление","Канонир","Кладбище","Клетка с гоблином","Клон","Колдун","Королева лучниц","Королевская почта","Королевские кабаны","Королевские рекруты","Королевский гигант","Королевский повар","Королевский призрак","Король Royale","Король скелетов","Костяные драконы","Ледяной голем","Ледяной дух","Ледяной колдун","Ледяной суперголем","Летучие мыши","Летучка","Лоза","Лучницы","Магический лучник","Маленький Принц","Мегаминьон","Мегарыцарь","Мини-генераторы","Мини-П.Е.К.К.А.","Миньоны","Молния","Монах","Мортира","Мушкетёр","Надгробие","Ночная ведьма","Огненная лучница","Огненный дух","Огненный шар","Орда миньонов","Охотник","П.Е.К.К.А.","Палач","Печь","Пламенный дракон","Повозка с пушкой","Подозрительный куст","Подрывник","Праздничная ракета","Праздничная хижина","Принц","Принцесса","Принцесса из башни","Пушка","Разбойники","Разряд","Ракета","Руническая гигантша","Рыбак","Рыцарь","Санта на кабане","Сборщик эликсира","Скелеты","Спарки","Стенобои","Стражи","Стрелы","Супер-адская гончая","Суперведьма","Супермагический лучник","Супермини-П.Е.К.К.А.","Тёмный принц","Терри","Тесла","Торнадо","Три мушкетёра","Трио колдунов","Феникс","Хижина варваров","Хижина гоблинов","Целительница-воин","Шар","Шахтёр","Шустрый шахтёр","Электрический дух","Электрогигант","Электродракон","Эликсирный голем","Элитные варвары","Яд","Ярость"];
+
+const ALL_CARDS = RAW_NAMES.map(name => {
+  // Исправленная логика формирования ID для ссылок
+  let id = name.toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/\./g, '')
+    .replace(/ё/g, 'e');
+  
+  // Маппинг для сложных названий, которые на GitHub называются иначе
+  if(name === "П.Е.К.К.А.") id = "pekka";
+  if(name === "Мини-П.Е.К.К.А.") id = "mini-pekka";
+
+  return {
+    name,
+    id: id,
+    toxic: ["Арбалет","Заморозка","Зеркало","Мортира","Электрогигант","Ярость","Торнадо","Элитные варвары"].includes(name),
+    noob: ["Мегарыцарь","Колдун","Ведьма","Гигантский скелет","Варвары"].includes(name)
+  };
+});
 
 let deck = Array(8).fill(null);
 let slotIdx = 0;
 
-function openModal(i) { slotIdx = i; document.getElementById('modal').style.display = 'flex'; renderCards(); }
+function openModal(i) { 
+  slotIdx = i; 
+  document.getElementById('modal').style.display = 'flex'; 
+  renderCards(); 
+}
+
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
 function renderCards() {
   const q = document.getElementById('search').value.toLowerCase();
-  document.getElementById('card-list').innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
+  const list = document.getElementById('card-list');
+  list.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
     <div class="card-item" onclick="selectCard('${c.name}')">
-      <img src="https://royaleapi.com/static/img/cards-150/${c.id}.png" onerror="this.src='https://placehold.co/100x130?text=CR'">
+      <img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png" 
+           onerror="this.src='https://placehold.co/100x130?text=CR'">
       <div class="card-name">${c.name}</div>
     </div>
   `).join('');
@@ -129,12 +151,14 @@ function selectCard(name) {
   deck[slotIdx] = card;
   const s = document.getElementById(`s${slotIdx}`);
   const img = document.getElementById(`img${slotIdx}`);
-  img.src = `https://royaleapi.com/static/img/cards-150/${card.id}.png`;
+  
+  img.src = `https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${card.id}.png`;
   img.style.display = 'block';
   s.querySelector('span').style.display = 'none';
   s.classList.add('filled');
   closeModal();
   updateStats();
+  tg.HapticFeedback.impactOccurred('light');
 }
 
 function updateStats() {
@@ -146,52 +170,56 @@ function updateStats() {
   document.getElementById('v-tox').innerText = Math.round(tox) + '%';
   document.getElementById('b-skill').style.width = Math.min(100, noob) + '%';
   document.getElementById('v-skill').innerText = Math.round(noob) + '%';
+  
   const love = Math.max(0, 100 - (tox + noob));
   document.getElementById('b-love').style.width = love + '%';
   document.getElementById('v-love').innerText = Math.round(love) + '%';
 }
 
 function analyze() {
-  if(deck.includes(null)) return tg.showAlert("Собери всю деку, чучело!");
+  if(deck.includes(null)) return tg.showAlert("Сначала выбери 8 карт!");
   
   const d = deck;
   const isToxic = d.some(c => c.toxic);
-  const isNoob = d.filter(c => c.noob).length > 1;
+  const toxCount = d.filter(c => c.toxic).length;
+  const noobCount = d.filter(c => c.noob).length;
   
   let title, text, emoji;
-  if(isToxic && isNoob) {
-    title = "СМЕРТЕЛЬНЫЙ ГРЕХ";
-    emoji = "☣️";
-    text = "Ты собрал комбо из тупости и токсичности. Твоя дека пахнет как свалка под Рязанью. Как ты вообще спишь по ночам, играя МК и Арбалетом одновременно?";
-  } else if(isToxic) {
-    title = "ТОКСИЧНЫЙ КРЫСЕНЫШ";
+  
+  if(toxCount >= 3) {
+    title = "ХОДЯЧАЯ КРЫСА";
     emoji = "🐀";
-    text = "Арбалет? Заморозка? Ты из тех людей, кто пишет 'ГГВП' после первой же снесенной башни. Твоя дека — причина, по которой люди удаляют игру.";
-  } else if(isNoob) {
-    title = "МАСТЕР МИДЛАДДЕРА";
+    text = "Три и более токсичных карты? У тебя вообще есть совесть? Противники просто удаляют игру, когда видят твой ник. Иди помойся.";
+  } else if(noobCount >= 3) {
+    title = "КОРОЛЬ МИДЛАДДЕРА";
     emoji = "🤡";
-    text = "Мегарыцарь и Ведьма? Серьезно? Ты просто кидаешь всё на мост и надеешься, что у противника случится эпилепсия. Скилл на уровне хлебушка.";
+    text = "МК, Ведьма, Колдун... стандартный набор человека, который застрял на 5000 кубков и винит во всем тиммейтов. Твой скилл равен нулю.";
+  } else if(isToxic) {
+    title = "ДУШНИЛА ОБЫКНОВЕННЫЙ";
+    emoji = "🤮";
+    text = "Один Арбалет или Торнадо уже говорят о твоем характере больше, чем твоя биография. С тобой неприятно иметь дело даже ботам.";
   } else {
-    title = "МЕТА-РАБ";
+    title = "МЕТА-РАБ БЕЗ МОЗГА";
     emoji = "🤖";
-    text = "Выглядит как дека из топа. Своего мозга не хватило? Скопировал у ютубера и думаешь, что теперь ты киберспортсмен? Спойлер: нет.";
+    text = "Слишком правильная дека. Сразу видно, что сам ты собрать ничего не можешь, просто скопировал топ-1 мира. Жаль, что руки не копируются.";
   }
 
   document.getElementById('res-title').innerText = title;
   document.getElementById('res-text').innerText = text;
   document.getElementById('res-emoji').innerText = emoji;
-  document.getElementById('res-grid').innerHTML = d.map(c => `<img src="https://royaleapi.com/static/img/cards-150/${c.id}.png" style="width:100%">`).join('');
+  document.getElementById('res-grid').innerHTML = d.map(c => `<img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png">`).join('');
   document.getElementById('result').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('error');
 }
 
 function saveImage() {
-  html2canvas(document.getElementById('capture-area')).then(canvas => {
+  const target = document.getElementById('capture-area');
+  html2canvas(target, { backgroundColor: '#000' }).then(canvas => {
     const link = document.createElement('a');
-    link.download = 'roast.png';
+    link.download = 'roast_result.png';
     link.href = canvas.toDataURL();
     link.click();
-    tg.showAlert("Сохранено! Бегом в ТикТок!");
+    tg.showAlert("Скриншот сохранен в галерею!");
   });
 }
 </script>
