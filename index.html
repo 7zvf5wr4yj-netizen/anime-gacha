@@ -3,235 +3,237 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ROASTER AI - TOTAL DESTRUCTION</title>
+  <title>DECK ROASTER ULTIMATE v12.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --accent: #00f2ff; --pink: #ff007a; --purple: #bc13fe; --gold: #ffcf00; --bg: #020202; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
+    :root { --red: #ff003c; --cyan: #00f2ff; --bg: #030303; }
+    body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; overflow: hidden; }
     
-    .app-container { height: 100vh; display: flex; flex-direction: column; background: radial-gradient(circle at 50% -20%, #1a0033, #020202); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 10px; }
+
+    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; border: 1px solid #1a1a1a; background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); }
     
-    .header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .header h1 { font-family: 'Orbitron'; font-size: 16px; margin: 0; letter-spacing: 3px; color: var(--accent); }
+    .header { padding: 15px; text-align: center; border-bottom: 1px solid #222; }
+    .glitch { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px var(--red); }
 
     .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; }
-    .slot { aspect-ratio: 1/1.25; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; position: relative; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-    .slot.filled { border-color: var(--accent); }
-    .slot.evo { border-color: var(--purple); box-shadow: 0 0 15px rgba(188, 19, 254, 0.4); }
-    .slot.champ { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 207, 0, 0.4); }
-    .slot img { width: 95%; height: 95%; object-fit: contain; }
-    .slot .label { position: absolute; bottom: -2px; right: -2px; font-size: 7px; background: #000; padding: 2px 4px; border-radius: 4px; font-family: 'Orbitron'; border: 1px solid rgba(255,255,255,0.2); }
+    .slot { aspect-ratio: 1/1.2; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.3s; overflow: hidden; }
+    .slot.filled { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+    .slot img { width: 100%; height: 100%; object-fit: contain; }
+    .slot span { font-size: 20px; opacity: 0.3; }
 
-    .stats-area { padding: 10px 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-    .stat-bar { margin-bottom: 12px; }
-    .stat-info { display: flex; justify-content: space-between; font-size: 9px; font-family: 'Orbitron'; margin-bottom: 4px; color: #666; }
-    .track { height: 4px; background: #111; border-radius: 2px; overflow: hidden; }
-    .fill { height: 100%; width: 0%; transition: 1.2s cubic-bezier(0.1, 1, 0.1, 1); }
+    .stats { padding: 10px 20px; }
+    .stat-row { margin-bottom: 12px; }
+    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 9px; margin-bottom: 4px; color: #888; }
+    .bar-bg { background: #111; height: 4px; border-radius: 2px; }
+    .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s cubic-bezier(0.17, 0.67, 0.83, 0.67); box-shadow: 0 0 8px var(--cyan); }
 
-    .btn-action { margin: 15px; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(45deg, var(--pink), #ff4d00); color: #fff; font-family: 'Orbitron'; font-weight: 900; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-main { margin: 10px 20px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: white; font-family: 'Orbitron'; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #900; }
+    .btn-main:active { transform: translateY(2px); box-shadow: 0 2px 0 #900; }
 
-    /* Modal List */
     .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-    .search-box { padding: 15px; border-bottom: 1px solid #222; }
-    #search { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; }
-    .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: scroll; }
-    .card-item { background: #0a0a0a; border-radius: 8px; padding: 6px; text-align: center; border: 1px solid #1a1a1a; }
-    .card-item img { width: 100%; }
-    .card-item span { font-size: 8px; color: #777; display: block; margin-top: 4px; }
+    .search-area { padding: 20px; background: #0a0a0a; border-bottom: 1px solid #222; }
+    #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
+    
+    .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; flex: 1; }
+    .card-item { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 5px; text-align: center; transition: 0.2s; }
+    .card-item:active { transform: scale(0.95); border-color: var(--cyan); }
+    .card-item img { width: 100%; border-radius: 4px; }
+    .card-name { font-size: 8px; margin-top: 5px; opacity: 0.7; height: 20px; overflow: hidden; }
 
-    /* Choice */
-    .choice-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
-    .choice-box { width: 100%; max-width: 280px; background: #0f0f0f; border: 1px solid #333; border-radius: 20px; padding: 20px; text-align: center; }
-    .c-btn { width: 100%; padding: 15px; margin: 8px 0; border-radius: 10px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; }
-
-    /* Result View */
-    .res-view { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-    .res-card { background: #050505; border: 1px solid var(--pink); border-radius: 24px; padding: 25px; width: 100%; text-align: center; }
+    .result-view { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .result-card { background: #0a0a0a; border: 2px solid var(--red); padding: 25px; border-radius: 20px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 60, 0.2); box-sizing: border-box; }
+    #res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
+    #res-grid img { width: 100%; border-radius: 4px; border: 1px solid #333; }
   </style>
 </head>
 <body>
 
-<div class="app-container">
-  <div class="header"><h1>DECK ROASTER TOTAL</h1></div>
+<div class="app">
+  <div class="header"><div class="glitch">ROAST MY DECK</div></div>
   
-  <div class="deck-grid">
+  <div class="deck-grid" id="grid">
     <script>
-      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openPick(${i})"><div class="plus" id="p${i}">+</div><img id="img${i}" style="display:none"></div>`);
+      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><span>+</span><img id="img${i}" style="display:none"></div>`);
     </script>
   </div>
 
-  <div class="stats-area">
-    <div class="stat-bar"><div class="stat-info"><span>TOXICITY</span><span id="v-tox">0%</span></div><div class="track"><div class="fill" id="b-tox" style="background:var(--pink)"></div></div></div>
-    <div class="stat-bar"><div class="stat-info"><span>SKILL ISSUE</span><span id="v-skill">0%</span></div><div class="track"><div class="fill" id="b-skill" style="background:var(--accent)"></div></div></div>
-    <div class="stat-bar"><div class="stat-info"><span>VIRGINITY SCORE</span><span id="v-love">100%</span></div><div class="track"><div class="fill" id="b-love" style="background:#fff; width:100%"></div></div></div>
+  <div class="stats">
+    <div class="stat-row">
+      <div class="stat-label"><span>TOXICITY LEVEL</span><span id="v-tox">0%</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="b-tox"></div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-label"><span>SKILL ISSUE (НУБСТВО)</span><span id="v-skill">0%</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="b-skill"></div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-label"><span style="color:var(--red)">ШАНС НАЙТИ ДЕВУШКУ</span><span id="v-love">100%</span></div>
+      <div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div>
+    </div>
   </div>
 
-  <button class="btn-action" onclick="analyze()">АНАЛИЗИРОВАТЬ</button>
-</div>
-
-<div id="choice-screen" class="choice-screen">
-  <div class="choice-box">
-    <h4 style="margin:0 0 15px 0; font-family:'Orbitron'; font-size:12px;">ВЫБЕРИ МОДИФИКАЦИЮ</h4>
-    <button class="c-btn" style="background:#222; color:#fff;" onclick="setMode('norm')">ОБЫЧНАЯ</button>
-    <button id="e-btn" class="c-btn" style="background:var(--purple); color:#fff; display:none;" onclick="setMode('evo')">ЭВОЛЮЦИЯ</button>
-    <button id="c-btn" class="c-btn" style="background:var(--gold); color:#000; display:none;" onclick="setMode('champ')">ЧЕМПИОН</button>
-    <button style="background:none; border:none; color:#444; margin-top:10px; font-size:10px;" onclick="closeChoice()">ОТМЕНА</button>
-  </div>
+  <button class="btn-main" onclick="analyze()">ЗАПУСТИТЬ ПРОЖАРКУ</button>
 </div>
 
 <div id="modal" class="modal">
-  <div class="search-box"><input type="text" id="search" placeholder="Поиск среди 110+ карт..." oninput="draw()"></div>
+  <div class="search-area">
+    <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
+    <button onclick="closeModal()" style="background:none; border:none; color:var(--red); margin-top:10px; width:100%; font-weight:bold; cursor:pointer;">ОТМЕНА</button>
+  </div>
   <div class="card-list" id="card-list"></div>
-  <button style="padding:15px; background:#111; border:none; color:var(--pink); font-family:'Orbitron';" onclick="closePick()">ЗАКРЫТЬ</button>
 </div>
 
-<div id="result" class="res-view">
-  <div id="capture-area" class="res-card">
-    <div id="res-emoji" style="font-size: 45px;"></div>
-    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--pink); font-size:18px; margin:10px 0;"></h2>
-    <p id="res-text" style="font-size: 13px; line-height: 1.5; color: #888;"></p>
-    <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:15px;"></div>
+<div id="result" class="result-view">
+  <div id="capture-area" class="result-card">
+    <div id="res-emoji" style="font-size: 50px;">🤮</div>
+    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--red); margin: 10px 0; font-size: 18px;"></h2>
+    <p id="res-text" style="font-size: 13px; opacity: 0.9; line-height: 1.4; min-height: 60px;"></p>
+    <div id="res-grid"></div>
   </div>
-  <button class="btn-action" style="width:100%" onclick="save()">СОХРАНИТЬ</button>
-  <button onclick="location.reload()" style="background:none; border:none; color:#444; margin-top:10px;">ЗАНОВО</button>
+  <button class="btn-main" style="width:90%;" onclick="saveImage()">СОХРАНИТЬ ДЛЯ TIKTOK</button>
+  <button class="btn-main" style="background:#222; width:90%; box-shadow: 0 4px 0 #000;" onclick="location.reload()">НОВЫЙ ТЕСТ</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// АБСОЛЮТНАЯ БАЗА КАРТ (110+)
-const ALL_CARDS = [
-  // Войска
-  {n:"Мегарыцарь",id:"mega-knight",evo:true,t:60,s:80},{n:"П.Е.К.К.А.",id:"pekka",evo:true,t:20,s:20},{n:"Всадник на кабане",id:"hog-rider",evo:true,t:40,s:10},
-  {n:"Элитные варвары",id:"elite-barbarians",evo:true,t:90,s:70},{n:"Огненная лучница",id:"firecracker",evo:true,t:50,s:10},{n:"Валькирия",id:"valkyrie",evo:true,t:10,s:10},
-  {n:"Ведьма",id:"witch",t:30,s:50},{n:"Колдун",id:"wizard",evo:true,t:15,s:60},{n:"Мушкетёр",id:"musketeer",evo:true,t:5,s:10},
-  {n:"Принц",id:"prince",t:20,s:20},{n:"Тёмный принц",id:"dark-prince",t:15,s:15},{n:"Мини П.Е.К.К.А.",id:"mini-pekka",t:10,s:10},
-  {n:"Гигант",id:"giant",t:10,s:15},{n:"Голем",id:"golem",t:40,s:40},{n:"Электрогигант",id:"electro-giant",t:80,s:50},
-  {n:"Королевский гигант",id:"royal-giant",evo:true,t:50,s:20},{n:"Гоблин-гигант",id:"goblin-giant",evo:true,t:45,s:20},{n:"Скелеты",id:"skeletons",evo:true,t:5,s:5},
-  {n:"Армия скелетов",id:"skeleton-army",t:5,s:15},{n:"Гвардейцы",id:"guards",t:10,s:15},{n:"Варвары",id:"barbarians",evo:true,t:15,s:25},
-  {n:"Банда гоблинов",id:"goblin-gang",t:15,s:10},{n:"Миньоны",id:"minions",t:5,s:5},{n:"Орда миньонов",id:"minion-horde",t:30,s:50},
-  {n:"Летучие мыши",id:"bats",evo:true,t:10,s:10},{n:"Шахтёр",id:"miner",t:20,s:30},{n:"Шар",id:"balloon",t:40,s:30},
-  {n:"Адская гончая",id:"lava-hound",t:25,s:20},{n:"Дракончик",id:"baby-dragon",t:5,s:10},{n:"Пламенный дракон",id:"inferno-dragon",t:20,s:20},
-  {n:"Электродракон",id:"electro-dragon",t:20,s:20},{n:"Феникс",id:"phoenix",t:25,s:20},{n:"Вышибала",id:"bowler",t:35,s:20},
-  {n:"Палач",id:"executioner",t:20,s:20},{n:"Магический лучник",id:"magic-archer",t:25,s:40},{n:"Громовержец",id:"electro-wizard",t:10,s:15},
-  {n:"Ледяной колдун",id:"ice-wizard",evo:true,t:15,s:20},{n:"Принцесса",id:"princess",t:30,s:10},{n:"Бандитка",id:"bandit",t:20,s:15},
-  {n:"Рыбак",id:"fisherman",t:20,s:40},{n:"Охотник",id:"hunter",t:10,s:20},{n:"Дровосек",id:"lumberjack",t:35,s:20},
-  {n:"Спарки",id:"sparky",t:60,s:40},{n:"Мегаминьон",id:"mega-minion",t:5,s:10},{n:"Королевские кабаны",id:"royal-hogs",t:25,s:20},
-  {n:"Королевские рекруты",id:"royal-recruits",evo:true,t:50,s:60},{n:"Ведьмина бабушка",id:"mother-witch",t:20,s:20},{n:"Дух льда",id:"ice-spirit",evo:true,t:5,s:10},
-  {n:"Дух огня",id:"fire-spirit",t:5,s:5},{n:"Дух электро",id:"electro-spirit",t:10,s:5},{n:"Дух исцеления",id:"heal-spirit",t:15,s:10},
-  {n:"Целительница-воин",id:"battle-healer",t:50,s:50},{n:"Эликсирный голем",id:"elixir-golem",t:70,s:60},{n:"Стенобои",id:"wall-breakers",evo:true,t:25,s:20},
-  // Заклинания
-  {n:"Бревно",id:"the-log",t:5,s:10},{n:"Стрелы",id:"arrows",t:5,s:5},{n:"Разряд",id:"zap",evo:true,t:10,s:5},
-  {n:"Огненный шар",id:"fireball",t:5,s:10},{n:"Яд",id:"poison",t:15,s:15},{n:"Ракета",id:"rocket",t:40,s:20},
-  {n:"Молния",id:"lightning",t:20,s:15},{n:"Землетрясение",id:"earthquake",t:25,s:10},{n:"Торнадо",id:"tornado",t:50,s:30},
-  {n:"Заморозка",id:"freeze",t:95,s:80},{n:"Ярость",id:"rage",t:50,s:40},{n:"Зеркало",id:"mirror",t:70,s:50},
-  {n:"Клон",id:"clone",t:60,s:60},{n:"Бочка с гоблинами",id:"goblin-barrel",evo:true,t:45,s:15},{n:"Бочка со скелетами",id:"skeleton-barrel",t:25,s:15},
-  {n:"Гоблинский бур",id:"goblin-drill",evo:true,t:40,s:20},{n:"Кладбище",id:"graveyard",t:40,s:30},
-  // Здания
-  {n:"Пушка",id:"cannon",evo:true,t:10,s:10},{n:"Тесла",id:"tesla",evo:true,t:20,s:15},{n:"Адская башня",id:"inferno-tower",t:20,s:10},
-  {n:"Башня-бомбёжка",id:"bomb-tower",evo:true,t:25,s:10},{n:"Мортира",id:"mortar",evo:true,t:50,s:30},{n:"Арбалет",id:"x-bow",t:70,s:50},
-  {n:"Надгробие",id:"tombstone",t:5,s:15},{n:"Клетка с гоблином",id:"goblin-cage",evo:true,t:15,s:15},{n:"Печь",id:"furnace",t:60,s:50},
-  {n:"Хижина гоблинов",id:"goblin-hut",t:60,s:60},{n:"Хижина варваров",id:"barbarian-hut",t:50,s:50},{n:"Сборщик эликсира",id:"elixir-collector",t:30,s:40},
-  // Чемпионы
-  {n:"Маленький Принц",id:"little-prince",champ:true,t:40,s:20},{n:"Королева лучниц",id:"archer-queen",champ:true,t:30,s:20},
-  {n:"Золотой рыцарь",id:"golden-knight",champ:true,t:20,s:20},{n:"Король скелетов",id:"skeleton-king",champ:true,t:20,s:20},
-  {n:"Монах",id:"monk",champ:true,t:30,s:30},{n:"Шустрый шахтёр",id:"mighty-miner",champ:true,t:25,s:20},{n:"Гоблинштейн",id:"goblinstein",champ:true,t:45,s:20}
-];
+// АБСОЛЮТНО ПОЛНЫЙ, ОТРЕДАКТИРОВАННЫЙ СПИСОК (БЕЗ УРЕЗАНИЙ)
+const RAW_NAMES = ["Адская башня","Адская гончая","Арбалет","Армия скелетов","Банда гоблинов","Бандитка","Башня-бомбёжка","Бездна","Берсеркша","Боевой таран","Бочка со скелетами","Бревно","Валькирия","Варварская бочка","Варварская пусковая установка","Варвары","Ведьма","Ведьмина бабушка","Всадник на кабане","Всадница на баране","Вышибала","Гигант","Гигантский скелет","Гигантский снежок","Главная бандитка","Гоблин с дротиками","Гоблин-гигант","Гоблин-подрывник","Гоблинская бочка","Гоблинский бур","Гоблинштейн","Гоблины","Гоблины-копейщики","Гоблинята","Голем","Графиня с кинжалами","Громовержец","Дракончик","Дровосек","Дух исцеления","Заморозка","Землетрясение","Зеркало","Золотой рыцарь","Императрица духов","Исцеление","Канонир","Кладбище","Клетка с гоблином","Клон","Колдун","Королева лучниц","Королевская почта","Королевские кабаны","Королевские рекруты","Королевский гигант","Королевский повар","Королевский призрак","Король Royale","Король скелетов","Костяные драконы","Ледяной голем","Ледяной дух","Ледяной колдун","Ледяной суперголем","Летучие мыши","Летучка","Лоза","Лучницы","Магический лучник","Маленький Принц","Мегаминьон","Мегарыцарь","Мини-генераторы","Мини-П.Е.К.К.А.","Миньоны","Молния","Монах","Мортира","Мушкетёр","Надгробие","Ночная ведьма","Огненная лучница","Огненный дух","Огненный шар","Орда миньонов","Охотник","П.Е.К.К.А.","Палач","Печь","Пламенный дракон","Повозка с пушкой","Подозрительный куст","Подрывник","Праздничная ракета","Праздничная хижина","Принц","Принцесса","Принцесса из башни","Пушка","Разбойники","Разряд","Ракета","Руническая гигантша","Рыбак","Рыцарь","Санта на кабане","Сборщик эликсира","Скелеты","Спарки","Стенобои","Стражи","Стрелы","Супер-адская гончая","Суперведьма","Супермагический лучник","Супермини-П.Е.К.К.А.","Тёмный принц","Терри","Тесла","Торнадо","Три мушкетёра","Трио колдунов","Феникс","Хижина варваров","Хижина гоблинов","Целительница-воин","Шар","Шахтёр","Шустрый шахтёр","Электрический дух","Электрогигант","Электродракон","Эликсирный голем","Элитные варвары","Яд","Ярость"];
+
+// Умный генератор ID и характеристик
+const ALL_CARDS = RAW_NAMES.map(name => {
+  let id = name.toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/\./g, '')
+    .replace(/ё/g, 'e');
+  
+  if(name === "П.Е.К.К.А.") id = "pekka";
+  if(name === "Мини-П.Е.К.К.А.") id = "mini-pekka";
+  
+  return {
+    name,
+    id: id,
+    toxic: ["Арбалет","Заморозка","Зеркало","Мортира","Электрогигант","Ярость","Торнадо","Элитные варвары"].includes(name),
+    noob: ["Мегарыцарь","Колдун","Ведьма","Гигантский скелет","Варвары","Королевский рекруты"].includes(name),
+    winCon: ["Всадник на кабане","Королевский гигант","Шахтёр","Голем","Арбалет","Мортира","Бочка с гоблинами","Шар"].includes(name)
+  };
+});
 
 let deck = Array(8).fill(null);
-let curSlot = 0;
-let picked = null;
+let slotIdx = 0;
 
-function openPick(i) { curSlot = i; document.getElementById('modal').style.display = 'flex'; draw(); }
-function closePick() { document.getElementById('modal').style.display = 'none'; }
-function closeChoice() { document.getElementById('choice-screen').style.display = 'none'; }
+function openModal(i) { slotIdx = i; document.getElementById('modal').style.display = 'flex'; renderCards(); }
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-function draw() {
-  const s = document.getElementById('search').value.toLowerCase();
-  const l = document.getElementById('card-list');
-  l.innerHTML = ALL_CARDS.filter(c => c.n.toLowerCase().includes(s)).map(c => `
-    <div class="card-item" onclick="ask('${c.n}')">
-      <img src="https://royaleapi.com/static/img/cards-150/${c.id}.png">
-      <span>${c.n}</span>
+function renderCards() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const list = document.getElementById('card-list');
+  list.innerHTML = ALL_CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => `
+    <div class="card-item" onclick="selectCard('${c.name}')">
+      <img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png" onerror="this.src='https://placehold.co/100x130?text=CR'">
+      <div class="card-name">${c.name}</div>
     </div>
   `).join('');
 }
 
-function ask(name) {
-  if(deck.some(d => d && d.n === name)) return tg.showAlert("Уже есть!");
-  picked = ALL_CARDS.find(x => x.n === name);
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('choice-screen').style.display = 'flex';
-  document.getElementById('e-btn').style.display = picked.evo ? 'block' : 'none';
-  document.getElementById('c-btn').style.display = picked.champ ? 'block' : 'none';
-}
-
-function setMode(mode) {
-  let c = {...picked, mode: mode};
-  deck[curSlot] = c;
-  const s = document.getElementById(`s${curSlot}`);
-  const img = document.getElementById(`img${curSlot}`);
-  s.className = `slot filled ${mode}`;
-  img.src = `https://royaleapi.com/static/img/cards-150/${c.id}${mode==='evo'?'-ev1':''}.png`;
+function selectCard(name) {
+  const card = ALL_CARDS.find(c => c.name === name);
+  deck[slotIdx] = card;
+  const s = document.getElementById(`s${slotIdx}`);
+  const img = document.getElementById(`img${slotIdx}`);
+  
+  img.src = `https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${card.id}.png`;
   img.style.display = 'block';
-  document.getElementById(`p${curSlot}`).style.display = 'none';
-  s.innerHTML += `<div class="label">${mode.toUpperCase()}</div>`;
-  closeChoice();
-  upd();
+  s.querySelector('span').style.display = 'none';
+  s.classList.add('filled');
+  closeModal();
+  updateStats();
+  tg.HapticFeedback.impactOccurred('light');
 }
 
-function upd() {
-  const d = deck.filter(x => x);
-  const t = d.reduce((a,b) => a + (b.mode==='evo'?b.t+30:b.t), 0) / 1.8;
-  const s = d.reduce((a,b) => a + b.s, 0) / 1.8;
-  document.getElementById('b-tox').style.width = Math.min(100, t) + '%';
-  document.getElementById('v-tox').innerText = Math.round(t) + '%';
-  document.getElementById('b-skill').style.width = Math.min(100, s) + '%';
-  document.getElementById('v-skill').innerText = Math.round(s) + '%';
-  document.getElementById('b-love').style.width = Math.max(0, 100 - (t+s)/2.2) + '%';
+function updateStats() {
+  const d = deck.filter(c => c);
+  const tox = (d.filter(c => c.toxic).length / 3) * 100;
+  const noob = (d.filter(c => c.noob).length / 3) * 100;
+  
+  document.getElementById('b-tox').style.width = Math.min(100, tox) + '%';
+  document.getElementById('v-tox').innerText = Math.round(tox) + '%';
+  document.getElementById('b-skill').style.width = Math.min(100, noob) + '%';
+  document.getElementById('v-skill').innerText = Math.round(noob) + '%';
+  
+  const love = Math.max(0, 100 - (tox + noob));
+  document.getElementById('b-love').style.width = love + '%';
+  document.getElementById('v-love').innerText = Math.round(love) + '%';
 }
 
+// НОВЫЙ, СТАБИЛЬНЫЙ АНАЛИЗАТОР С ПРИОРИТЕТАМИ
 function analyze() {
-  if(deck.includes(null)) return tg.showAlert("8 карт, быстро!");
-  const names = deck.map(d => d.n);
-  const modes = deck.map(d => d.mode);
-  let t, e, txt;
-
-  if(names.includes("Мегарыцарь") && modes.includes("evo")) {
-    t = "ЭВО-МУСОР"; e = "🤡";
-    txt = "Эволюция МК? Ты официально безнадёжен. Твой геймплей — это просто кидать жирную тушу на мост и надеяться, что противник такой же тупой, как ты. Спойлер: нет.";
-  } else if(names.includes("Арбалет") && names.includes("Тесла")) {
-    t = "ДУШНИЛА ГЕЙ-КЛУБА"; e = "🧱";
-    txt = "Арбалет и Тесла. Ты боишься переходить мост больше, чем солнечного света. Сидишь в своей конуре и дрочишь на цифры урона. Жалкое зрелище.";
-  } else if(modes.filter(m => m === 'evo').length >= 2) {
-    t = "PAY TO WIN РАБ"; e = "💳";
-    txt = "Две эволюции в деке. Без кредитки ты бы не поднялся выше второй арены. Твой скилл — это иллюзия, созданная деньгами твоих родителей.";
-  } else if(names.includes("Гоблинский бур") && names.includes("Яд")) {
-    t = "КРЫСИНЫЙ КОРОЛЬ"; e = "🐀";
-    txt = "Бур и яд. Ты ковыряешь башню по 200 урона и думаешь, что ты тактик. На самом деле ты просто мелкий вредитель, которого все презирают.";
-  } else if(!names.some(n => ["Мегарыцарь", "Ведьма", "Колдун", "Элитки"].includes(n)) && names.includes("Рыцарь")) {
-    t = "УВАЖАЕМЫЙ ГИГАЧАД"; e = "🗿";
-    txt = "Никакого спама, никакой гнили. Чистый скилл и контроль. Ты либо про-плеер, либо очень стараешься им быть. Снимаю шляпу.";
-  } else {
-    t = "МИДЛАДДЕР-НЫТИК"; e = "💩";
-    txt = "Рандомный набор карт без логики. Ты просто накидал всё, что блестит, и удивляешься, почему сидишь на 5000 кубков. Попробуй включить мозг.";
+  if(deck.includes(null)) return tg.showAlert("Сначала выбери 8 карт!");
+  
+  const d = deck;
+  const names = d.map(c => c.name);
+  const toxCount = d.filter(c => c.toxic).length;
+  const noobCount = d.filter(c => c.noob).length;
+  const winIcons = d.filter(c => c.winCon).length;
+  
+  let title, text, emoji;
+  
+  // ПРИОРИТЕТ 1: УЛЬТРА-ТОКСИКИ
+  if(toxCount >= 3 && names.includes("Арбалет")) {
+    title = "ОСАДНЫЙ ЧЕРВЬ"; emoji = "☣️";
+    text = "Арбалет и гора токсичного мусора? Твоя стратегия — сидеть за забором и ждать, пока противник умрёт от скуки. У тебя нет друзей, и это заслуженно.";
+  }
+  // ПРИОРИТЕТ 2: МИДЛАДДЕР КОМБО
+  else if(names.includes("Мегарыцарь") && names.includes("Ведьма")) {
+    title = "КОРОЛЬ МИДЛАДДЕРА"; emoji = "🤡";
+    text = "Мегарыцарь и Ведьма на мост — вот и весь твой геймплей. Ты застрял на 5000 кубков в 2019 году и винишь во всём баланс. Удали игру.";
+  }
+  // ПРИОРИТЕТ 3: LOGBAIT КОПИПАСТ
+  else if(names.includes("Гоблинская бочка") && names.includes("Принцесса") && names.includes("Армия скелетов")) {
+    title = "LOGBAIT РАБ"; emoji = "🐀";
+    text = "Ого, Logbait. Своего мозга не хватило собрать деку, скопировал у ютубера? Ты жалок. Кидай бочки, пока я кидаю твой геймплей в мусорку.";
+  }
+  // ПРИОРИТЕТ 4: ПИВНАЯ ДЕКА (2+ ВИНКОНА)
+  else if(winIcons >= 2) {
+    title = "ВИГЕНЕГРЕТ ИЗ КАРТ"; emoji = "🤮";
+    text = "Всадник на кабане И Шахтёр в одной деке? Зачем? Ты просто накидал винконов, не понимая, как они работают. Это не дека, это каша из топора.";
+  }
+  // ПРИОРИТЕТ 5: МЕТА ДЕКА (ЕСЛИ НЕТ НУБСКИХ КАРТ И МНОГО ТОКСИКА)
+  else if(noobCount === 0 && toxCount > 0) {
+    title = "МЕТА-РАБ БЕЗ МОЗГА"; emoji = "🤖";
+    text = "Выглядит как дека из топа, но играешь ты ею, как нуб. Руки не копируются, так что удачи проигрывать крутой декой.";
+  }
+  // ПРИОРИТЕТ 6: ХОРОШАЯ ДЕКА (ПРИЗНАНИЕ СКИЛЛА)
+  else if(noobCount === 0 && toxCount === 0 && d.some(c => c.winCon)) {
+    title = "СКИЛЛОВЫЙ ИГРОК (УВАЖЕНИЕ)"; emoji = "🗿";
+    text = "Опа, баланс есть. Нет нубских карт, есть винкон и защита. Либо ты профи, либо ты украл деку и сейчас проиграешь. В любом случае — выглядит достойно.";
+  }
+  // ДЕФОЛТНЫЙ ВАРИАНТ
+  else {
+    title = "СЛУЧАЙНЫЙ ОВОЩ"; emoji = "🤷‍♂️";
+    text = "Я просканировал твою деку и нашел только одну проблему: ТЕБЯ. Карты не синергируют, ты просто накидал мусора. Сходи в тренировку.";
   }
 
-  document.getElementById('res-title').innerText = t;
-  document.getElementById('res-emoji').innerText = e;
-  document.getElementById('res-text').innerText = txt;
-  document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="https://royaleapi.com/static/img/cards-150/${x.id}${x.mode==='evo'?'-ev1':''}.png" style="border:1px solid ${x.mode==='evo'?'#bc13fe':'#222'}; border-radius:5px;">`).join('');
+  document.getElementById('res-title').innerText = title;
+  document.getElementById('res-text').innerText = text;
+  document.getElementById('res-emoji').innerText = emoji;
+  document.getElementById('res-grid').innerHTML = d.map(c => `<img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png">`).join('');
   document.getElementById('result').style.display = 'flex';
-  tg.HapticFeedback.notificationOccurred('warning');
+  tg.HapticFeedback.notificationOccurred('error');
 }
 
-function save() {
-  html2canvas(document.getElementById('capture-area')).then(c => {
-    const a = document.createElement('a'); a.download='deck.png'; a.href=c.toDataURL(); a.click();
-    tg.showAlert("Сделано!");
+function saveImage() {
+  const target = document.getElementById('capture-area');
+  html2canvas(target, { backgroundColor: '#000' }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'roast_result.png';
+    link.href = canvas.toDataURL();
+    link.click();
+    tg.showAlert("Скриншот сохранен в галерею!");
   });
 }
 </script>
