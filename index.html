@@ -3,205 +3,506 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DECK ANALYZER PRO</title>
+  <title>CYBERDECK_TERMINAL_v5.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
   <style>
-    :root { --green: #00ff41; --red: #ff003c; --bg: #050505; --panel: #111; }
-    body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; margin: 0; overflow: hidden; }
+    :root {
+      --green: #00ff41;
+      --pink: #ff2a6d;
+      --blue: #05d9e8;
+      --bg: #020205;
+      --panel: rgba(20, 20, 25, 0.9);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; background: #000; }
-    .header { padding: 15px; border-bottom: 1px solid var(--green); text-align: center; }
-    .header h1 { font-family: 'Orbitron'; font-size: 18px; color: var(--green); margin: 0; letter-spacing: 2px; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%),
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 100%, 100% 4px, 3px 100%;
+      color: var(--green);
+      font-family: 'JetBrains Mono', monospace;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 15px; background: #080808; }
-    .slot { aspect-ratio: 1/1.2; background: #111; border: 1px dashed #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-    .slot.filled { border: 1px solid var(--green); box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.1); }
+    /* Scanline effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+      z-index: 10;
+      pointer-events: none;
+      background-size: 100% 2px, 3px 100%;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 500px;
+      margin: 0 auto;
+      border: 2px solid var(--green);
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+      position: relative;
+      z-index: 5;
+    }
+
+    .header {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 2px solid var(--green);
+      background: var(--panel);
+    }
+
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      margin: 0;
+      letter-spacing: 4px;
+      text-shadow: 0 0 10px var(--green);
+    }
+
+    /* Deck Grid with Staggered Animation */
+    .deck-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 15px;
+      background: rgba(0, 20, 0, 0.3);
+    }
+
+    .slot {
+      aspect-ratio: 1/1.25;
+      background: #0a0a0a;
+      border: 1px solid var(--green);
+      border-radius: 4px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: slotAppear 0.5s ease backwards;
+    }
+
+    @keyframes slotAppear {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .slot.filled {
+      border-color: var(--blue);
+      box-shadow: 0 0 15px rgba(5, 217, 232, 0.3);
+    }
+
     .slot img { width: 100%; height: 100%; object-fit: contain; }
-    .slot .plus { color: var(--green); font-size: 20px; opacity: 0.5; }
+    
+    .remove-btn {
+      position: absolute;
+      top: -5px; right: -5px;
+      background: var(--pink);
+      color: white;
+      border-radius: 50%;
+      width: 18px; height: 18px;
+      font-size: 12px;
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 10;
+    }
+    .slot.filled:hover .remove-btn { display: flex; }
 
-    .console { flex: 1; padding: 15px; font-size: 12px; color: var(--green); overflow-y: auto; background: #050505; border-top: 1px solid #222; }
-    .log-line { margin-bottom: 8px; line-height: 1.4; border-left: 2px solid var(--green); padding-left: 8px; }
+    /* Stats & Console */
+    .console-box {
+      flex: 1;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      overflow-y: auto;
+      font-size: 11px;
+      border-top: 2px solid var(--green);
+    }
 
-    .btn-run { margin: 15px; padding: 20px; background: var(--green); color: #000; border: none; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-    .btn-run:active { transform: scale(0.98); background: #00cc33; }
+    .console-line { margin-bottom: 5px; opacity: 0.9; position: relative; padding-left: 15px; }
+    .console-line::before { content: ">"; position: absolute; left: 0; color: var(--green); animation: blink 1s infinite; }
 
-    /* Modal */
-    .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-    .search-bar { padding: 20px; display: flex; gap: 10px; }
-    #search { flex: 1; padding: 12px; background: #111; border: 1px solid var(--green); color: #fff; outline: none; }
-    .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; }
-    .card-item { background: #111; padding: 5px; text-align: center; border: 1px solid #222; }
-    .card-item img { width: 100%; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-    /* Result */
-    .result-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; padding: 20px; }
-    .report { border: 1px solid var(--green); padding: 20px; background: #050505; flex: 1; overflow-y: auto; }
-    .report-h { color: var(--green); border-bottom: 1px solid var(--green); margin-bottom: 15px; padding-bottom: 5px; font-family: 'Orbitron'; }
-    .tag { display: inline-block; padding: 2px 6px; background: var(--green); color: #000; font-size: 10px; font-weight: bold; margin-bottom: 10px; }
-    .section-title { color: var(--green); font-weight: 800; margin-top: 15px; display: block; text-transform: uppercase; }
-    .plus-list { color: #00ff41; }
-    .minus-list { color: #ff003c; }
+    /* Action Button */
+    .btn-analyze {
+      margin: 15px;
+      padding: 20px;
+      background: transparent;
+      border: 2px solid var(--green);
+      color: var(--green);
+      font-family: 'Orbitron';
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: 0.3s;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 5px var(--green); }
+      50% { box-shadow: 0 0 20px var(--green); }
+      100% { box-shadow: 0 0 5px var(--green); }
+    }
+
+    .btn-analyze:active { background: var(--green); color: #000; }
+
+    /* Modal List */
+    .modal {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+    }
+
+    .search-area { padding: 20px; border-bottom: 1px solid var(--green); display: flex; gap: 10px; }
+    #search {
+      flex: 1;
+      background: #111;
+      border: 1px solid var(--green);
+      color: var(--green);
+      padding: 12px;
+      font-family: 'JetBrains Mono';
+    }
+
+    .card-list {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; padding: 15px;
+      overflow-y: scroll;
+    }
+
+    .card-item {
+      background: #0a0a0a; border: 1px solid #333;
+      padding: 5px; text-align: center; border-radius: 8px;
+      transition: 0.3s;
+    }
+
+    .card-item:hover { border-color: var(--blue); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(5,217,232,0.2); }
+    .card-item img { width: 100%; border-radius: 4px; }
+    .card-item div { font-size: 9px; margin-top: 5px; color: #aaa; }
+
+    /* Result View */
+    .result-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .report-card {
+      border: 1px solid var(--green);
+      background: rgba(0, 255, 65, 0.05);
+      padding: 20px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .verdict-box { font-size: 24px; font-weight: 900; margin: 15px 0; border: 2px solid; padding: 10px; display: inline-block; }
+    .status-ok { color: var(--green); border-color: var(--green); }
+    .status-bad { color: var(--pink); border-color: var(--pink); }
+
+    .pros { color: var(--green); margin-bottom: 15px; }
+    .cons { color: var(--pink); margin-bottom: 15px; }
+    
+    .tip-box { background: #111; padding: 15px; border-left: 4px solid var(--blue); color: var(--blue); font-size: 13px; font-style: italic; }
+
+    .share-btn { background: var(--blue); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Orbitron'; }
   </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="header"><h1>TACTICAL ANALYZER v4.0</h1></div>
+<div class="app-container">
+  <div class="header"><h1>DECK_TERMINAL_v5.0</h1></div>
   
-  <div class="deck-grid">
-    <script>
-      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><div class="plus">+</div><img id="img${i}" style="display:none"></div>`);
-    </script>
+  <div class="deck-grid" id="grid">
+    </div>
+
+  <div class="console-box" id="console">
+    <div class="console-line">Инициализация систем... OK</div>
+    <div class="console-line">Загрузка базы данных карт Royale... OK</div>
+    <div class="console-line">Ожидание формирования колоды...</div>
   </div>
 
-  <div class="console" id="console">
-    <div class="log-line">> Ожидание ввода данных...</div>
-    <div class="log-line">> Система готова к тактическому разбору.</div>
-  </div>
-
-  <button class="btn-run" onclick="startAnalysis()">АНАЛИЗ ЭФФЕКТИВНОСТИ</button>
+  <button class="btn-analyze" onclick="processAnalysis()">ЗАПУСТИТЬ АНАЛИЗ</button>
 </div>
 
 <div id="modal" class="modal">
-  <div class="search-bar">
-    <input type="text" id="search" placeholder="Поиск карты..." oninput="renderCards()">
-    <button onclick="closeModal()" style="color:var(--green); background:none; border:none;">[X]</button>
+  <div class="search-area">
+    <input type="text" id="search" placeholder="NAME_SEARCH..." oninput="drawCards()">
+    <button onclick="toggleModal(false)" style="color:var(--pink); background:none; border:none; font-family:'Orbitron';">EXIT</button>
   </div>
   <div class="card-list" id="card-list"></div>
 </div>
 
-<div id="result" class="result-screen">
-  <div class="report" id="report-content">
-    <div class="tag" id="res-tag">STABLE</div>
-    <h2 class="report-h" id="res-title"></h2>
+<div id="result" class="result-overlay">
+  <div id="capture-area" class="report-card">
+    <div style="font-size: 10px; color: var(--blue);">ARCHETYPE: <span id="res-archetype">---</span></div>
+    <div id="res-verdict-box" class="verdict-box">---</div>
     
-    <span class="section-title">Вердикт:</span>
-    <p id="res-verdict"></p>
+    <div class="pros">
+      <div style="font-weight: bold;">[+] СИЛЬНЫЕ СТОРОНЫ:</div>
+      <ul id="res-pros"></ul>
+    </div>
     
-    <span class="section-title">Сильные стороны:</span>
-    <ul class="plus-list" id="res-plus"></ul>
-    
-    <span class="section-title">Слабые стороны:</span>
-    <ul class="minus-list" id="res-minus"></ul>
+    <div class="cons">
+      <div style="font-weight: bold;">[-] УЯЗВИМОСТИ:</div>
+      <ul id="res-cons"></ul>
+    </div>
 
-    <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-top:20px; opacity:0.5;"></div>
+    <div class="tip-box">
+      <strong>СОВЕТ:</strong> <span id="res-tip">---</span>
+    </div>
+
+    <div id="res-deck-view" style="display: grid; grid-template-columns: repeat(4,1fr); gap:5px; margin-top:20px; opacity:0.6"></div>
   </div>
-  <button class="btn-run" onclick="location.reload()">НОВЫЙ ТЕСТ</button>
+  
+  <button class="share-btn" onclick="saveAndShare()">ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ</button>
+  <button onclick="location.reload()" style="background:none; border:none; color:var(--green); margin-top:20px; cursor:pointer;">ВЕРНУТЬСЯ В ТЕРМИНАЛ</button>
 </div>
 
 <script>
-const tg = window.Telegram.WebApp; tg.expand();
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-// БАЗА ДАННЫХ (Расширенная логика)
+// ПОЛНАЯ БАЗА КАРТ (Representative list)
 const DB = [
-  {n:"Мегарыцарь",id:"mega-knight",type:"tank",air:false,splash:true,win:false,cost:7},
-  {n:"Всадник на кабане",id:"hog-rider",type:"wincon",air:false,splash:false,win:true,cost:4},
-  {n:"Адская башня",id:"inferno-tower",type:"building",air:true,splash:false,win:false,cost:5},
-  {n:"Арбалет",id:"x-bow",type:"wincon",air:false,splash:false,win:true,cost:6},
-  {n:"Огненная лучница",id:"firecracker",type:"support",air:true,splash:true,win:false,cost:3},
-  {n:"Бревно",id:"the-log",type:"spell",air:false,splash:true,win:false,cost:2},
-  {n:"Стрелы",id:"arrows",type:"spell",air:true,splash:true,win:false,cost:3},
-  {n:"П.Е.К.К.А.",id:"pekka",type:"tank",air:false,splash:false,win:false,cost:7},
-  {n:"Шахтёр",id:"miner",type:"wincon",air:false,splash:false,win:true,cost:3},
-  {n:"Шар",id:"balloon",type:"wincon",air:false,splash:false,win:true,cost:5},
-  {n:"Маленький Принц",id:"little-prince",type:"support",air:true,splash:false,win:false,cost:3},
-  {n:"Заморозка",id:"freeze",type:"spell",air:true,splash:false,win:false,cost:4},
-  {n:"Элитные варвары",id:"elite-barbarians",type:"dps",air:false,splash:false,win:false,cost:6},
-  {n:"Голем",id:"golem",type:"wincon",air:false,splash:false,win:true,cost:8},
-  {n:"Скелеты",id:"skeletons",type:"cycle",air:false,splash:false,win:false,cost:1}
+  {n:"Всадник на кабане", id:"hog-rider", cost:4, type:"wincon", target:"ground", rarity:"rare"},
+  {n:"Королевский гигант", id:"royal-giant", cost:6, type:"wincon", target:"ground", rarity:"common"},
+  {n:"Голем", id:"golem", cost:8, type:"wincon", target:"ground", rarity:"epic"},
+  {n:"Шар", id:"balloon", cost:5, type:"wincon", target:"air", rarity:"epic"},
+  {n:"Арбалет", id:"x-bow", cost:6, type:"wincon", target:"ground", rarity:"epic"},
+  {n:"Мортира", id:"mortar", cost:4, type:"wincon", target:"ground", rarity:"common"},
+  {n:"Кладбище", id:"graveyard", cost:5, type:"wincon", target:"ground", rarity:"legendary"},
+  {n:"Бочка с гоблинами", id:"goblin-barrel", cost:3, type:"wincon", target:"ground", rarity:"epic"},
+  {n:"Гигант", id:"giant", cost:5, type:"wincon", target:"ground", rarity:"rare"},
+  {n:"Электрогигант", id:"electro-giant", cost:7, type:"wincon", target:"ground", rarity:"epic"},
+  {n:"П.Е.К.К.А.", id:"pekka", cost:7, type:"tank", target:"ground", rarity:"epic"},
+  {n:"Мегарыцарь", id:"mega-knight", cost:7, type:"tank", target:"ground", rarity:"legendary"},
+  {n:"Огненный шар", id:"fireball", cost:4, type:"spell", target:"both", rarity:"rare"},
+  {n:"Яд", id:"poison", cost:4, type:"spell", target:"both", rarity:"epic"},
+  {n:"Бревно", id:"the-log", cost:2, type:"spell", target:"ground", rarity:"legendary"},
+  {n:"Разряд", id:"zap", cost:2, type:"spell", target:"both", rarity:"common"},
+  {n:"Стрелы", id:"arrows", cost:3, type:"spell", target:"both", rarity:"common"},
+  {n:"Ракета", id:"rocket", cost:6, type:"spell", target:"both", rarity:"rare"},
+  {n:"Молния", id:"lightning", cost:6, type:"spell", target:"both", rarity:"epic"},
+  {n:"Маленький Принц", id:"little-prince", cost:3, type:"champion", target:"both", rarity:"champion", champ:true},
+  {n:"Королева лучниц", id:"archer-queen", cost:5, type:"champion", target:"both", rarity:"champion", champ:true},
+  {n:"Монах", id:"monk", cost:5, type:"champion", target:"both", rarity:"champion", champ:true},
+  {n:"Адская башня", id:"inferno-tower", cost:5, type:"building", target:"both", rarity:"rare"},
+  {n:"Тесла", id:"tesla", cost:4, type:"building", target:"both", rarity:"common"},
+  {n:"Пушка", id:"cannon", cost:3, type:"building", target:"ground", rarity:"common"},
+  {n:"Волшебник", id:"wizard", cost:5, type:"troop", target:"both", rarity:"rare", splash:true},
+  {n:"Палач", id:"executioner", cost:5, type:"troop", target:"both", rarity:"epic", splash:true},
+  {n:"Мушкетёр", id:"musketeer", cost:4, type:"troop", target:"both", rarity:"rare"},
+  {n:"Электро-маг", id:"electro-wizard", cost:4, type:"troop", target:"both", rarity:"legendary"},
+  {n:"Дракончик", id:"baby-dragon", cost:4, type:"troop", target:"both", rarity:"epic", splash:true},
+  {n:"Валькирия", id:"valkyrie", cost:4, type:"troop", target:"ground", rarity:"rare", splash:true},
+  {n:"Скелеты", id:"skeletons", cost:1, type:"troop", target:"ground", rarity:"common"},
+  {n:"Ледяной дух", id:"ice-spirit", cost:1, type:"troop", target:"both", rarity:"common"},
+  {n:"Огненная лучница", id:"firecracker", cost:3, type:"troop", target:"both", rarity:"common", splash:true},
+  {n:"Принцесса", id:"princess", cost:3, type:"troop", target:"both", rarity:"legendary", splash:true}
 ];
 
 let deck = Array(8).fill(null);
-let curSlot = 0;
+let activeSlot = 0;
 
-function openModal(i) { curSlot = i; document.getElementById('modal').style.display = 'flex'; renderCards(); }
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
+// Инициализация слотов
+const grid = document.getElementById('grid');
+for(let i=0; i<8; i++) {
+  const slot = document.createElement('div');
+  slot.className = 'slot';
+  slot.id = `slot-${i}`;
+  slot.style.animationDelay = `${i * 0.05}s`;
+  slot.onclick = () => openPicker(i);
+  slot.innerHTML = `<span class="plus">+</span><img style="display:none"><div class="remove-btn" onclick="clearSlot(event, ${i})">×</div>`;
+  grid.appendChild(slot);
+}
 
-function renderCards() {
+function openPicker(i) {
+  activeSlot = i;
+  toggleModal(true);
+  tg.HapticFeedback.impactOccurred('medium');
+}
+
+function toggleModal(show) {
+  document.getElementById('modal').style.display = show ? 'flex' : 'none';
+}
+
+function drawCards() {
   const q = document.getElementById('search').value.toLowerCase();
-  const list = document.getElementById('card-list');
-  list.innerHTML = DB.filter(c => c.n.toLowerCase().includes(q)).map(c => `
-    <div class="card-item" onclick="selectCard('${c.n}')">
+  const container = document.getElementById('card-list');
+  container.innerHTML = DB.filter(c => c.n.toLowerCase().includes(q)).map(c => `
+    <div class="card-item" onclick="pickCard('${c.id}')">
       <img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png">
-      <div style="font-size:8px;">${c.n}</div>
+      <div style="color:var(--green)">${c.cost}💧</div>
+      <div style="text-transform:uppercase">${c.n}</div>
     </div>
   `).join('');
 }
+drawCards();
 
-function selectCard(name) {
-  const card = DB.find(c => c.n === name);
-  deck[curSlot] = card;
-  const s = document.getElementById(`s${curSlot}`);
-  s.querySelector('img').src = `https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${card.id}.png`;
-  s.querySelector('img').style.display = 'block';
-  s.querySelector('.plus').style.display = 'none';
-  s.classList.add('filled');
-  closeModal();
+function pickCard(id) {
+  const card = DB.find(c => c.id === id);
+  deck[activeSlot] = card;
   
-  const log = document.getElementById('console');
-  log.innerHTML += `<div class="log-line">> Карта ${name} добавлена в слот ${curSlot+1}</div>`;
-  log.scrollTop = log.scrollHeight;
+  const slot = document.getElementById(`slot-${activeSlot}`);
+  slot.classList.add('filled');
+  slot.querySelector('img').src = `https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${id}.png`;
+  slot.querySelector('img').style.display = 'block';
+  slot.querySelector('.plus').style.display = 'none';
+  
+  toggleModal(false);
+  logConsole(`Модуль ${card.n.toUpperCase()} интегрирован в систему.`);
+  tg.HapticFeedback.notificationOccurred('success');
 }
 
-function startAnalysis() {
-  if(deck.includes(null)) return tg.showAlert("Заполни все слоты!");
+function clearSlot(e, i) {
+  e.stopPropagation();
+  deck[i] = null;
+  const slot = document.getElementById(`slot-${i}`);
+  slot.classList.remove('filled');
+  slot.querySelector('img').style.display = 'none';
+  slot.querySelector('.plus').style.display = 'block';
+  logConsole(`Слот ${i+1} очищен.`);
+  tg.HapticFeedback.impactOccurred('light');
+}
+
+function logConsole(text) {
+  const c = document.getElementById('console');
+  c.innerHTML += `<div class="console-line">${text}</div>`;
+  c.scrollTop = c.scrollHeight;
+}
+
+function processAnalysis() {
+  if (deck.includes(null)) {
+    tg.showAlert("ОШИБКА: Колода не укомплектована (8/8 карт).");
+    return;
+  }
   
-  const d = deck;
-  const avgCost = (d.reduce((a,b) => a + b.cost, 0) / 8).toFixed(1);
-  const winCons = d.filter(c => c.win).length;
-  const airDefense = d.filter(c => c.air).length;
-  const splashUnits = d.filter(c => c.splash).length;
-  const buildings = d.filter(c => c.type === 'building').length;
+  logConsole("Запуск симуляции боя...");
+  logConsole("Расчет синергии юнитов...");
+  
+  setTimeout(() => {
+    const report = analyzeDeck(deck);
+    showResult(report);
+  }, 1000);
+}
 
-  let title, verdict, tag, plus = [], minus = [];
+function analyzeDeck(d) {
+  const avgCost = d.reduce((a, b) => a + b.cost, 0) / 8;
+  const winCons = d.filter(c => c.type === 'wincon');
+  const airHitters = d.filter(c => c.target === 'both' || c.target === 'air');
+  const spells = d.filter(c => c.type === 'spell');
+  const bigSpells = spells.filter(c => c.cost >= 4);
+  const smallSpells = spells.filter(c => c.cost < 4);
+  const splash = d.filter(c => c.splash);
+  const tanks = d.filter(c => c.type === 'tank' || c.cost >= 7);
+  const buildings = d.filter(c => c.type === 'building');
 
-  // ЛОГИКА АНАЛИЗА
-  if(winCons === 0) {
-    tag = "CRITICAL ERROR";
-    title = "БЕСПОЛЕЗНЫЙ НАБОР КАРТ";
-    verdict = "Ты собрал деку без условия победы. Ты планируешь выигрывать за счет того, что противник умрет от смеха? Без Хога, Шара или Гиганта ты просто манекен для битья.";
-    minus.push("Отсутствует Win-Condition (нет карт, бьющих по башне)");
-  } else if(avgCost > 4.5) {
-    tag = "HEAVY UNIT";
-    title = "ЭЛИКСИРНОЕ ОЖИРЕНИЕ";
-    verdict = "Твоя дека тяжелее, чем твоя бывшая. Пока ты накопишь на одну карту, противник трижды прокрутит цикл. Один неверный шаг — и ты в пролете.";
-    minus.push("Слишком дорогой цикл (Avg: " + avgCost + ")");
-    plus.push("Огромная огневая мощь в двойном эликсире");
-  } else if(airDefense < 2) {
-    tag = "VULNERABLE";
-    title = "БОЯЗНЬ ВЫСОТЫ";
-    verdict = "У тебя почти нет защиты от воздуха. Один Шарик или Лава — и твоя башня превратится в руины. Надеюсь, твой интернет вырубится раньше, чем прилетят миньоны.";
-    minus.push("Критически мало анти-эйр юнитов");
-  } else if(winCons === 1 && avgCost < 3.5) {
-    tag = "PRO-BUILD";
-    title = "ДИСЦИПЛИНИРОВАННЫЙ ЦИКЛ";
-    verdict = "Неплохо. Дека выглядит сбалансированной и быстрой. Видно, что ты не просто тыкал в экран, а немного думал. Но помни: скилл не копируется вместе с декой.";
-    plus.push("Быстрый цикл карт", "Хороший баланс защиты и атаки");
+  let res = {
+    archetype: "Balance",
+    verdict: "СТАБИЛЬНО",
+    statusClass: "status-ok",
+    pros: [],
+    cons: [],
+    tip: ""
+  };
+
+  // Archetype Detection
+  if (avgCost < 3.0) res.archetype = "Cycle";
+  else if (avgCost > 4.2) res.archetype = "Beatdown";
+  else if (d.some(c => c.id === 'x-bow' || c.id === 'mortar')) res.archetype = "Siege / Control";
+
+  // Logic checks
+  if (winCons.length === 0) {
+    res.verdict = "МУСОР";
+    res.statusClass = "status-bad";
+    res.cons.push("Нет Win-Condition. Ты не сможешь пробить башню.");
+    res.tip = "Добавь Хога, Гиганта или Бочку, иначе ты просто защищаешься вечно.";
   } else {
-    tag = "AVERAGE";
-    title = "ТИПИЧНЫЙ СЕРЕДНЯК";
-    verdict = "Играть можно, но без энтузиазма. Дека рабочая, но против потных игроков из топа ты рассыпешься как карточный домик.";
-    plus.push("Есть чем атаковать", "Средняя выживаемость");
-    minus.push("Нет четкой специализации");
+    res.pros.push(`Найден вин-кон: ${winCons[0].n}`);
   }
 
-  // Общие проверки
-  if(splashUnits > 0) plus.push("Есть сплэш-урон против орд");
-  if(buildings > 0) plus.push("Здание в защите облегчит жизнь");
-  else minus.push("Нет здания — кабаны и гиганты будут у тебя дома");
+  if (airHitters.length < 3) {
+    res.cons.push("Слабое ПВО. Тебя уничтожит любой Шар или Лава.");
+    res.statusClass = "status-bad";
+  } else {
+    res.pros.push("Достаточно юнитов против воздуха.");
+  }
 
-  // Вывод
-  document.getElementById('res-tag').innerText = tag;
-  document.getElementById('res-title').innerText = title;
-  document.getElementById('res-verdict').innerText = verdict;
-  document.getElementById('res-plus').innerHTML = plus.map(p => `<li>${p}</li>`).join('');
-  document.getElementById('res-minus').innerHTML = minus.map(m => `<li>${m}</li>`).join('');
-  document.getElementById('res-grid').innerHTML = d.map(c => `<img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png">`).join('');
+  if (spells.length === 0) {
+    res.cons.push("Нет заклинаний. Ты не добьешь башню и не уберешь мелочь.");
+  } else if (bigSpells.length > 0 && smallSpells.length > 0) {
+    res.pros.push("Отличная связка заклинаний (Тяжелое + Легкое).");
+  }
+
+  if (avgCost > 4.5) {
+    res.verdict = "СЫРО / ТЯЖЕЛО";
+    res.cons.push("Слишком дорогая колода. Тебя переедут быстрым циклом.");
+    res.tip = "Замени тяжелую карту на Скелетов или Духа для прокрутки.";
+  }
+
+  if (buildings.length === 0 && avgCost < 3.5) {
+    res.cons.push("Нет здания — Хог будет бить твою башню каждый раз.");
+  }
+
+  if (res.pros.length > 3 && res.cons.length === 0) {
+    res.verdict = "META-STEALTH";
+    res.tip = "Колода выглядит профессионально. Иди в Гранд-испытание.";
+  }
+
+  if (!res.tip) res.tip = "Попробуй сбалансировать стоимость и добавить больше сплэш-урона.";
+
+  return res;
+}
+
+function showResult(report) {
+  document.getElementById('res-archetype').innerText = report.archetype;
+  document.getElementById('res-verdict-box').innerText = report.verdict;
+  document.getElementById('res-verdict-box').className = `verdict-box ${report.statusClass}`;
+  document.getElementById('res-pros').innerHTML = report.pros.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('res-cons').innerHTML = report.cons.map(c => `<li>${c}</li>`).join('');
+  document.getElementById('res-tip').innerText = report.tip;
+  
+  // Мини-сетка карт в результате
+  document.getElementById('res-deck-view').innerHTML = deck.map(c => `<img src="https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards/${c.id}.png" style="width:100%">`).join('');
   
   document.getElementById('result').style.display = 'flex';
-  tg.HapticFeedback.notificationOccurred('success');
+  tg.HapticFeedback.notificationOccurred('warning');
+}
+
+function saveAndShare() {
+  const target = document.getElementById('capture-area');
+  html2canvas(target, {backgroundColor: '#020205'}).then(canvas => {
+    const dataUrl = canvas.toDataURL();
+    // В Telegram Mini Apps мы не можем напрямую сохранить файл в галерею,
+    // но можем предложить скачать или отправить данные боту.
+    tg.showConfirm("Скриншот сформирован. Сохранить его?", (ok) => {
+        if(ok) {
+            const link = document.createElement('a');
+            link.download = 'cyberdeck_report.png';
+            link.href = dataUrl;
+            link.click();
+        }
+    });
+  });
 }
 </script>
 </body>
