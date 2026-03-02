@@ -3,205 +3,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DECK ROASTER - GOLD & EVO EDITION</title>
+  <title>DECK ROASTER AI v3.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;600;800&display=swap" rel="stylesheet">
   <style>
-    :root { --red: #ff003c; --cyan: #00f2ff; --bg: #000; --gold: #ffcc00; --purple: #cf19ff; }
-    body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; margin: 0; padding: 0; overflow: hidden; }
-    .app { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; }
-    .header { padding: 10px; text-align: center; border-bottom: 2px solid var(--red); background: #050505; }
-    .glitch { font-family: 'Orbitron'; font-size: 16px; text-shadow: 2px 2px var(--red); text-transform: uppercase; }
-    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px; }
-    .slot { aspect-ratio: 1/1.2; background: #111; border: 2px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; transition: 0.3s; }
-    .slot.filled { border-color: var(--cyan); }
-    .slot.evo { border-color: var(--purple); box-shadow: 0 0 15px var(--purple); }
-    .slot.star { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
-    .slot.champ { border-color: var(--gold); background: linear-gradient(45deg, #443300, #111); }
-    .slot img { width: 100%; height: 100%; object-fit: contain; }
-    .stats { padding: 10px 20px; flex-grow: 1; }
-    .stat-row { margin-bottom: 10px; }
-    .stat-label { display: flex; justify-content: space-between; font-family: 'Orbitron'; font-size: 10px; color: #666; }
-    .bar-bg { background: #1a1a1a; height: 6px; border-radius: 3px; margin-top: 4px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0%; background: var(--cyan); transition: 1s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-    .btn-main { margin: 10px; padding: 18px; border: none; border-radius: 12px; background: var(--red); color: #fff; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+    :root { --accent: #00f2ff; --pink: #ff007a; --purple: #bc13fe; --gold: #ffcf00; --bg: #050505; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
     
-    /* Окно выбора */
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
-    .choice-btn { width: 100%; padding: 16px; margin: 8px; border-radius: 12px; border: none; font-family: 'Orbitron'; font-size: 14px; font-weight: bold; color: #fff; cursor: pointer; transition: 0.2s; }
-    .btn-norm { background: #333; }
-    .btn-evo { background: var(--purple); text-shadow: 0 0 10px #fff; }
-    .btn-star { background: var(--gold); color: #000; box-shadow: 0 0 20px rgba(255,204,0,0.4); }
-    .btn-champ { background: linear-gradient(90deg, #ffcc00, #ff8800); color: #000; }
+    .screen { height: 100vh; display: flex; flex-direction: column; background: radial-gradient(circle at top right, #1a0033, #050505); }
+    
+    /* Header */
+    .header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+    .header h1 { font-family: 'Orbitron'; font-size: 18px; margin: 0; letter-spacing: 4px; color: var(--accent); text-shadow: 0 0 10px var(--accent); }
 
-    .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-    .search-area { padding: 15px; background: #0a0a0a; border-bottom: 1px solid #333; }
-    #search { width: 100%; padding: 12px; background: #111; border: 1px solid var(--red); border-radius: 8px; color: #fff; outline: none; }
-    .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; }
-    .card-item { background: #111; border-radius: 10px; padding: 5px; text-align: center; border: 1px solid #222; }
-    .card-item img { width: 100%; border-radius: 5px; }
+    /* Grid */
+    .deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; }
+    .slot { aspect-ratio: 1/1.25; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+    .slot.filled { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); }
+    .slot.evo { border-color: var(--purple); box-shadow: inset 0 0 15px rgba(188, 19, 254, 0.3); border-width: 2px; }
+    .slot.evo::after { content: 'EVO'; position: absolute; top: 4px; right: 4px; font-size: 8px; font-weight: 900; background: var(--purple); padding: 2px 4px; border-radius: 4px; font-family: 'Orbitron'; }
+    .slot img { width: 90%; height: 90%; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
+    .slot .plus { font-size: 30px; color: rgba(255,255,255,0.1); font-weight: 100; }
+
+    /* Stats Pane */
+    .stats-pane { padding: 0 25px; flex-grow: 1; }
+    .stat-card { margin-bottom: 15px; }
+    .stat-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 10px; font-family: 'Orbitron'; letter-spacing: 1px; color: #888; }
+    .progress-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; transition: width 1s ease-out; }
+
+    /* Buttons */
+    .btn-fire { margin: 20px; padding: 20px; border: none; border-radius: 16px; background: linear-gradient(90deg, var(--pink), #ff4d00); color: #fff; font-family: 'Orbitron'; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 10px 20px rgba(255,0,122,0.3); transition: 0.3s; }
+    .btn-fire:active { transform: scale(0.95); box-shadow: none; }
+
+    /* Selection Modal */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; flex-direction: column; animation: fadeIn 0.3s; }
+    .search-bar { padding: 20px; background: #0a0a0a; }
+    #search { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; background: #111; color: #fff; font-size: 16px; outline: none; }
+    .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; overflow-y: auto; }
+    .card-thumb { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+    .card-thumb img { width: 100%; border-radius: 8px; }
+    .card-thumb span { display: block; font-size: 9px; margin-top: 5px; color: #aaa; white-space: nowrap; overflow: hidden; }
+
+    /* Choice Overlay */
+    .choice-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 30px; text-align: center; }
+    .choice-card { width: 100%; max-width: 300px; background: #111; border: 1px solid #333; border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .choice-btn { width: 100%; padding: 18px; margin: 10px 0; border-radius: 14px; border: none; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; transition: 0.2s; }
+
+    /* Result */
+    .result-screen { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
+    .roast-card { background: #0a0a0a; border: 1px solid var(--pink); border-radius: 30px; padding: 30px; width: 100%; text-align: center; position: relative; box-shadow: 0 0 40px rgba(255,0,122,0.15); }
     
-    .result-view { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-    .result-card { background: #0a0a0a; border: 3px solid var(--red); border-radius: 20px; padding: 25px; text-align: center; width: 100%; position: relative; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="header"><div class="glitch">DECK ANALYZER 2026</div></div>
+<div class="screen">
+  <div class="header"><h1>DECK ROASTER AI</h1></div>
+  
   <div class="deck-grid">
     <script>
-      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openModal(${i})"><img id="img${i}" style="display:none"><span id="p${i}" style="opacity:0.3; font-size:24px;">+</span></div>`);
+      for(let i=0; i<8; i++) document.write(`<div class="slot" id="s${i}" onclick="openPicker(${i})"><div class="plus" id="p${i}">+</div><img id="img${i}" style="display:none"></div>`);
     </script>
   </div>
-  <div class="stats">
-    <div class="stat-row"><div class="stat-label"><span>TOXICITY (ЯД)</span><span id="v-tox">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-tox"></div></div></div>
-    <div class="stat-row"><div class="stat-label"><span>SKILL ISSUE</span><span id="v-skill">0%</span></div><div class="bar-bg"><div class="bar-fill" id="b-skill"></div></div></div>
-    <div class="stat-row"><div class="stat-label"><span>GIRLFRIEND CHANCE</span><span id="v-love">100%</span></div><div class="bar-bg"><div class="bar-fill" id="b-love" style="background:var(--red); width:100%"></div></div></div>
+
+  <div class="stats-pane">
+    <div class="stat-card">
+      <div class="stat-header"><span>TOXIC LEVEL</span><span id="v-tox" style="color:var(--pink)">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="b-tox" style="background:var(--pink)"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><span>SKILL DEFICIT</span><span id="v-skill" style="color:var(--accent)">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="b-skill" style="background:var(--accent)"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><span>GIRLFRIEND PROBABILITY</span><span id="v-love">100%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="b-love" style="background:#fff; width:100%"></div></div>
+    </div>
   </div>
-  <button class="btn-main" onclick="startRoast()">УНИЗИТЬ КОЛОДУ</button>
+
+  <button class="btn-fire" onclick="generateRoast()">ПРОВЕРИТЬ КОЛОДУ</button>
 </div>
 
-<div id="choice-overlay" class="overlay">
-  <h2 id="choice-name" style="margin-bottom:20px; font-family:'Orbitron';">КАРТА</h2>
-  <button class="choice-btn btn-norm" onclick="selectVersion('norm')">ОБЫЧНАЯ</button>
-  <button id="opt-star" class="choice-btn btn-star" onclick="selectVersion('star')">ЗОЛОТАЯ (STAR LEVEL)</button>
-  <button id="opt-evo" class="choice-btn btn-evo" style="display:none" onclick="selectVersion('evo')">ЭВОЛЮЦИЯ</button>
-  <button id="opt-champ" class="choice-btn btn-champ" style="display:none" onclick="selectVersion('champ')">ЧЕМПИОН</button>
-  <button style="background:none; border:none; color:#555; margin-top:20px;" onclick="closeChoice()">ОТМЕНА</button>
+<div id="choice-overlay" class="choice-overlay">
+  <div class="choice-card">
+    <h3 style="font-family:'Orbitron'; margin-bottom:20px;">ВЫБЕРИ СТАТУС</h3>
+    <button class="choice-btn" style="background:#222; color:#fff;" onclick="finishSelection('norm')">ОБЫЧНАЯ</button>
+    <button id="evo-btn" class="choice-btn" style="background:var(--purple); color:#fff; display:none;" onclick="finishSelection('evo')">ЭВОЛЮЦИЯ</button>
+    <button id="champ-btn" class="choice-btn" style="background:var(--gold); color:#000; display:none;" onclick="finishSelection('champ')">ЧЕМПИОН</button>
+    <button style="background:none; border:none; color:#555; margin-top:15px;" onclick="document.getElementById('choice-overlay').style.display='none'">ОТМЕНА</button>
+  </div>
 </div>
 
 <div id="modal" class="modal">
-  <div class="search-area">
-    <input type="text" id="search" placeholder="Найти карту..." oninput="renderCards()">
-    <button onclick="closeModal()" style="background:none; border:none; color:var(--red); margin-top:10px; width:100%; font-weight:bold;">НАЗАД</button>
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Поиск карты..." oninput="drawCards()">
   </div>
   <div class="card-list" id="card-list"></div>
+  <button style="padding:20px; background:none; border:none; color:var(--pink); font-family:'Orbitron';" onclick="closePicker()">ЗАКРЫТЬ</button>
 </div>
 
-<div id="result" class="result-view">
-  <div id="capture-area" class="result-card">
-    <div id="res-emoji" style="font-size: 60px; margin-bottom:10px;"></div>
-    <h2 id="res-title" style="color:var(--red); font-family:'Orbitron'; margin:0;"></h2>
-    <p id="res-text" style="font-size: 14px; margin: 20px 0; line-height:1.5;"></p>
-    <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px;"></div>
+<div id="result" class="result-screen">
+  <div id="capture-area" class="roast-card">
+    <div id="res-emoji" style="font-size: 50px;"></div>
+    <h2 id="res-title" style="font-family:'Orbitron'; color:var(--pink); margin: 15px 0;"></h2>
+    <p id="res-text" style="font-size: 14px; line-height: 1.6; color: #ccc;"></p>
+    <div id="res-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:20px;"></div>
   </div>
-  <button class="btn-main" style="width:100%" onclick="saveResult()">СОХРАНИТЬ ДЛЯ ТИКТОКА</button>
-  <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:15px;">ЗАНОВО</button>
+  <button class="btn-fire" style="width:100%" onclick="save()">СОХРАНИТЬ РЕЗУЛЬТАТ</button>
+  <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:10px;">ЗАНОВО</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
 
-// БАЗА ДАННЫХ (ID ИЗ КЭША ИГРЫ)
-const DATA = [
-  {n:"Мегарыцарь",id:"mega-knight",evo:true,t:40,s:80}, {n:"Всадник на кабане",id:"hog-rider",evo:true,t:30,s:10},
-  {n:"Элитные варвары",id:"elite-barbarians",evo:true,t:80,s:70}, {n:"Арбалет",id:"x-bow",t:60,s:40},
-  {n:"Огненная лучница",id:"firecracker",evo:true,t:40,s:10}, {n:"П.Е.К.К.А.",id:"pekka",evo:true,t:15,s:20},
-  {n:"Ведьма",id:"witch",t:20,s:50}, {n:"Колдун",id:"wizard",evo:true,t:10,s:60},
-  {n:"Маленький Принц",id:"little-prince",champ:true,t:30,s:15}, {n:"Королева лучниц",id:"archer-queen",champ:true,t:20,s:20},
-  {n:"Гоблинская бочка",id:"goblin-barrel",evo:true,t:40,s:10}, {n:"Заморозка",id:"freeze",t:90,s:80},
-  {n:"Зеркало",id:"mirror",t:70,s:50}, {n:"Электрогигант",id:"electro-giant",t:75,s:40},
-  {n:"Боевой таран",id:"battle-ram",evo:true,t:10,s:15}, {n:"Валькирия",id:"valkyrie",evo:true,t:5,s:10},
-  {n:"Мортира",id:"mortar",evo:true,t:45,s:25}, {n:"Скелеты",id:"skeletons",evo:true,t:5,s:5},
-  {n:"Спарки",id:"sparky",t:60,s:40}, {n:"Ярость",id:"rage",t:50,s:30}, {n:"Гоблинштейн",id:"goblinstein",t:40,s:20}
-  // Добавь сюда остальные карты по аналогии, если нужно
+// БАЗА ВСЕХ КАРТ + ЭВОЛЮЦИЙ
+const DB = [
+  {n:"Мегарыцарь",id:"mega-knight",evo:true,tox:40,sk:60},
+  {n:"П.Е.К.К.А.",id:"pekka",evo:true,tox:15,sk:15},
+  {n:"Всадник на кабане",id:"hog-rider",evo:true,tox:30,sk:10},
+  {n:"Элитные варвары",id:"elite-barbarians",evo:true,tox:80,sk:70},
+  {n:"Огненная лучница",id:"firecracker",evo:true,tox:40,sk:10},
+  {n:"Гоблинская бочка",id:"goblin-barrel",evo:true,tox:45,sk:10},
+  {n:"Гоблин-гигант",id:"goblin-giant",evo:true,tox:35,sk:15},
+  {n:"Валькирия",id:"valkyrie",evo:true,tox:10,sk:10},
+  {n:"Колдун",id:"wizard",evo:true,tox:10,sk:50},
+  {n:"Тесла",id:"tesla",evo:true,tox:25,sk:10},
+  {n:"Боевой таран",id:"battle-ram",evo:true,tox:10,sk:15},
+  {n:"Мортира",id:"mortar",evo:true,tox:40,sk:25},
+  {n:"Скелеты",id:"skeletons",evo:true,tox:5,sk:5},
+  {n:"Запоздалая клетка",id:"goblin-cage",evo:true,tox:15,sk:15},
+  {n:"Варвары",id:"barbarians",evo:true,tox:10,sk:20},
+  {n:"Мушкетёр",id:"musketeer",evo:true,tox:5,sk:10},
+  {n:"Маленький Принц",id:"little-prince",champ:true,tox:30,sk:15},
+  {n:"Королева лучниц",id:"archer-queen",champ:true,tox:20,sk:20},
+  {n:"Гоблинштейн",id:"goblinstein",tox:40,sk:20},
+  {n:"Арбалет",id:"x-bow",tox:60,sk:40},
+  {n:"Заморозка",id:"freeze",tox:90,sk:80},
+  {n:"Спарки",id:"sparky",tox:60,sk:30},
+  {n:"Шахтёр",id:"miner",tox:15,sk:30},
+  {n:"Шар",id:"balloon",tox:35,sk:25},
+  {n:"Электрогигант",id:"electro-giant",tox:70,sk:40}
 ];
 
 let deck = Array(8).fill(null);
-let curSlot = 0;
-let tempCard = null;
+let slotIdx = 0;
+let temp = null;
 
-function openModal(i) { curSlot = i; document.getElementById('modal').style.display = 'flex'; renderCards(); }
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
-function closeChoice() { document.getElementById('choice-overlay').style.display = 'none'; }
+function openPicker(i) { slotIdx = i; document.getElementById('modal').style.display = 'flex'; drawCards(); }
+function closePicker() { document.getElementById('modal').style.display = 'none'; }
 
-function renderCards() {
+function drawCards() {
   const q = document.getElementById('search').value.toLowerCase();
   const list = document.getElementById('card-list');
-  list.innerHTML = DATA.filter(c => c.n.toLowerCase().includes(q)).map(c => `
-    <div class="card-item" onclick="initChoice('${c.n}')">
+  list.innerHTML = DB.filter(c => c.n.toLowerCase().includes(q)).map(c => `
+    <div class="card-thumb" onclick="pickCard('${c.n}')">
       <img src="https://royaleapi.com/static/img/cards-150/${c.id}.png">
-      <div style="font-size:10px; margin-top:5px;">${c.n}</div>
+      <span>${c.n}</span>
     </div>
   `).join('');
 }
 
-function initChoice(name) {
-  tempCard = DATA.find(x => x.n === name);
+function pickCard(name) {
+  if(deck.some(d => d && d.n === name)) return tg.showAlert("Эта карта уже в деке!");
+  temp = DB.find(x => x.n === name);
   document.getElementById('modal').style.display = 'none';
   document.getElementById('choice-overlay').style.display = 'flex';
-  document.getElementById('choice-name').innerText = name;
-  document.getElementById('opt-evo').style.display = tempCard.evo ? 'block' : 'none';
-  document.getElementById('opt-champ').style.display = tempCard.champ ? 'block' : 'none';
+  document.getElementById('evo-btn').style.display = temp.evo ? 'block' : 'none';
+  document.getElementById('champ-btn').style.display = temp.champ ? 'block' : 'none';
 }
 
-function selectVersion(ver) {
-  let final = {...tempCard, ver: ver};
-  deck[curSlot] = final;
+function finishSelection(type) {
+  let card = {...temp, mode: type};
+  deck[slotIdx] = card;
   
-  const s = document.getElementById(`s${curSlot}`);
-  const img = document.getElementById(`img${curSlot}`);
+  const s = document.getElementById(`s${slotIdx}`);
+  const img = document.getElementById(`img${slotIdx}`);
   
-  s.className = `slot filled ${ver}`;
-  let url = `https://royaleapi.com/static/img/cards-150/${final.id}${ver==='evo'?'-ev1':''}.png`;
-  img.src = url;
+  s.className = `slot filled ${type}`;
+  img.src = `https://royaleapi.com/static/img/cards-150/${card.id}${type==='evo'?'-ev1':''}.png`;
   img.style.display = 'block';
-  document.getElementById(`p${curSlot}`).style.display = 'none';
+  document.getElementById(`p${slotIdx}`).style.display = 'none';
   
-  closeChoice();
-  updateStats();
+  document.getElementById('choice-overlay').style.display = 'none';
+  updateBars();
 }
 
-function updateStats() {
+function updateBars() {
   const d = deck.filter(x => x);
-  const tox = d.reduce((a,b) => a + (b.ver==='evo'?b.t+20:b.t), 0) / 1.6;
-  const skill = d.reduce((a,b) => a + (b.ver==='star'?b.s+10:b.s), 0) / 1.6;
+  const tox = d.reduce((a,b) => a + (b.mode==='evo'?b.tox+25:b.tox), 0) / 2;
+  const sk = d.reduce((a,b) => a + b.sk, 0) / 2;
   
   document.getElementById('b-tox').style.width = Math.min(100, tox) + '%';
   document.getElementById('v-tox').innerText = Math.round(tox) + '%';
-  document.getElementById('b-skill').style.width = Math.min(100, skill) + '%';
-  document.getElementById('v-skill').innerText = Math.round(skill) + '%';
-  document.getElementById('b-love').style.width = Math.max(0, 100 - (tox+skill)/2.5) + '%';
+  document.getElementById('b-skill').style.width = Math.min(100, sk) + '%';
+  document.getElementById('v-skill').innerText = Math.round(sk) + '%';
+  document.getElementById('b-love').style.width = Math.max(0, 100 - (tox+sk)/2.5) + '%';
 }
 
-function startRoast() {
-  if(deck.includes(null)) return tg.showAlert("Сначала выбери 8 карт!");
+function generateRoast() {
+  if(deck.includes(null)) return tg.showAlert("Заполни все 8 слотов!");
   
-  const names = deck.map(c => c.n);
-  const vers = deck.map(c => c.ver);
+  const names = deck.map(d => d.n);
+  const modes = deck.map(d => d.mode);
   let t, e, txt;
 
-  if(vers.includes('star') && names.includes('Мегарыцарь')) {
-    t = "ЗОЛОТОЙ КЛОУН"; e = "✨🤡";
-    txt = "Ты реально потратил звездные очки на Мегарыцаря? Думаешь, если он блестит, то его прыжок на мост станет умнее? Ты — легенда мидладера, золотой стандарт отсутствия мозга.";
-  } else if(vers.includes('evo') && names.includes('Элитные варвары')) {
-    t = "МУТАНТ-ОЛИГОФРЕН"; e = "🧬🤮";
-    txt = "Эволюция Элиток. Ты буквально заплатил за то, чтобы играла нейросеть вместо тебя. У тебя нет совести, нет друзей, и, скорее всего, ты до сих пор просишь маму завязать тебе шнурки.";
-  } else if(names.includes('Арбалет') && names.includes('Заморозка')) {
-    t = "ЛЕФОРТОВСКИЙ УЗНИК"; e = "🧊";
-    txt = "Арбалет под Фризом? Ты самый мерзкий тип, которого я видел. Ты не играешь в Клэш, ты просто пытаешься сделать жизнь других людей хуже. Надеюсь, у тебя вылетит Wi-Fi.";
-  } else if(vers.filter(v => v==='evo').length >= 2) {
-    t = "ЭВО-ШЛЮХА"; e = "😈";
-    txt = "Две эволюции в деке. Без доната ты бы даже тренировочный лагерь не прошел. Твой скилл куплен в магазине, но уважение там не продается.";
+  if(modes.filter(m => m === 'evo').length >= 2) {
+    t = "ДВОЙНОЙ КАБЛУК"; e = "🤡🤡";
+    txt = "Две эволюции? Ты буквально кричишь: 'У МЕНЯ НЕТ РУК, НО ЕСТЬ МАМИНА КАРТА!'. Твой геймплей настолько зависим от фиолетовых кнопок, что без них ты не сможешь победить даже бота.";
+  } else if(names.includes("Мегарыцарь") && modes.includes("evo")) {
+    t = "ЭВО-ШИЗОФРЕНИК"; e = "🦠";
+    txt = "Эволюция Мегарыцаря? Серьезно? Ты взял самую гейскую карту в игре и сделал её еще более гейской. Твой батя ушел за хлебом сразу после того, как увидел твой реплей.";
+  } else if(names.includes("Арбалет") || names.includes("Мортира")) {
+    t = "ОБИЖЕННЫЙ ОСАДНИК"; e = "🏰";
+    txt = "Ставишь палку у реки и защищаешь её всей жизнью? Ты и в жизни такой же — сидишь в углу и боишься честного боя. Никто не любит тебя, даже твоя собака.";
+  } else if(names.includes("Элитные варвары") && names.includes("Ярость")) {
+    t = "ПОМОЙНЫЙ СПАМЕР"; e = "🤮";
+    txt = "Элитки под рейджем на мост. Твой IQ равен количеству твоих извилин (одна, и та от кепки). Это не колода, это крик о помощи.";
   } else {
-    t = "ПОСМЕШИЩЕ"; e = "💩";
-    txt = "Рандомный мусор. Ты просто накидал карт и ждешь чуда. Твоя дека выглядит как объедки с праздничного стола топ-игрока.";
+    t = "ТИПИЧНЫЙ НУБ"; e = "💩";
+    txt = "Никакой синергии. Просто накидал карт, которые блестят. Твой мозг работает в режиме энергосбережения, когда ты заходишь в игру.";
   }
 
   document.getElementById('res-title').innerText = t;
   document.getElementById('res-emoji').innerText = e;
   document.getElementById('res-text').innerText = txt;
-  document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="https://royaleapi.com/static/img/cards-150/${x.id}${x.ver==='evo'?'-ev1':''}.png" class="${x.ver}">`).join('');
+  document.getElementById('res-grid').innerHTML = deck.map(x => `<img src="https://royaleapi.com/static/img/cards-150/${x.id}${x.mode==='evo'?'-ev1':''}.png" class="${x.mode}">`).join('');
   document.getElementById('result').style.display = 'flex';
   tg.HapticFeedback.notificationOccurred('success');
 }
 
-function saveResult() {
+function save() {
   html2canvas(document.getElementById('capture-area')).then(canvas => {
     const a = document.createElement('a'); a.download='roast.png'; a.href=canvas.toDataURL(); a.click();
-    tg.showAlert("Скриншот готов!");
+    tg.showAlert("Сохранено!");
   });
 }
 </script>
